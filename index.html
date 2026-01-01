@@ -27,36 +27,42 @@
 
 <script>
     async function handleVerify() {
-        const input = document.getElementById('inputCode').value.trim().toUpperCase();
-        const resultDiv = document.getElementById('result');
-        const scriptURL = "https://script.google.com/macros/s/AKfycbzIm2i1cEMHhhSYRz50dSjBvgDe3C3HZdtEBHPjTEjUbdujyHSbkGR7n-IOdtj-03ISGw/exec";
+    const input = document.getElementById('inputCode').value.trim().toUpperCase();
+    const resultDiv = document.getElementById('result');
+    
+    // THAY LINK MỚI CỦA BẠN VÀO ĐÂY
+    const scriptURL = "LINK_ỨNG_DỤNG_WEB_MỚI_CỦA_BẠN";
 
-        if (!input) {
-            resultDiv.innerHTML = "❌ Vui lòng nhập mã!";
-            resultDiv.className = "error";
-            return;
-        }
-
-        resultDiv.innerHTML = "Đang kiểm tra hệ thống...";
-        
-        try {
-            const response = await fetch(`${scriptURL}?code=${input}`);
-            const status = await response.text();
-
-            if (status === "SUCCESS") {
-                resultDiv.innerHTML = "✅ Kích hoạt thành công!<br>Mã này hiện đã bị vô hiệu hóa toàn hệ thống.";
-                resultDiv.className = "success";
-            } else if (status === "USED") {
-                resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng ở thiết bị khác!";
-                resultDiv.className = "error";
-            } else {
-                resultDiv.innerHTML = "❌ Mã không tồn tại!";
-                resultDiv.className = "error";
-            }
-        } catch (e) {
-            resultDiv.innerHTML = "⚠️ Lỗi kết nối hệ thống!";
-        }
+    if (!input) {
+        resultDiv.innerHTML = "❌ Vui lòng nhập mã!";
+        resultDiv.className = "error";
+        return;
     }
+
+    resultDiv.innerHTML = "⏳ Đang kiểm tra...";
+
+    try {
+        // Gửi yêu cầu đến Google Sheets
+        const response = await fetch(`${scriptURL}?code=${input}`);
+        const resData = await response.json();
+
+        if (resData.status === "SUCCESS") {
+            resultDiv.innerHTML = "✅ Kích hoạt thành công!<br>Mã này đã bị vô hiệu hóa.";
+            resultDiv.className = "success";
+            document.getElementById('inputCode').value = "";
+        } else if (resData.status === "USED") {
+            resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng rồi!";
+            resultDiv.className = "error";
+        } else {
+            resultDiv.innerHTML = "❌ Mã không tồn tại trong hệ thống.";
+            resultDiv.className = "error";
+        }
+    } catch (e) {
+        console.error(e);
+        resultDiv.innerHTML = "⚠️ Lỗi kết nối! Vui lòng thử lại.";
+        resultDiv.className = "error";
+    }
+}
 </script>
 </body>
 </html>
