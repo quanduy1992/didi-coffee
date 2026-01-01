@@ -3,135 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Di Di Coffee - Kích Hoạt Mã</title>
+    <title>Di Di Coffee - Nhận Quà</title>
     <style>
-        body {
-            background-color: #f5eee6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            font-family: 'Segoe UI', Arial, sans-serif;
-        }
-        .card {
-            background: white;
-            padding: 40px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            text-align: center;
-            width: 350px;
-        }
-        .logo {
-            font-size: 24px;
-            font-weight: bold;
-            color: #5d4037;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-        .sub-title {
-            color: #333;
-            font-weight: 600;
-            margin-bottom: 25px;
-            font-size: 18px;
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            box-sizing: border-box;
-            font-size: 16px;
-            text-align: center;
-        }
-        button {
-            width: 100%;
-            background-color: #795548;
-            color: white;
-            border: none;
-            padding: 14px;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-        button:hover {
-            background-color: #5d4037;
-        }
-        #result {
-            margin-top: 20px;
-            font-weight: bold;
-            min-height: 24px;
-            font-size: 15px;
-        }
+        body { background-color: #f5eee6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        .card { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 320px; }
+        h2 { color: #5d4037; margin: 0 0 20px 0; font-size: 22px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; box-sizing: border-box; text-align: center; font-size: 16px; outline: none; }
+        button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        button:active { background-color: #5d4037; }
+        #result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
         .error { color: #d32f2f; }
         .success { color: #2e7d32; }
     </style>
 </head>
 <body>
-
-<div class="card">
-    <div class="logo">☕ DI DI COFFEE</div>
-    <div class="sub-title">Nhập mã tích điểm!</div>
-    
-    <input type="text" id="inputCode" placeholder="Mã quà tặng của bạn..." autocomplete="off">
-    <button onclick="handleVerify()">KÍCH HOẠT</button>
-    
-    <div id="result"></div>
-</div>
+    <div class="card">
+        <h2>☕ DI DI COFFEE</h2>
+        <div style="margin-bottom: 15px; font-weight: bold;">Nhập mã tích điểm!</div>
+        <input type="text" id="inputCode" placeholder="Mã quà tặng...">
+        <button onclick="handleVerify()">KÍCH HOẠT</button>
+        <div id="result"></div>
+    </div>
 
 <script>
-    let validCodes = [];
-
-    // Hàm đọc file txt với cơ chế chống cache (Math.random)
-    async function loadCodes() {
+    // Hàm này giúp trang web luôn lấy dữ liệu mới nhất, không bị kẹt mã cũ
+    async function checkCodeDirectly(userCode) {
         try {
-            const response = await fetch('codes.txt?v=' + Math.random());
-            if (!response.ok) throw new Error("Không thể tải danh sách mã");
-            
+            // Thêm mã thời gian ngẫu nhiên để phá cache của GitHub
+            const response = await fetch('codes.txt?nocache=' + new Date().getTime());
             const data = await response.text();
             
-            // Xử lý tách dòng chuẩn cho cả Windows và Linux (\r\n hoặc \n)
-            validCodes = data.split(/\r?\n/)
-                             .map(c => c.trim().toUpperCase())
-                             .filter(c => c.length > 0);
+            // Chuyển toàn bộ danh sách mã thành chữ hoa và xóa khoảng trắng dư thừa
+            const validCodes = data.split(/\r?\n/).map(c => c.trim().toUpperCase()).filter(c => c !== "");
             
-            console.log("Dữ liệu đã sẵn sàng!");
-        } catch (err) {
-            console.error("Lỗi:", err);
-            document.getElementById('result').innerHTML = "⚠️ Lỗi kết nối dữ liệu!";
+            console.log("Danh sách mã trên hệ thống:", validCodes);
+            return validCodes.includes(userCode.toUpperCase());
+        } catch (e) {
+            console.error("Lỗi kết nối:", e);
+            return false;
         }
     }
 
-    // Tải mã ngay khi mở trang
-    loadCodes();
-
-    function handleVerify() {
-        const inputField = document.getElementById('inputCode');
-        const userCode = inputField.value.trim().toUpperCase();
+    async function handleVerify() {
+        const input = document.getElementById('inputCode').value.trim();
         const resultDiv = document.getElementById('result');
-
-        if (userCode === "") {
+        
+        if (!input) {
             resultDiv.innerHTML = "❌ Vui lòng nhập mã!";
             resultDiv.className = "error";
             return;
         }
 
-        if (validCodes.includes(userCode)) {
-            resultDiv.innerHTML = "✅ Kích hoạt thành công!<br>Vui lòng đưa cho nhân viên nhận quà.";
+        resultDiv.innerHTML = "Đang kiểm tra...";
+        resultDiv.className = "";
+
+        const isValid = await checkCodeDirectly(input);
+        
+        if (isValid) {
+            resultDiv.innerHTML = "✅ Kích hoạt thành công!<br><span style='font-size:13px'>Vui lòng đưa màn hình cho nhân viên.</span>";
             resultDiv.className = "success";
-            inputField.value = ""; // Xóa mã cũ sau khi thành công
+            document.getElementById('inputCode').value = ""; // Xóa mã sau khi dùng
         } else {
             resultDiv.innerHTML = "❌ Mã không đúng hoặc đã hết hạn.";
             resultDiv.className = "error";
         }
     }
 </script>
-
 </body>
 </html>
