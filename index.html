@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Di Di Coffee - Tích Điểm</title>
+    <title>Di Di Coffee - Kích Hoạt Mã</title>
     <style>
         body {
             background-color: #f5eee6;
@@ -12,71 +12,74 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
         .card {
             background: white;
             padding: 40px;
             border-radius: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
             text-align: center;
-            width: 380px;
+            width: 350px;
         }
-        .logo-area {
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #5d4037;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 10px;
             margin-bottom: 10px;
         }
-        h2 { color: #5d4037; margin: 0; font-size: 24px; letter-spacing: 1px; }
-        p { color: #333; font-weight: bold; margin-bottom: 25px; }
-        
+        .sub-title {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 25px;
+            font-size: 18px;
+        }
         input {
             width: 100%;
             padding: 12px;
-            border: 1px solid #ccc;
+            border: 1px solid #ddd;
             border-radius: 8px;
             margin-bottom: 20px;
             box-sizing: border-box;
             font-size: 16px;
+            text-align: center;
         }
-
         button {
             width: 100%;
             background-color: #795548;
             color: white;
             border: none;
-            padding: 12px;
+            padding: 14px;
             border-radius: 8px;
             font-weight: bold;
             cursor: pointer;
             font-size: 16px;
-            text-transform: uppercase;
+            transition: background 0.3s;
         }
-
+        button:hover {
+            background-color: #5d4037;
+        }
         #result {
             margin-top: 20px;
             font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
+            min-height: 24px;
+            font-size: 15px;
         }
-        .error { color: red; }
-        .success { color: green; }
+        .error { color: #d32f2f; }
+        .success { color: #2e7d32; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <div class="logo-area">
-        <span>☕</span> 
-        <h2>DI DI COFFEE</h2>
-    </div>
-    <p>Nhập mã tích điểm!</p>
+    <div class="logo">☕ DI DI COFFEE</div>
+    <div class="sub-title">Nhập mã tích điểm!</div>
     
-    <input type="text" id="inputCode" placeholder="Mã quà tặng...">
+    <input type="text" id="inputCode" placeholder="Mã quà tặng của bạn..." autocomplete="off">
     <button onclick="handleVerify()">KÍCH HOẠT</button>
     
     <div id="result"></div>
@@ -85,38 +88,44 @@
 <script>
     let validCodes = [];
 
-    // Hàm load file txt
+    // Hàm đọc file txt với cơ chế chống cache (Math.random)
     async function loadCodes() {
         try {
-            // Thêm tham số thời gian để tránh trình duyệt lưu cache file cũ
-            const response = await fetch('codes.txt?t=' + new Date().getTime());
-            if (!response.ok) throw new Error("Không tìm thấy file codes.txt");
-            const text = await response.exec(); 
+            const response = await fetch('codes.txt?v=' + Math.random());
+            if (!response.ok) throw new Error("Không thể tải danh sách mã");
+            
             const data = await response.text();
             
-            validCodes = data.split('\n')
+            // Xử lý tách dòng chuẩn cho cả Windows và Linux (\r\n hoặc \n)
+            validCodes = data.split(/\r?\n/)
                              .map(c => c.trim().toUpperCase())
-                             .filter(c => c !== "");
-            console.log("Đã tải danh sách mã thành công!");
+                             .filter(c => c.length > 0);
+            
+            console.log("Dữ liệu đã sẵn sàng!");
         } catch (err) {
-            console.error("Lỗi: ", err.message);
-            // Nếu lỗi do chạy file offline, thông báo cho bạn biết
-            if(window.location.protocol === 'file:') {
-                alert("Lưu ý: Bạn đang mở file trực tiếp từ ổ cứng. Trình duyệt sẽ chặn đọc file codes.txt. Hãy dùng Live Server hoặc đưa lên Web nhé!");
-            }
+            console.error("Lỗi:", err);
+            document.getElementById('result').innerHTML = "⚠️ Lỗi kết nối dữ liệu!";
         }
     }
 
-    // Chạy hàm load mã ngay khi trang web mở
+    // Tải mã ngay khi mở trang
     loadCodes();
 
     function handleVerify() {
-        const input = document.getElementById('inputCode').value.trim().toUpperCase();
+        const inputField = document.getElementById('inputCode');
+        const userCode = inputField.value.trim().toUpperCase();
         const resultDiv = document.getElementById('result');
 
-        if (validCodes.includes(input)) {
-            resultDiv.innerHTML = "✅ Kích hoạt thành công!";
+        if (userCode === "") {
+            resultDiv.innerHTML = "❌ Vui lòng nhập mã!";
+            resultDiv.className = "error";
+            return;
+        }
+
+        if (validCodes.includes(userCode)) {
+            resultDiv.innerHTML = "✅ Kích hoạt thành công!<br>Vui lòng đưa cho nhân viên nhận quà.";
             resultDiv.className = "success";
+            inputField.value = ""; // Xóa mã cũ sau khi thành công
         } else {
             resultDiv.innerHTML = "❌ Mã không đúng hoặc đã hết hạn.";
             resultDiv.className = "error";
