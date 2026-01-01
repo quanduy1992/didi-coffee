@@ -26,46 +26,35 @@
     </div>
 
 <script>
-    // Hàm này giúp trang web luôn lấy dữ liệu mới nhất, không bị kẹt mã cũ
-    async function checkCodeDirectly(userCode) {
-        try {
-            // Thêm mã thời gian ngẫu nhiên để phá cache của GitHub
-            const response = await fetch('codes.txt?nocache=' + new Date().getTime());
-            const data = await response.text();
-            
-            // Chuyển toàn bộ danh sách mã thành chữ hoa và xóa khoảng trắng dư thừa
-            const validCodes = data.split(/\r?\n/).map(c => c.trim().toUpperCase()).filter(c => c !== "");
-            
-            console.log("Danh sách mã trên hệ thống:", validCodes);
-            return validCodes.includes(userCode.toUpperCase());
-        } catch (e) {
-            console.error("Lỗi kết nối:", e);
-            return false;
-        }
-    }
-
     async function handleVerify() {
-        const input = document.getElementById('inputCode').value.trim();
+        const input = document.getElementById('inputCode').value.trim().toUpperCase();
         const resultDiv = document.getElementById('result');
-        
+        const scriptURL = "DÁN_LINK_GOOGLE_APPS_SCRIPT_CỦA_BẠN_VÀO_ĐÂY";
+
         if (!input) {
             resultDiv.innerHTML = "❌ Vui lòng nhập mã!";
             resultDiv.className = "error";
             return;
         }
 
-        resultDiv.innerHTML = "Đang kiểm tra...";
-        resultDiv.className = "";
-
-        const isValid = await checkCodeDirectly(input);
+        resultDiv.innerHTML = "Đang kiểm tra hệ thống...";
         
-        if (isValid) {
-            resultDiv.innerHTML = "✅ Kích hoạt thành công!<br><span style='font-size:13px'>Vui lòng đưa màn hình cho nhân viên.</span>";
-            resultDiv.className = "success";
-            document.getElementById('inputCode').value = ""; // Xóa mã sau khi dùng
-        } else {
-            resultDiv.innerHTML = "❌ Mã không đúng hoặc đã hết hạn.";
-            resultDiv.className = "error";
+        try {
+            const response = await fetch(`${scriptURL}?code=${input}`);
+            const status = await response.text();
+
+            if (status === "SUCCESS") {
+                resultDiv.innerHTML = "✅ Kích hoạt thành công!<br>Mã này hiện đã bị vô hiệu hóa toàn hệ thống.";
+                resultDiv.className = "success";
+            } else if (status === "USED") {
+                resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng ở thiết bị khác!";
+                resultDiv.className = "error";
+            } else {
+                resultDiv.innerHTML = "❌ Mã không tồn tại!";
+                resultDiv.className = "error";
+            }
+        } catch (e) {
+            resultDiv.innerHTML = "⚠️ Lỗi kết nối hệ thống!";
         }
     }
 </script>
