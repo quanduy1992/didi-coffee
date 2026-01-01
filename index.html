@@ -12,7 +12,19 @@
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; font-size: 15px; outline: none; }
         button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
         #result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
-        .point-box { background: #efebe9; padding: 15px; border-radius: 10px; margin-top: 15px; border: 2px dashed #795548; display: none; }
+        .point-box { 
+            background: #fff8e1; /* Màu nền vàng nhẹ nhàng hơn */
+            padding: 20px; 
+            border-radius: 15px; 
+            margin-top: 20px; 
+            border: 2px solid #795548; /* Đổi nét đứt thành nét liền cho chắc chắn */
+            display: none; 
+            animation: fadeIn 0.5s; /* Thêm hiệu ứng hiện hình mượt mà */
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
         .point-number { font-size: 30px; color: #795548; display: block; }
         .error { color: #d32f2f; }
         .success { color: #2e7d32; }
@@ -71,16 +83,20 @@
                 currentPoints.innerText = resData.points;
                 pointBox.style.display = "block";
                 
-                // Xóa mã để tránh nhập lại, giữ lại tên/sđt cho khách xem
+                // Xóa mã để tránh nhập lại
                 document.getElementById('inputCode').value = "";
             } else if (resData.status === "USED") {
-                resultDiv.innerHTML = "⚠️ Mã này đã được dùng.<br>Số điểm hiện tại của bạn là:";
+                // ĐÃ BỎ DÒNG: "Số điểm hiện tại của bạn là" theo ý bạn
+                resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng.";
                 resultDiv.className = "error";
+                
+                // Vẫn hiển thị ô điểm ở dưới cho khách xem
                 currentPoints.innerText = resData.points;
                 pointBox.style.display = "block";
             } else {
                 resultDiv.innerHTML = "❌ Mã không tồn tại!";
                 resultDiv.className = "error";
+                pointBox.style.display = "none";
             }
             document.body.removeChild(scriptTag);
         };
