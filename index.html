@@ -3,16 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Di Di Coffee - Nhận Quà</title>
+    <title>Di Di Coffee - Tích Điểm</title>
     <style>
         body { background-color: #f5eee6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
         .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 340px; }
         h2 { color: #5d4037; margin: 0 0 20px 0; }
         label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: #5d4037; font-size: 14px; }
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; font-size: 15px; outline: none; }
-        input:focus { border-color: #795548; }
         button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
         #result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
+        .point-box { background: #efebe9; padding: 15px; border-radius: 10px; margin-top: 15px; border: 2px dashed #795548; display: none; }
+        .point-number { font-size: 30px; color: #795548; display: block; }
         .error { color: #d32f2f; }
         .success { color: #2e7d32; }
     </style>
@@ -21,17 +22,23 @@
     <div class="card">
         <h2>☕ DI DI COFFEE</h2>
         
-        <label>Tên của bạn:</label>
-        <input type="text" id="cusName" placeholder="Nhập tên khách hàng">
+        <div id="form-input">
+            <label>Tên khách hàng:</label>
+            <input type="text" id="cusName" placeholder="Nhập tên của bạn">
+            <label>Số điện thoại:</label>
+            <input type="tel" id="cusPhone" placeholder="Nhập số điện thoại">
+            <label>Mã quà tặng:</label>
+            <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
+            <button onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
+        </div>
 
-        <label>Số điện thoại:</label>
-        <input type="tel" id="cusPhone" placeholder="Nhập số điện thoại">
-
-        <label>Mã quà tặng:</label>
-        <input type="text" id="inputCode" placeholder="Ví dụ: DIDI123">
-
-        <button onclick="handleVerify()">KÍCH HOẠT NHẬN QUÀ</button>
         <div id="result"></div>
+
+        <div id="pointBox" class="point-box">
+            <span style="color: #5d4037;">Bạn hiện có:</span>
+            <span class="point-number" id="currentPoints">0</span>
+            <span style="color: #5d4037;">Điểm tích lũy</span>
+        </div>
     </div>
 
 <script>
@@ -40,8 +47,10 @@
         const phone = document.getElementById('cusPhone').value.trim();
         const code = document.getElementById('inputCode').value.trim().toUpperCase();
         const resultDiv = document.getElementById('result');
+        const pointBox = document.getElementById('pointBox');
+        const currentPoints = document.getElementById('currentPoints');
         
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxH0S72l81r6SgsLTReVB5Dnwo6rFxTwAG4tIssT_ZW4AaByIEtQLTUH_tF0dUQ3bQ9PA/exec"; // DÁN LINK MỚI CỦA BẠN VÀO ĐÂY
+        const scriptURL = "https://script.google.com/macros/s/AKfycbwpWalQszZtAFx_2UloUzrizOBcVQUpHOdgUM-963dXsSDDggeUTfkgDLzTh7LkO0RGhA/exec"; // DÁN LINK CỦA BẠN VÀO ĐÂY
 
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
@@ -49,22 +58,28 @@
             return;
         }
 
-        resultDiv.innerHTML = "⌛ Đang xử lý...";
+        resultDiv.innerHTML = "⌛ Đang kiểm tra...";
         resultDiv.className = "";
+        pointBox.style.display = "none";
 
         window.googleCallback = function(resData) {
             if (resData.status === "SUCCESS") {
-                resultDiv.innerHTML = "✅ Kích hoạt thành công!<br>Chào mừng " + name + " đến với Di Di.";
+                resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
-                // Xóa form sau khi thành công
-                document.getElementById('cusName').value = "";
-                document.getElementById('cusPhone').value = "";
+                
+                // Hiển thị điểm
+                currentPoints.innerText = resData.points;
+                pointBox.style.display = "block";
+                
+                // Xóa mã để tránh nhập lại, giữ lại tên/sđt cho khách xem
                 document.getElementById('inputCode').value = "";
             } else if (resData.status === "USED") {
-                resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng rồi!";
+                resultDiv.innerHTML = "⚠️ Mã này đã được dùng.<br>Số điểm hiện tại của bạn là:";
                 resultDiv.className = "error";
+                currentPoints.innerText = resData.points;
+                pointBox.style.display = "block";
             } else {
-                resultDiv.innerHTML = "❌ Mã không đúng hoặc không tồn tại.";
+                resultDiv.innerHTML = "❌ Mã không tồn tại!";
                 resultDiv.className = "error";
             }
             document.body.removeChild(scriptTag);
