@@ -29,9 +29,7 @@
     async function handleVerify() {
     const input = document.getElementById('inputCode').value.trim().toUpperCase();
     const resultDiv = document.getElementById('result');
-    
-    // THAY LINK MỚI CỦA BẠN VÀO ĐÂY
-    const scriptURL = "LINK_ỨNG_DỤNG_WEB_MỚI_CỦA_BẠN";
+    const scriptURL = "https://script.google.com/macros/s/AKfycbxNA_e1AO2ZENKFlT-__YTkOhC8UF_0h46iZ92gFN1UklK3C6VNTTD_XTgsUu6AzowCOg/exec"; // Nhớ dán link của bạn vào đây
 
     if (!input) {
         resultDiv.innerHTML = "❌ Vui lòng nhập mã!";
@@ -39,17 +37,20 @@
         return;
     }
 
-    resultDiv.innerHTML = "⏳ Đang kiểm tra...";
+    resultDiv.innerHTML = "⌛ Đang kiểm tra...";
+    resultDiv.className = "";
 
     try {
-        // Gửi yêu cầu đến Google Sheets
+        // Gọi đến Google Sheets
         const response = await fetch(`${scriptURL}?code=${input}`);
         const resData = await response.json();
 
+        console.log("Kết quả từ hệ thống:", resData.status); // Để kiểm tra trong Console
+
         if (resData.status === "SUCCESS") {
-            resultDiv.innerHTML = "✅ Kích hoạt thành công!<br>Mã này đã bị vô hiệu hóa.";
+            resultDiv.innerHTML = "✅ Kích hoạt thành công!<br><span style='font-size:13px'>Mã này đã bị vô hiệu hóa toàn hệ thống.</span>";
             resultDiv.className = "success";
-            document.getElementById('inputCode').value = "";
+            document.getElementById('inputCode').value = ""; 
         } else if (resData.status === "USED") {
             resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng rồi!";
             resultDiv.className = "error";
@@ -58,8 +59,8 @@
             resultDiv.className = "error";
         }
     } catch (e) {
-        console.error(e);
-        resultDiv.innerHTML = "⚠️ Lỗi kết nối! Vui lòng thử lại.";
+        console.error("Lỗi:", e);
+        resultDiv.innerHTML = "⚠️ Lỗi kết nối hệ thống! Thử lại sau.";
         resultDiv.className = "error";
     }
 }
