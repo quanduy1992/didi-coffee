@@ -13,13 +13,13 @@
         button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
         #result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
         .point-box { 
-            background: #fff8e1; /* Màu nền vàng nhẹ nhàng hơn */
+            background: #fff8e1; 
             padding: 20px; 
             border-radius: 15px; 
             margin-top: 20px; 
-            border: 2px solid #795548; /* Đổi nét đứt thành nét liền cho chắc chắn */
+            border: 2px solid #795548; 
             display: none; 
-            animation: fadeIn 0.5s; /* Thêm hiệu ứng hiện hình mượt mà */
+            animation: fadeIn 0.5s; 
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -54,6 +54,23 @@
     </div>
 
 <script>
+    // --- 1. KHI TRANG WEB VỪA MỞ: TỰ ĐIỀN THÔNG TIN ---
+    window.onload = function() {
+        // Tự điền mã từ Link QR (?code=DIDI1)
+        const urlParams = new URLSearchParams(window.location.search);
+        const codeFromURL = urlParams.get('code');
+        if (codeFromURL) {
+            document.getElementById('inputCode').value = codeFromURL.toUpperCase();
+        }
+
+        // Tự điền Tên và SĐT từ bộ nhớ máy khách (nếu có)
+        const savedName = localStorage.getItem('didi_customer_name');
+        const savedPhone = localStorage.getItem('didi_customer_phone');
+        if (savedName) document.getElementById('cusName').value = savedName;
+        if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
+    };
+
+    // --- 2. HÀM XỬ LÝ TÍCH ĐIỂM ---
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -62,13 +79,17 @@
         const pointBox = document.getElementById('pointBox');
         const currentPoints = document.getElementById('currentPoints');
         
-        const scriptURL = "https://script.google.com/macros/s/AKfycbz68hN847qNjiEOSHXdXu8RYs_uFd4VqAJdSCqvAbdFYDT5vCr5Zm26MMWyQCnZ1NKQ-Q/exec"; // DÁN LINK CỦA BẠN VÀO ĐÂY
+        const scriptURL = "https://script.google.com/macros/s/AKfycbz68hN847qNjiEOSHXdXu8RYs_uFd4VqAJdSCqvAbdFYDT5vCr5Zm26MMWyQCnZ1NKQ-Q/exec";
 
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
             resultDiv.className = "error";
             return;
         }
+
+        // LƯU THÔNG TIN VÀO BỘ NHỚ ĐIỆN THOẠI NGAY LÚC BẤM NÚT
+        localStorage.setItem('didi_customer_name', name);
+        localStorage.setItem('didi_customer_phone', phone);
 
         resultDiv.innerHTML = "⌛ Đang kiểm tra...";
         resultDiv.className = "";
@@ -78,19 +99,12 @@
             if (resData.status === "SUCCESS") {
                 resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
-                
-                // Hiển thị điểm
                 currentPoints.innerText = resData.points;
                 pointBox.style.display = "block";
-                
-                // Xóa mã để tránh nhập lại
-                document.getElementById('inputCode').value = "";
+                document.getElementById('inputCode').value = ""; // Xóa mã sau khi dùng
             } else if (resData.status === "USED") {
-                // ĐÃ BỎ DÒNG: "Số điểm hiện tại của bạn là" theo ý bạn
                 resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng.";
                 resultDiv.className = "error";
-                
-                // Vẫn hiển thị ô điểm ở dưới cho khách xem
                 currentPoints.innerText = resData.points;
                 pointBox.style.display = "block";
             } else {
@@ -105,14 +119,6 @@
         scriptTag.src = `${scriptURL}?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&callback=googleCallback`;
         document.body.appendChild(scriptTag);
     }
-// Tự động lấy mã từ Link khi khách quét QR
-window.onload = function() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const codeFromURL = urlParams.get('code');
-    if (codeFromURL) {
-        document.getElementById('inputCode').value = codeFromURL.toUpperCase();
-    }
-};
 </script>
 </body>
 </html>
