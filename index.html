@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Di Di Coffee - Tích Điểm</title>
+    <style>
+        body {
+            background-color: #f5eee6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .card {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            text-align: center;
+            width: 380px;
+        }
+        .logo-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        h2 { color: #5d4037; margin: 0; font-size: 24px; letter-spacing: 1px; }
+        p { color: #333; font-weight: bold; margin-bottom: 25px; }
+        
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button {
+            width: 100%;
+            background-color: #795548;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+
+        #result {
+            margin-top: 20px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="logo-area">
+        <span>☕</span> 
+        <h2>DI DI COFFEE</h2>
+    </div>
+    <p>Nhập mã tích điểm!</p>
+    
+    <input type="text" id="inputCode" placeholder="Mã quà tặng...">
+    <button onclick="handleVerify()">KÍCH HOẠT</button>
+    
+    <div id="result"></div>
+</div>
+
+<script>
+    let validCodes = [];
+
+    // Hàm load file txt
+    async function loadCodes() {
+        try {
+            // Thêm tham số thời gian để tránh trình duyệt lưu cache file cũ
+            const response = await fetch('codes.txt?t=' + new Date().getTime());
+            if (!response.ok) throw new Error("Không tìm thấy file codes.txt");
+            const text = await response.exec(); 
+            const data = await response.text();
+            
+            validCodes = data.split('\n')
+                             .map(c => c.trim().toUpperCase())
+                             .filter(c => c !== "");
+            console.log("Đã tải danh sách mã thành công!");
+        } catch (err) {
+            console.error("Lỗi: ", err.message);
+            // Nếu lỗi do chạy file offline, thông báo cho bạn biết
+            if(window.location.protocol === 'file:') {
+                alert("Lưu ý: Bạn đang mở file trực tiếp từ ổ cứng. Trình duyệt sẽ chặn đọc file codes.txt. Hãy dùng Live Server hoặc đưa lên Web nhé!");
+            }
+        }
+    }
+
+    // Chạy hàm load mã ngay khi trang web mở
+    loadCodes();
+
+    function handleVerify() {
+        const input = document.getElementById('inputCode').value.trim().toUpperCase();
+        const resultDiv = document.getElementById('result');
+
+        if (validCodes.includes(input)) {
+            resultDiv.innerHTML = "✅ Kích hoạt thành công!";
+            resultDiv.className = "success";
+        } else {
+            resultDiv.innerHTML = "❌ Mã không đúng hoặc đã hết hạn.";
+            resultDiv.className = "error";
+        }
+    }
+</script>
+
+</body>
+</html>
