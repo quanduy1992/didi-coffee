@@ -105,6 +105,14 @@
         scriptTag.src = `${scriptURL}?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&callback=googleCallback`;
         document.body.appendChild(scriptTag);
     }
+// Tự động lấy mã từ Link khi khách quét QR
+window.onload = function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const codeFromURL = urlParams.get('code');
+    if (codeFromURL) {
+        document.getElementById('inputCode').value = codeFromURL.toUpperCase();
+    }
+};
 </script>
 </body>
 </html>
