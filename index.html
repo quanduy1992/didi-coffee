@@ -5,12 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Di Di Coffee - Nhận Quà</title>
     <style>
-        body { background-color: #f5eee6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
-        .card { background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 320px; }
-        h2 { color: #5d4037; margin: 0 0 20px 0; font-size: 22px; }
-        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 20px; box-sizing: border-box; text-align: center; font-size: 16px; outline: none; }
-        button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        button:active { background-color: #5d4037; }
+        body { background-color: #f5eee6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 340px; }
+        h2 { color: #5d4037; margin: 0 0 20px 0; }
+        label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: #5d4037; font-size: 14px; }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; font-size: 15px; outline: none; }
+        input:focus { border-color: #795548; }
+        button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
         #result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
         .error { color: #d32f2f; }
         .success { color: #2e7d32; }
@@ -19,51 +20,60 @@
 <body>
     <div class="card">
         <h2>☕ DI DI COFFEE</h2>
-        <div style="margin-bottom: 15px; font-weight: bold;">Nhập mã tích điểm!</div>
-        <input type="text" id="inputCode" placeholder="Mã quà tặng...">
-        <button onclick="handleVerify()">KÍCH HOẠT</button>
+        
+        <label>Tên của bạn:</label>
+        <input type="text" id="cusName" placeholder="Nhập tên khách hàng">
+
+        <label>Số điện thoại:</label>
+        <input type="tel" id="cusPhone" placeholder="Nhập số điện thoại">
+
+        <label>Mã quà tặng:</label>
+        <input type="text" id="inputCode" placeholder="Ví dụ: DIDI123">
+
+        <button onclick="handleVerify()">KÍCH HOẠT NHẬN QUÀ</button>
         <div id="result"></div>
     </div>
 
 <script>
-    async function handleVerify() {
-    const input = document.getElementById('inputCode').value.trim().toUpperCase();
-    const resultDiv = document.getElementById('result');
-    const scriptURL = "https://script.google.com/macros/s/AKfycbxNA_e1AO2ZENKFlT-__YTkOhC8UF_0h46iZ92gFN1UklK3C6VNTTD_XTgsUu6AzowCOg/exec"; // Nhớ dán link của bạn vào đây
+    function handleVerify() {
+        const name = document.getElementById('cusName').value.trim();
+        const phone = document.getElementById('cusPhone').value.trim();
+        const code = document.getElementById('inputCode').value.trim().toUpperCase();
+        const resultDiv = document.getElementById('result');
+        
+        const scriptURL = "https://script.google.com/macros/s/AKfycbxH0S72l81r6SgsLTReVB5Dnwo6rFxTwAG4tIssT_ZW4AaByIEtQLTUH_tF0dUQ3bQ9PA/exec"; // DÁN LINK MỚI CỦA BẠN VÀO ĐÂY
 
-    if (!input) {
-        resultDiv.innerHTML = "❌ Vui lòng nhập mã!";
-        resultDiv.className = "error";
-        return;
-    }
-
-    resultDiv.innerHTML = "⌛ Đang kiểm tra...";
-    resultDiv.className = "";
-
-    try {
-        // Gọi đến Google Sheets
-        const response = await fetch(`${scriptURL}?code=${input}`);
-        const resData = await response.json();
-
-        console.log("Kết quả từ hệ thống:", resData.status); // Để kiểm tra trong Console
-
-        if (resData.status === "SUCCESS") {
-            resultDiv.innerHTML = "✅ Kích hoạt thành công!<br><span style='font-size:13px'>Mã này đã bị vô hiệu hóa toàn hệ thống.</span>";
-            resultDiv.className = "success";
-            document.getElementById('inputCode').value = ""; 
-        } else if (resData.status === "USED") {
-            resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng rồi!";
+        if (!name || !phone || !code) {
+            resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
             resultDiv.className = "error";
-        } else {
-            resultDiv.innerHTML = "❌ Mã không tồn tại trong hệ thống.";
-            resultDiv.className = "error";
+            return;
         }
-    } catch (e) {
-        console.error("Lỗi:", e);
-        resultDiv.innerHTML = "⚠️ Lỗi kết nối hệ thống! Thử lại sau.";
-        resultDiv.className = "error";
+
+        resultDiv.innerHTML = "⌛ Đang xử lý...";
+        resultDiv.className = "";
+
+        window.googleCallback = function(resData) {
+            if (resData.status === "SUCCESS") {
+                resultDiv.innerHTML = "✅ Kích hoạt thành công!<br>Chào mừng " + name + " đến với Di Di.";
+                resultDiv.className = "success";
+                // Xóa form sau khi thành công
+                document.getElementById('cusName').value = "";
+                document.getElementById('cusPhone').value = "";
+                document.getElementById('inputCode').value = "";
+            } else if (resData.status === "USED") {
+                resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng rồi!";
+                resultDiv.className = "error";
+            } else {
+                resultDiv.innerHTML = "❌ Mã không đúng hoặc không tồn tại.";
+                resultDiv.className = "error";
+            }
+            document.body.removeChild(scriptTag);
+        };
+
+        const scriptTag = document.createElement("script");
+        scriptTag.src = `${scriptURL}?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&callback=googleCallback`;
+        document.body.appendChild(scriptTag);
     }
-}
 </script>
 </body>
 </html>
