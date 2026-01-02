@@ -4,102 +4,91 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Di Di Coffee - Đổi Thưởng</title>
-    <script src="config.js"></script> <style>
+    <script src="config.js"></script> 
+    <style>
         body { font-family: 'Arial', sans-serif; background-color: #f4f1ea; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 320px; text-align: center; border: 2px solid #795548; }
         h2 { color: #795548; margin: 0 0 10px 0; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 18px; text-align: center; background: #f9f9f9; }
         button { width: 100%; padding: 15px; background-color: #795548; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
         button:disabled { background-color: #ccc; }
-        #status { margin-top: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .success { color: #2e7d32; background: #e8f5e9; padding: 15px; border-radius: 10px; border: 2px solid #2e7d32; width: 100%; }
-        .error { color: #c62828; background: #ffebee; padding: 15px; border-radius: 10px; border: 2px solid #c62828; width: 100%; }
+        #status { margin-top: 20px; min-height: 60px; font-weight: bold; }
+        .point-box { background: #fff8e1; color: #f57f17; padding: 10px; border-radius: 8px; border: 1px dashed #f57f17; margin-bottom: 10px; font-size: 16px; }
+        .success { color: #2e7d32; background: #e8f5e9; padding: 15px; border-radius: 10px; border: 2px solid #2e7d32; }
+        .error { color: #c62828; background: #ffebee; padding: 15px; border-radius: 10px; border: 2px solid #c62828; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>☕ DI DI COFFEE</h2>
-    <p style="color: #8d6e63;">Đổi 20 điểm = 1 ly miễn phí</p>
+    <p style="color: #8d6e63;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
     
-    <input type="tel" id="phone" placeholder="Số điện thoại">
+    <div id="pointDisplay"></div> <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
     <button id="btnRedeem" onclick="handleRedeem()">XÁC NHẬN ĐỔI QUÀ</button>
 
     <div id="status"></div>
 </div>
-<script src="config.js"></script>
 
 <script>
-    // Kiểm tra nếu config.js đã tải thành công
-    const scriptURL = typeof CONFIG !== 'undefined' ? CONFIG.SCRIPT_URL : '';
-    const minPoints = typeof CONFIG !== 'undefined' ? CONFIG.REDEEM_POINTS : 20;
+    const scriptURL = CONFIG.SCRIPT_URL;
+    const minPoints = CONFIG.REDEEM_POINTS;
+    document.getElementById('reqPoints').innerText = minPoints;
 
-    // Tự động điền SĐT nếu máy khách đã từng tích điểm trước đó
+    // Tự động kiểm tra khi vừa load trang
     window.onload = function() {
         const savedPhone = localStorage.getItem('userPhone');
         if (savedPhone) {
             document.getElementById('phone').value = savedPhone;
+            checkPointRealtime(); 
         }
     };
 
+    // Hàm kiểm tra điểm realtime khi khách gõ xong SĐT
+    function checkPointRealtime() {
+        const phone = document.getElementById('phone').value.trim();
+        const display = document.getElementById('pointDisplay');
+        
+        if (phone.length >= 10) {
+            display.innerHTML = "⏳ Đang kiểm tra điểm...";
+            fetch(`${scriptURL}?action=get_points&phone=${phone}`)
+                .then(res => res.text())
+                .then(points => {
+                    display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${points}</strong> điểm</div>`;
+                })
+                .catch(() => { display.innerHTML = ""; });
+        } else {
+            display.innerHTML = "";
+        }
+    }
+
     function handleRedeem() {
-        const phoneInput = document.getElementById('phone');
+        const phone = document.getElementById('phone').value.trim();
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
-        const phone = phoneInput.value.trim();
 
-        if (!phone || phone.length < 10) {
-            alert("Vui lòng nhập đúng số điện thoại!");
-            return;
-        }
-
-        if (!scriptURL) {
-            alert("Lỗi: Không tìm thấy link Web App trong config.js!");
-            return;
-        }
-
-        // Vô hiệu hóa nút để tránh khách bấm nhiều lần
         btn.disabled = true;
-        btn.innerText = "⏳ ĐANG KIỂM TRA...";
-        statusDiv.innerHTML = "";
+        btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
-        // Gửi yêu cầu đến Google Sheets
-        // Gửi yêu cầu đổi quà kèm theo số điểm lấy từ config.js
-fetch(CONFIG.SCRIPT_URL, {
-    method: 'POST',
-    body: JSON.stringify({ 
-        action: "doi_thuong", 
-        phone: phone, 
-        points_required: CONFIG.REDEEM_POINTS // Dòng này cực kỳ quan trọng
-    })
-})
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify({ 
+                action: "doi_thuong", 
+                phone: phone, 
+                points_required: minPoints 
+            })
+        })
         .then(res => res.text())
         .then(result => {
             if (result === "SUCCESS") {
-                // HIỆN MÀU XANH KHI ĐỦ ĐIỂM
-                statusDiv.innerHTML = `
-                    <div style="background:#e8f5e9; color:#2e7d32; padding:20px; border:3px solid #2e7d32; border-radius:15px; font-weight:bold; font-size:22px; margin-top:20px;">
-                        ✅ ĐỔI THÀNH CÔNG!<br>
-                        <span style="font-size:16px;">Đã trừ ${minPoints} điểm</span>
-                    </div>`;
+                statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời nhận quà</div>";
                 btn.style.display = "none";
-                phoneInput.style.display = "none";
+                checkPointRealtime(); // Cập nhật lại số điểm sau khi trừ
             } else {
-                // HIỆN MÀU ĐỎ KHI CHƯA ĐỦ ĐIỂM (Ví dụ: khách có 14 điểm)
-                statusDiv.innerHTML = `
-                    <div style="background:#ffebee; color:#c62828; padding:15px; border:2px solid #c62828; border-radius:10px; font-weight:bold; margin-top:20px;">
-                        ❌ CHƯA ĐỦ ${minPoints} ĐIỂM<br>
-                        <span style="font-size:14px;">Vui lòng tích thêm để nhận quà nhé!</span>
-                    </div>`;
+                statusDiv.innerHTML = `<div class='error'>❌ KHÔNG ĐỦ ${minPoints} ĐIỂM</div>`;
                 btn.disabled = false;
                 btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
             }
-        })
-        .catch(err => {
-            console.error(err);
-            alert("Lỗi kết nối mạng hoặc sai link Web App!");
-            btn.disabled = false;
-            btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
         });
     }
 </script>
