@@ -1,0 +1,47 @@
+<div id="app" style="text-align: center; padding: 50px; font-family: sans-serif;">
+    <h2 style="color: #795548;">DI DI COFFEE - ĐỔI THƯỞNG</h2>
+    <input type="tel" id="phone" placeholder="Nhập SĐT của bạn" 
+           style="width: 80%; padding: 15px; font-size: 20px; border-radius: 10px;">
+    
+    <button onclick="handleRedeem()" 
+            style="margin-top: 20px; width: 85%; padding: 20px; background: #4CAF50; color: white; font-size: 24px; border: none; border-radius: 10px; font-weight: bold;">
+        BẤM ĐỂ ĐỔI 20 ĐIỂM
+    </button>
+    
+    <div id="status" style="margin-top: 30px; font-size: 30px; font-weight: bold;"></div>
+</div>
+
+<script>
+    // Tự động điền SĐT nếu đã có lưu từ lần tích điểm trước
+    document.getElementById('phone').value = localStorage.getItem('userPhone') || '';
+
+    function handleRedeem() {
+        const phone = document.getElementById('phone').value;
+        const statusDiv = document.getElementById('status');
+        
+        if(!phone) return alert("Vui lòng nhập SĐT");
+
+        statusDiv.innerHTML = "Đang kiểm tra...";
+        statusDiv.style.color = "orange";
+
+        fetch('URL_WEB_APP_CUA_BAN', {
+            method: 'POST',
+            body: JSON.stringify({
+                action: "doi_thuong",
+                phone: phone
+            })
+        })
+        .then(res => res.text())
+        .then(data => {
+            if(data === "Thành công") {
+                statusDiv.innerHTML = "✅ ĐÃ ĐỔI THÀNH CÔNG!<br>-20 ĐIỂM";
+                statusDiv.style.color = "green";
+                // Kích hoạt rung điện thoại để báo hiệu (nếu máy khách hỗ trợ)
+                window.navigator.vibrate(200);
+            } else {
+                statusDiv.innerHTML = "❌ KHÔNG ĐỦ 20 ĐIỂM";
+                statusDiv.style.color = "red";
+            }
+        });
+    }
+</script>
