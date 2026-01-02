@@ -116,10 +116,16 @@
                     currentRotation += randomDegree;
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
-                    fetch(CONFIG.SCRIPT_URL, {
-                        method: "POST",
-                        body: JSON.stringify({ action: "doi_thuong", phone: phone, points_required: CONFIG.SPIN_POINTS })
-                    });
+                    // Tìm đoạn fetch trong file HTML và sửa lại như sau:
+fetch(CONFIG.SCRIPT_URL, {
+    method: "POST",
+    body: JSON.stringify({ 
+        action: "doi_thuong", 
+        phone: phone, 
+        points_required: CONFIG.SPIN_POINTS,
+        gift: GIFTS[giftIndex] // THÊM DÒNG NÀY ĐỂ GỬI TÊN QUÀ
+    })
+});
 
                     setTimeout(() => {
                         const actualDeg = currentRotation % 360;
