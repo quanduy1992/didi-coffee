@@ -44,23 +44,29 @@
         }
     };
 
-    // Hàm kiểm tra điểm realtime khi khách gõ xong SĐT
+  // Hàm kiểm tra điểm realtime khi khách gõ xong SĐT
     function checkPointRealtime() {
-        const phone = document.getElementById('phone').value.trim();
-        const display = document.getElementById('pointDisplay');
-        
-        if (phone.length >= 10) {
-            display.innerHTML = "⏳ Đang kiểm tra điểm...";
-            fetch(`${scriptURL}?action=get_points&phone=${phone}`)
-                .then(res => res.text())
-                .then(points => {
+    const phone = document.getElementById('phone').value.trim();
+    const display = document.getElementById('pointDisplay');
+    
+    if (phone.length >= 10) {
+        display.innerHTML = "⏳ Đang kiểm tra...";
+        // Gọi link kèm action=get_points
+        fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
+            .then(res => res.text()) // Nhận kết quả dạng chữ
+            .then(points => {
+                // Kiểm tra nếu kết quả trả về là số hợp lệ
+                if (!isNaN(points)) {
                     display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${points}</strong> điểm</div>`;
-                })
-                .catch(() => { display.innerHTML = ""; });
-        } else {
-            display.innerHTML = "";
-        }
+                } else {
+                    display.innerHTML = "";
+                }
+            })
+            .catch(() => { display.innerHTML = ""; });
+    } else {
+        display.innerHTML = "";
     }
+}
 
     function handleRedeem() {
         const phone = document.getElementById('phone').value.trim();
