@@ -35,47 +35,42 @@
         <div id="result"></div>
     </div>
 
-    <script src="config.js"></script>
-<script>
-// 1. Phải nhúng file config trước
-// <script src="config.js"></script>
+<script src="config.js"></script> <script>
+    // TOÀN BỘ MÃ JAVASCRIPT PHẢI NẰM TRONG NÀY
+    const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
+    const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
 
-const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
-const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
+    function drawWheel() {
+        const canvas = document.getElementById('wheel');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const arc = (Math.PI * 2) / GIFTS.length;
 
-// Hàm vẽ vòng quay (Phải chạy khi trang vừa tải xong)
-function drawWheel() {
-    const canvas = document.getElementById('wheel');
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    const arc = (Math.PI * 2) / GIFTS.length;
-
-    GIFTS.forEach((gift, i) => {
-        ctx.beginPath();
-        ctx.fillStyle = COLORS[i];
-        ctx.moveTo(150, 150);
-        ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
-        ctx.fill();
-        ctx.save();
-        ctx.fillStyle = "white";
-        ctx.font = "bold 14px Arial";
-        ctx.translate(150, 150);
-        ctx.rotate(i * arc + arc / 2);
-        ctx.fillText(gift, 75, 5);
-        ctx.restore();
-    });
-}
-
-// Lệnh quan trọng: Tự động chạy khi mở trang
-window.onload = function() {
-    if (typeof CONFIG !== 'undefined') {
-        // Cập nhật dòng chữ hiển thị điểm từ file config
-        document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
-        drawWheel(); // Vẽ các ô màu và chữ lên vòng quay
-    } else {
-        alert("Lỗi: Không tìm thấy file config.js hoặc file bị lỗi!");
+        GIFTS.forEach((gift, i) => {
+            ctx.beginPath();
+            ctx.fillStyle = COLORS[i];
+            ctx.moveTo(150, 150);
+            ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
+            ctx.fill();
+            ctx.save();
+            ctx.fillStyle = "white";
+            ctx.font = "bold 14px Arial";
+            ctx.translate(150, 150);
+            ctx.rotate(i * arc + arc / 2);
+            ctx.fillText(gift, 75, 5);
+            ctx.restore();
+        });
     }
-};
+
+    window.onload = function() {
+        // Kiểm tra xem đã nhận được SPIN_POINTS từ config.js chưa
+        if (typeof CONFIG !== 'undefined' && CONFIG.SPIN_POINTS) {
+            document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+            drawWheel();
+        } else {
+            console.error("Lỗi: Không tìm thấy giá trị SPIN_POINTS trong config.js!");
+        }
+    };
 </script>
 </body>
 </html>
