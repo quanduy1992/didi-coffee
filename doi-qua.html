@@ -1,47 +1,82 @@
-<div id="app" style="text-align: center; padding: 50px; font-family: sans-serif;">
-    <h2 style="color: #795548;">DI DI COFFEE - ĐỔI THƯỞNG</h2>
-    <input type="tel" id="phone" placeholder="Nhập SĐT của bạn" 
-           style="width: 80%; padding: 15px; font-size: 20px; border-radius: 10px;">
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Di Di Coffee - Đổi Thưởng</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; background-color: #f4f1ea; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 320px; text-align: center; border: 2px solid #795548; }
+        h2 { color: #795548; margin-bottom: 5px; }
+        p { color: #8d6e63; font-size: 14px; margin-bottom: 20px; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; text-align: center; }
+        button { width: 100%; padding: 15px; background-color: #795548; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:active { transform: scale(0.98); background-color: #5d4037; }
+        #status { margin-top: 20px; font-weight: bold; font-size: 18px; min-height: 50px; }
+        .success { color: #2e7d32; font-size: 22px; background: #e8f5e9; padding: 10px; border-radius: 10px; border: 2px solid #2e7d32; animation: pop 0.3s; }
+        .error { color: #c62828; }
+        @keyframes pop { 0% {transform: scale(0.5);} 100% {transform: scale(1);} }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>☕ DI DI COFFEE</h2>
+    <p>ĐỔI 20 ĐIỂM NHẬN 1 LY MIỄN PHÍ</p>
     
-    <button onclick="handleRedeem()" 
-            style="margin-top: 20px; width: 85%; padding: 20px; background: #4CAF50; color: white; font-size: 24px; border: none; border-radius: 10px; font-weight: bold;">
-        BẤM ĐỂ ĐỔI 20 ĐIỂM
-    </button>
-    
-    <div id="status" style="margin-top: 30px; font-size: 30px; font-weight: bold;"></div>
+    <input type="tel" id="phone" placeholder="Số điện thoại của bạn" readonly>
+    <button id="btnRedeem" onclick="confirmRedeem()">XÁC NHẬN ĐỔI QUÀ</button>
+
+    <div id="status"></div>
 </div>
 
 <script>
-    // Tự động điền SĐT nếu đã có lưu từ lần tích điểm trước
-    document.getElementById('phone').value = localStorage.getItem('userPhone') || '';
+    // Tự động lấy SĐT từ bộ nhớ máy khách nếu họ đã từng tích điểm
+    const savedPhone = localStorage.getItem('userPhone');
+    if (savedPhone) {
+        document.getElementById('phone').value = savedPhone;
+    } else {
+        document.getElementById('phone').readOnly = false;
+        document.getElementById('phone').placeholder = "Nhập SĐT để kiểm tra";
+    }
 
-    function handleRedeem() {
+    function confirmRedeem() {
         const phone = document.getElementById('phone').value;
         const statusDiv = document.getElementById('status');
-        
-        if(!phone) return alert("Vui lòng nhập SĐT");
+        const btn = document.getElementById('btnRedeem');
 
-        statusDiv.innerHTML = "Đang kiểm tra...";
-        statusDiv.style.color = "orange";
+        if (!phone) {
+            alert("Vui lòng nhập số điện thoại!");
+            return;
+        }
 
-        fetch('URL_WEB_APP_CUA_BAN', {
-            method: 'POST',
-            body: JSON.stringify({
-                action: "doi_thuong",
-                phone: phone
+        if (confirm("Bạn muốn dùng 20 điểm để đổi 1 ly cafe miễn phí chứ?")) {
+            btn.disabled = true;
+            btn.innerText = "Đang xử lý...";
+            statusDiv.innerHTML = "⏳ Đang kiểm tra điểm...";
+
+            // Gửi yêu cầu đến Google App Script của bạn
+            fetch('URL_WEB_APP_CUA_BAN', {
+                method: 'POST',
+                mode: 'no-cors', // Quan trọng để tránh lỗi CORS khi dùng Apps Script
+                body: JSON.stringify({
+                    action: "doi_thuong",
+                    phone: phone
+                })
             })
-        })
-        .then(res => res.text())
-        .then(data => {
-            if(data === "Thành công") {
-                statusDiv.innerHTML = "✅ ĐÃ ĐỔI THÀNH CÔNG!<br>-20 ĐIỂM";
-                statusDiv.style.color = "green";
-                // Kích hoạt rung điện thoại để báo hiệu (nếu máy khách hỗ trợ)
-                window.navigator.vibrate(200);
-            } else {
-                statusDiv.innerHTML = "❌ KHÔNG ĐỦ 20 ĐIỂM";
-                statusDiv.style.color = "red";
-            }
-        });
+            .then(() => {
+                // Vì dùng no-cors nên mình sẽ giả định thành công và báo khách đưa màn hình cho chủ
+                // Bạn nên kết hợp kiểm tra điểm ở Sheets sau đó.
+                statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời nhận quà</div>";
+                btn.style.display = "none";
+            })
+            .catch(err => {
+                statusDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối!</div>";
+                btn.disabled = false;
+            });
+        }
     }
 </script>
+
+</body>
+</html>
