@@ -14,7 +14,7 @@
         button:active { transform: scale(0.98); background-color: #5d4037; }
         #status { margin-top: 20px; font-weight: bold; font-size: 18px; min-height: 50px; }
         .success { color: #2e7d32; font-size: 22px; background: #e8f5e9; padding: 10px; border-radius: 10px; border: 2px solid #2e7d32; animation: pop 0.3s; }
-        .error { color: #c62828; }
+        .error { color: #c62828; font-size: 16px; margin-top: 10px; }
         @keyframes pop { 0% {transform: scale(0.5);} 100% {transform: scale(1);} }
     </style>
 </head>
@@ -29,15 +29,25 @@
 
     <div id="status"></div>
 </div>
+<script src="config.js"></script> <script>
+    // 2. Lấy link từ file config, không cần dán link trực tiếp vào đây nữa
+    const scriptURL = CONFIG.SCRIPT_URL; 
 
+    function confirmRedeem() {
+        const phone = document.getElementById('phone').value;
+        // ... các đoạn code xử lý fetch(scriptURL, ...) giữ nguyên ...
+    }
+</script>
 <script>
-    // Tự động lấy SĐT từ bộ nhớ máy khách nếu họ đã từng tích điểm
+    // --- DÁN LINK CỦA BẠN VÀO GIỮA HAI DẤU NHÁY DƯỚI ĐÂY ---
+    
+
     const savedPhone = localStorage.getItem('userPhone');
     if (savedPhone) {
         document.getElementById('phone').value = savedPhone;
     } else {
         document.getElementById('phone').readOnly = false;
-        document.getElementById('phone').placeholder = "Nhập SĐT để kiểm tra";
+        document.getElementById('phone').placeholder = "Nhập SĐT để đổi quà";
     }
 
     function confirmRedeem() {
@@ -45,34 +55,33 @@
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
 
-        if (!phone) {
-            alert("Vui lòng nhập số điện thoại!");
-            return;
-        }
+        if (!phone) return alert("Vui lòng nhập SĐT!");
+        if (scriptURL.includes('DÁN_LINK')) return alert("Bạn chưa dán link Google Script vào code!");
 
         if (confirm("Bạn muốn dùng 20 điểm để đổi 1 ly cafe miễn phí chứ?")) {
             btn.disabled = true;
             btn.innerText = "Đang xử lý...";
             statusDiv.innerHTML = "⏳ Đang kiểm tra điểm...";
 
-            // Gửi yêu cầu đến Google App Script của bạn
-            fetch('URL_WEB_APP_CUA_BAN', {
+            fetch(scriptURL, {
                 method: 'POST',
-                mode: 'no-cors', // Quan trọng để tránh lỗi CORS khi dùng Apps Script
-                body: JSON.stringify({
-                    action: "doi_thuong",
-                    phone: phone
-                })
+                body: JSON.stringify({ action: "doi_thuong", phone: phone })
             })
-            .then(() => {
-                // Vì dùng no-cors nên mình sẽ giả định thành công và báo khách đưa màn hình cho chủ
-                // Bạn nên kết hợp kiểm tra điểm ở Sheets sau đó.
-                statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời nhận quà</div>";
-                btn.style.display = "none";
+            .then(res => res.text())
+            .then(result => {
+                if (result === "SUCCESS") {
+                    statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời nhận quà</div>";
+                    btn.style.display = "none";
+                } else {
+                    statusDiv.innerHTML = "<div class='error'>❌ KHÔNG ĐỦ 20 ĐIỂM!<br>Vui lòng tích thêm nhé.</div>";
+                    btn.disabled = false;
+                    btn.innerText = "THỬ LẠI";
+                }
             })
             .catch(err => {
-                statusDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối!</div>";
+                statusDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối. Vui lòng báo chủ quán!</div>";
                 btn.disabled = false;
+                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
             });
         }
     }
