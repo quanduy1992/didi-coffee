@@ -4,6 +4,7 @@ const CONFIG = {
     SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbyIebWKBmrSzNMSeJutyYI840DDJ7gP4XaETghop-r5aXyjzdXMIOntOczYuvOjyDn4bQ/exec',
     
     // Bạn có thể thêm các cấu hình khác sau này tại đây
-    REDEEM_POINTS: 20,
+    REDEEM_POINTS: 10,
     SHOP_NAME: 'Di Di Coffee'
+
 };
