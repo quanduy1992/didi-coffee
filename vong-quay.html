@@ -43,18 +43,34 @@
         const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
         let currentRotation = 0;
 
-        function drawWheel() {
-            const canvas = document.getElementById('wheel');
-            const ctx = canvas.getContext('2d');
-            const arc = (Math.PI * 2) / GIFTS.length;
-            GIFTS.forEach((gift, i) => {
-                ctx.beginPath(); ctx.fillStyle = COLORS[i]; ctx.moveTo(150, 150);
-                ctx.arc(150, 150, 150, i * arc, (i + 1) * arc); ctx.fill();
-                ctx.save(); ctx.fillStyle = "white"; ctx.font = "bold 14px Arial";
-                ctx.translate(150, 150); ctx.rotate(i * arc + arc / 2);
-                ctx.fillText(gift, 75, 5); ctx.restore();
-            });
-        }
+function drawWheel() {
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const arc = (Math.PI * 2) / GIFTS.length;
+
+    ctx.clearRect(0, 0, 300, 300);
+    // Xoay toàn bộ Canvas để ô đầu tiên nằm ở đỉnh
+    ctx.save();
+    ctx.translate(150, 150);
+    ctx.rotate(-Math.PI / 2); // Xoay ngược 90 độ
+    ctx.translate(-150, -150);
+
+    GIFTS.forEach((gift, i) => {
+        ctx.beginPath();
+        ctx.fillStyle = COLORS[i];
+        ctx.moveTo(150, 150);
+        ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
+        ctx.fill();
+        ctx.save();
+        ctx.fillStyle = "white";
+        ctx.font = "bold 14px Arial";
+        ctx.translate(150, 150);
+        ctx.rotate(i * arc + arc / 2);
+        ctx.fillText(gift, 70, 5);
+        ctx.restore();
+    });
+    ctx.restore();
+}
 
         window.onload = function() {
             // Kiểm tra xem đã nhận được dữ liệu từ file config chưa
@@ -95,13 +111,12 @@
                         body: JSON.stringify({ action: "doi_thuong", phone: phone, points_required: CONFIG.SPIN_POINTS })
                     });
 
-                    setTimeout(() => {
-    // 1. Tính toán góc quay thực tế trong phạm vi 360 độ
+setTimeout(() => {
+    // 1. Tính toán góc quay thực tế (loại bỏ số vòng quay dư)
     const actualDeg = currentRotation % 360;
 
-    // 2. Tính toán chỉ số phần thưởng (Index)
-    // Cần trừ đi góc của kim chỉ (thường là ở vị trí 270 hoặc 90 độ tùy code)
-    // Công thức chuẩn cho kim ở đỉnh (Top):
+    // 2. Vì vòng quay quay xuôi chiều kim đồng hồ, 
+    // chúng ta dùng (360 - góc quay) để tìm ra ô quà ở vị trí 0 độ (đỉnh)
     const giftIndex = Math.floor(((360 - actualDeg) % 360) / (360 / GIFTS.length));
 
     // 3. Hiển thị thông báo
