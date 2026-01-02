@@ -85,4 +85,19 @@
                 btn.style.display = "none";
                 localStorage.setItem('userPhone', phone);
                 checkPointRealtime(); 
-            } else
+            } else {
+                statusDiv.innerHTML = `<div class='error'>❌ THẤT BẠI: KHÔNG ĐỦ ${minPoints} ĐIỂM</div>`;
+                btn.disabled = false;
+                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
+                checkPointRealtime();
+            }
+        })
+        .catch(error => {
+            statusDiv.innerHTML = `<div class='error'>❌ LỖI KẾT NỐI: Vui lòng thử lại</div>`;
+            btn.disabled = false;
+            btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
+        });
+    }
+</script>
+</body>
+</html>
