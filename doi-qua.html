@@ -24,7 +24,8 @@
     <h2>☕ DI DI COFFEE</h2>
     <p style="color: #8d6e63;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
     
-    <div id="pointDisplay"></div> <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
+    <div id="pointDisplay"></div> 
+    <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
     <button id="btnRedeem" onclick="handleRedeem()">XÁC NHẬN ĐỔI QUÀ</button>
 
     <div id="status"></div>
@@ -33,9 +34,10 @@
 <script>
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
+    let currentPoints = 0; // Biến lưu trữ điểm thực tế lấy từ server
+    
     document.getElementById('reqPoints').innerText = minPoints;
 
-    // Tự động kiểm tra khi vừa load trang
     window.onload = function() {
         const savedPhone = localStorage.getItem('userPhone');
         if (savedPhone) {
@@ -44,26 +46,32 @@
         }
     };
 
-  // Hàm kiểm tra điểm realtime khi khách gõ xong SĐT
     function checkPointRealtime() {
-    const phone = document.getElementById('phone').value.trim();
-    const display = document.getElementById('pointDisplay');
-    
-    if (phone.length >= 10) {
-        display.innerHTML = "⏳ Đang kiểm tra...";
-        fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
-            .then(res => res.text())
-            .then(points => {
-                // Hiển thị số lượt hiện có (ví dụ: 18)
-                display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${points}</strong> lượt tích lũy</div>`;
-            });
+        const phone = document.getElementById('phone').value.trim();
+        const display = document.getElementById('pointDisplay');
+        
+        if (phone.length >= 10) {
+            display.innerHTML = "⏳ Đang kiểm tra...";
+            fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
+                .then(res => res.text())
+                .then(points => {
+                    // Cập nhật điểm vào biến toàn cục để handleRedeem sử dụng
+                    currentPoints = parseInt(points) || 0;
+                    display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${currentPoints}</strong> lượt tích lũy</div>`;
+                });
+        }
     }
-}
 
     function handleRedeem() {
         const phone = document.getElementById('phone').value.trim();
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
+
+        // KIỂM TRA ĐIỂM TRƯỚC KHI GỬI (Lấy minPoints từ config.js)
+        if (currentPoints < minPoints) {
+            statusDiv.innerHTML = `<div class='error'>❌ KHÔNG ĐỦ ĐIỂM<br>Cần ${minPoints} điểm (Hiện có: ${currentPoints})</div>`;
+            return; // Ngăn chặn fetch dữ liệu nếu không đủ điểm
+        }
 
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
@@ -81,12 +89,20 @@
             if (result === "SUCCESS") {
                 statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời nhận quà</div>";
                 btn.style.display = "none";
-                checkPointRealtime(); // Cập nhật lại số điểm sau khi trừ
+                // Lưu SĐT vào localStorage để lần sau không phải nhập lại
+                localStorage.setItem('userPhone', phone);
+                checkPointRealtime(); 
             } else {
                 statusDiv.innerHTML = `<div class='error'>❌ KHÔNG ĐỦ ${minPoints} ĐIỂM</div>`;
                 btn.disabled = false;
                 btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
+                checkPointRealtime();
             }
+        })
+        .catch(error => {
+            statusDiv.innerHTML = `<div class='error'>❌ LỖI KẾT NỐI: Vui lòng thử lại</div>`;
+            btn.disabled = false;
+            btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
         });
     }
 </script>
