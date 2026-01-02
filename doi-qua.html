@@ -4,88 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Di Di Coffee - Đổi Thưởng</title>
-    <style>
+    <script src="config.js"></script> <style>
         body { font-family: 'Arial', sans-serif; background-color: #f4f1ea; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
         .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 320px; text-align: center; border: 2px solid #795548; }
-        h2 { color: #795548; margin-bottom: 5px; }
-        p { color: #8d6e63; font-size: 14px; margin-bottom: 20px; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; text-align: center; }
-        button { width: 100%; padding: 15px; background-color: #795548; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:active { transform: scale(0.98); background-color: #5d4037; }
-        #status { margin-top: 20px; font-weight: bold; font-size: 18px; min-height: 50px; }
-        .success { color: #2e7d32; font-size: 22px; background: #e8f5e9; padding: 10px; border-radius: 10px; border: 2px solid #2e7d32; animation: pop 0.3s; }
-        .error { color: #c62828; font-size: 16px; margin-top: 10px; }
-        @keyframes pop { 0% {transform: scale(0.5);} 100% {transform: scale(1);} }
+        h2 { color: #795548; margin: 0 0 10px 0; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 18px; text-align: center; background: #f9f9f9; }
+        button { width: 100%; padding: 15px; background-color: #795548; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        button:disabled { background-color: #ccc; }
+        #status { margin-top: 20px; min-height: 60px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .success { color: #2e7d32; background: #e8f5e9; padding: 15px; border-radius: 10px; border: 2px solid #2e7d32; width: 100%; }
+        .error { color: #c62828; background: #ffebee; padding: 15px; border-radius: 10px; border: 2px solid #c62828; width: 100%; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>☕ DI DI COFFEE</h2>
-    <p>ĐỔI 20 ĐIỂM NHẬN 1 LY MIỄN PHÍ</p>
+    <p style="color: #8d6e63;">Đổi 20 điểm = 1 ly miễn phí</p>
     
-    <input type="tel" id="phone" placeholder="Số điện thoại của bạn" readonly>
-    <button id="btnRedeem" onclick="confirmRedeem()">XÁC NHẬN ĐỔI QUÀ</button>
+    <input type="tel" id="phone" placeholder="Số điện thoại" readonly>
+    <button id="btnRedeem" onclick="handleRedeem()">XÁC NHẬN ĐỔI QUÀ</button>
 
     <div id="status"></div>
 </div>
-<script src="config.js"></script> <script>
-    // 2. Lấy link từ file config, không cần dán link trực tiếp vào đây nữa
+<script src="config.js"></script> 
+
+<script>
+    // 2. Gán link từ file config vào biến scriptURL
     const scriptURL = CONFIG.SCRIPT_URL; 
 
-    function confirmRedeem() {
-        const phone = document.getElementById('phone').value;
-        // ... các đoạn code xử lý fetch(scriptURL, ...) giữ nguyên ...
-    }
-</script>
-<script>
-    // --- DÁN LINK CỦA BẠN VÀO GIỮA HAI DẤU NHÁY DƯỚI ĐÂY ---
-    
-
-    const savedPhone = localStorage.getItem('userPhone');
-    if (savedPhone) {
-        document.getElementById('phone').value = savedPhone;
-    } else {
-        document.getElementById('phone').readOnly = false;
-        document.getElementById('phone').placeholder = "Nhập SĐT để đổi quà";
-    }
-
-    function confirmRedeem() {
+    function handleRedeem() {
         const phone = document.getElementById('phone').value;
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
 
-        if (!phone) return alert("Vui lòng nhập SĐT!");
-        if (scriptURL.includes('DÁN_LINK')) return alert("Bạn chưa dán link Google Script vào code!");
+        if (!phone) return alert("Không tìm thấy SĐT!");
 
-        if (confirm("Bạn muốn dùng 20 điểm để đổi 1 ly cafe miễn phí chứ?")) {
-            btn.disabled = true;
-            btn.innerText = "Đang xử lý...";
-            statusDiv.innerHTML = "⏳ Đang kiểm tra điểm...";
+        btn.disabled = true;
+        statusDiv.innerHTML = "⌛ Đang kiểm tra điểm...";
 
-            fetch(scriptURL, {
-                method: 'POST',
-                body: JSON.stringify({ action: "doi_thuong", phone: phone })
-            })
-            .then(res => res.text())
-            .then(result => {
-                if (result === "SUCCESS") {
-                    statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời nhận quà</div>";
-                    btn.style.display = "none";
-                } else {
-                    statusDiv.innerHTML = "<div class='error'>❌ KHÔNG ĐỦ 20 ĐIỂM!<br>Vui lòng tích thêm nhé.</div>";
-                    btn.disabled = false;
-                    btn.innerText = "THỬ LẠI";
-                }
-            })
-            .catch(err => {
-                statusDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối. Vui lòng báo chủ quán!</div>";
+        // 3. Gửi lệnh đến Google Sheets
+        fetch(scriptURL, {
+            method: 'POST',
+            body: JSON.stringify({ action: "doi_thuong", phone: phone })
+        })
+        .then(res => res.text())
+        .then(result => {
+            // Kiểm tra phản hồi từ Sheets
+            if (result === "SUCCESS") {
+                statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời bạn nhận quà</div>";
+                btn.style.display = "none";
+            } else {
+                // Nếu chưa đủ 20 điểm, hiện thông báo lỗi đỏ
+                statusDiv.innerHTML = "<div class='error'>❌ CHƯA ĐỦ 20 ĐIỂM<br>Vui lòng tích thêm nhé!</div>";
                 btn.disabled = false;
-                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
-            });
-        }
+                btn.innerText = "THỬ LẠI";
+            }
+        })
+        .catch(() => {
+            statusDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối!</div>";
+            btn.disabled = false;
+        });
     }
 </script>
-
 </body>
 </html>
