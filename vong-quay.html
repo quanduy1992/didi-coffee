@@ -38,8 +38,19 @@
     <script src="config.js"></script>
 
 // 1. Phải nhúng file config trước
-// <script src="config.js"></script>
+// <script src="config.js">
+<script>
+window.onload = function() {
+    // Kiểm tra nếu chưa nhận được file config
+    if (typeof CONFIG === 'undefined') {
+        document.body.innerHTML = "<h2 style='color:red; text-align:center;'>Lỗi: Không tìm thấy file config.js!</h2>";
+        return;
+    }
 
+    // Nếu có config, tiến hành vẽ vòng quay và hiển thị điểm
+    document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+    drawWheel();
+};
 const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
 const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
 
@@ -76,5 +87,6 @@ window.onload = function() {
         alert("Lỗi: Không tìm thấy file config.js hoặc file bị lỗi!");
     }
 };
+</script>
 </body>
 </html>
