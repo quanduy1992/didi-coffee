@@ -42,7 +42,22 @@
         const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
         const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
         let currentRotation = 0;
+window.onload = function() {
+    // 1. Lấy số điện thoại từ địa chỉ trang web (URL)
+    const urlParams = new URLSearchParams(window.location.search);
+    const phoneFromUrl = urlParams.get('phone');
 
+    // 2. Nếu có số điện thoại, tự động điền vào ô nhập liệu
+    if (phoneFromUrl) {
+        document.getElementById('phone').value = phoneFromUrl;
+    }
+
+    // 3. Hiển thị cấu hình và vẽ vòng quay
+    if (typeof CONFIG !== 'undefined') {
+        document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+        drawWheel();
+    }
+};
 function drawWheel() {
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
