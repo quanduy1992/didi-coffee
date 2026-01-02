@@ -1,4 +1,41 @@
-<script src="config.js"></script>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DI DI COFFEE - Vòng Quay May Mắn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        /* Giữ nguyên phần CSS từ bản trước */
+        body { font-family: 'Arial', sans-serif; text-align: center; background: #fdf5e6; margin: 0; padding: 20px; }
+        .container { max-width: 400px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #6f4e37; }
+        #wheel-container { position: relative; width: 300px; height: 300px; margin: 20px auto; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 5px solid #6f4e37; transition: transform 4s cubic-bezier(0.17, 0.67, 0.12, 0.99); }
+        #pointer { position: absolute; top: -10px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #e74c3c; z-index: 10; }
+        .controls { margin-top: 20px; }
+        input { padding: 12px; width: 80%; border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px; font-size: 16px; outline: none; }
+        button { padding: 12px 25px; background: #6f4e37; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; width: 85%; font-size: 16px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #result { margin-top: 15px; font-weight: bold; color: #27ae60; font-size: 18px; min-height: 24px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 id="title">🎡 VÒNG QUAY DI DI</h2>
+        <p id="sub-title">Đang tải cấu hình...</p>
+        
+        <div id="wheel-container">
+            <div id="pointer"></div>
+            <canvas id="wheel" width="300" height="300"></canvas>
+        </div>
+
+        <div class="controls">
+            <input type="tel" id="phone" placeholder="Nhập số điện thoại (10 số)">
+            <button id="spinBtn" onclick="checkAndSpin()">QUAY NGAY</button>
+        </div>
+        <div id="result"></div>
+    </div>
+
+    <script src="config.js"></script>
 
 <script>
     // Danh sách quà và màu sắc (có thể đưa vào config.js luôn nếu muốn)
@@ -58,3 +95,5 @@
         }
     }
 </script>
+</body>
+</html>
