@@ -32,7 +32,7 @@
 </head>
 <body>
     <div class="card">
-        <h2>☕ DI DI COFFEE</h2>
+        <h2 id="shopTitle">☕ DI DI COFFEE</h2>
         
         <div id="form-input">
             <label>Tên khách hàng:</label>
@@ -55,8 +55,13 @@
 
 <script src="config.js"></script> 
 <script>
-    // 1. Tự điền thông tin khi mở trang
+    // 1. Khởi tạo khi trang tải xong
     window.onload = function() {
+        // Tự lấy tên quán từ config.js
+        if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
+            document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
         if (codeFromURL) {
@@ -69,7 +74,7 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
     };
 
-    // 2. Hàm xử lý tích điểm chính
+    // 2. Hàm xử lý tích điểm
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -79,12 +84,12 @@
         const currentPoints = document.getElementById('currentPoints');
         const btnSubmit = document.getElementById('btnSubmit');
 
-        // Lấy link từ config.js
-        if (typeof CONFIG === 'undefined' || !CONFIG.scriptURL) {
-            alert("Lỗi: Không tìm thấy link trong config.js!");
+        // --- SỬA TẠI ĐÂY: Khớp với tên biến SCRIPT_URL trong config.js của bạn ---
+        if (typeof CONFIG === 'undefined' || !CONFIG.SCRIPT_URL) {
+            alert("Lỗi: Không tìm thấy link SCRIPT_URL trong config.js!");
             return;
         }
-        const scriptURL = CONFIG.scriptURL; 
+        const scriptURL = CONFIG.SCRIPT_URL; 
 
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
@@ -92,24 +97,23 @@
             return;
         }
 
-        // Lưu thông tin khách hàng
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
 
-        // Trạng thái chờ
         resultDiv.innerHTML = "⌛ Đang kiểm tra...";
         resultDiv.className = "";
         pointBox.style.display = "none";
-        btnSubmit.disabled = true; // Chặn bấm liên tục
+        btnSubmit.disabled = true;
 
-        // Định nghĩa hàm nhận dữ liệu từ Google Script
+        // Callback nhận kết quả từ Google Script
         window.googleCallback = function(resData) {
             btnSubmit.disabled = false;
             
             if (resData.status === "SUCCESS") {
                 resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
-                currentPoints.innerText = resData.points; // Sẽ hiện 6 thay vì 14
+                // Hiển thị số điểm thực tế (đã trừ quà)
+                currentPoints.innerText = resData.points; 
                 pointBox.style.display = "block";
                 document.getElementById('inputCode').value = ""; 
             } else if (resData.status === "USED") {
@@ -123,19 +127,19 @@
                 pointBox.style.display = "none";
             }
             
-            // Xóa thẻ script sau khi hoàn tất để tránh kẹt trang
+            // Dọn dẹp thẻ script để tránh kẹt trang lần sau
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
 
-        // Tạo kết nối JSONP
+        // Gọi API dùng JSONP để tránh lỗi CORS
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
+        // Thêm action=tich_diem để script xử lý đúng logic
         scriptTag.src = `${scriptURL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&callback=googleCallback&t=${new Date().getTime()}`;
         
-        // Xử lý khi rớt mạng/lỗi server
         scriptTag.onerror = function() {
-            resultDiv.innerHTML = "❌ Lỗi kết nối! Vui lòng thử lại.";
+            resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
             resultDiv.className = "error";
             btnSubmit.disabled = false;
         };
