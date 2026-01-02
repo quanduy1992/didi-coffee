@@ -42,53 +42,47 @@
         const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
         const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
         let currentRotation = 0;
-window.onload = function() {
-    // 1. Lấy số điện thoại từ địa chỉ trang web (URL)
-    const urlParams = new URLSearchParams(window.location.search);
-    const phoneFromUrl = urlParams.get('phone');
 
-    // 2. Nếu có số điện thoại, tự động điền vào ô nhập liệu
-    if (phoneFromUrl) {
-        document.getElementById('phone').value = phoneFromUrl;
-    }
+        function drawWheel() {
+            const canvas = document.getElementById('wheel');
+            const ctx = canvas.getContext('2d');
+            const arc = (Math.PI * 2) / GIFTS.length;
 
-    // 3. Hiển thị cấu hình và vẽ vòng quay
-    if (typeof CONFIG !== 'undefined') {
-        document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
-        drawWheel();
-    }
-};
-function drawWheel() {
-    const canvas = document.getElementById('wheel');
-    const ctx = canvas.getContext('2d');
-    const arc = (Math.PI * 2) / GIFTS.length;
+            ctx.clearRect(0, 0, 300, 300);
+            ctx.save();
+            ctx.translate(150, 150);
+            ctx.rotate(-Math.PI / 2); 
+            ctx.translate(-150, -150);
 
-    ctx.clearRect(0, 0, 300, 300);
-    // Xoay toàn bộ Canvas để ô đầu tiên nằm ở đỉnh
-    ctx.save();
-    ctx.translate(150, 150);
-    ctx.rotate(-Math.PI / 2); // Xoay ngược 90 độ
-    ctx.translate(-150, -150);
-
-    GIFTS.forEach((gift, i) => {
-        ctx.beginPath();
-        ctx.fillStyle = COLORS[i];
-        ctx.moveTo(150, 150);
-        ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
-        ctx.fill();
-        ctx.save();
-        ctx.fillStyle = "white";
-        ctx.font = "bold 14px Arial";
-        ctx.translate(150, 150);
-        ctx.rotate(i * arc + arc / 2);
-        ctx.fillText(gift, 70, 5);
-        ctx.restore();
-    });
-    ctx.restore();
-}
+            GIFTS.forEach((gift, i) => {
+                ctx.beginPath();
+                ctx.fillStyle = COLORS[i];
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
+                ctx.fill();
+                ctx.save();
+                ctx.fillStyle = "white";
+                ctx.font = "bold 14px Arial";
+                ctx.translate(150, 150);
+                ctx.rotate(i * arc + arc / 2);
+                ctx.fillText(gift, 70, 5);
+                ctx.restore();
+            });
+            ctx.restore();
+        }
 
         window.onload = function() {
-            // Kiểm tra xem đã nhận được dữ liệu từ file config chưa
+            // TỰ ĐỘNG ĐIỀN SĐT: Ưu tiên URL, sau đó đến bộ nhớ trình duyệt
+            const urlParams = new URLSearchParams(window.location.search);
+            const phoneFromUrl = urlParams.get('phone');
+            const savedPhone = localStorage.getItem('didi_customer_phone');
+
+            if (phoneFromUrl) {
+                document.getElementById('phone').value = phoneFromUrl;
+            } else if (savedPhone) {
+                document.getElementById('phone').value = savedPhone;
+            }
+
             if (typeof CONFIG !== 'undefined') {
                 document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
                 drawWheel();
@@ -105,12 +99,14 @@ function drawWheel() {
 
             if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
             
+            // Lưu SĐT vào bộ nhớ để lần sau không cần nhập lại
+            localStorage.setItem('didi_customer_phone', phone);
+
             btn.disabled = true;
             resDiv.style.color = "#27ae60";
             resDiv.innerText = "⏳ Đang kiểm tra điểm...";
 
             try {
-                // Lấy link và điểm từ CONFIG
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
                 const currentPoints = parseInt(await response.text()) || 0;
 
@@ -120,24 +116,17 @@ function drawWheel() {
                     currentRotation += randomDegree;
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
-                    // Ghi lệnh trừ điểm dựa trên CONFIG.SPIN_POINTS
                     fetch(CONFIG.SCRIPT_URL, {
                         method: "POST",
                         body: JSON.stringify({ action: "doi_thuong", phone: phone, points_required: CONFIG.SPIN_POINTS })
                     });
 
-setTimeout(() => {
-    // 1. Tính toán góc quay thực tế (loại bỏ số vòng quay dư)
-    const actualDeg = currentRotation % 360;
-
-    // 2. Vì vòng quay quay xuôi chiều kim đồng hồ, 
-    // chúng ta dùng (360 - góc quay) để tìm ra ô quà ở vị trí 0 độ (đỉnh)
-    const giftIndex = Math.floor(((360 - actualDeg) % 360) / (360 / GIFTS.length));
-
-    // 3. Hiển thị thông báo
-    resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
-    btn.disabled = false;
-}, 4000);
+                    setTimeout(() => {
+                        const actualDeg = currentRotation % 360;
+                        const giftIndex = Math.floor(((360 - actualDeg) % 360) / (360 / GIFTS.length));
+                        resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
+                        btn.disabled = false;
+                    }, 4000);
                 } else {
                     resDiv.style.color = "#e74c3c";
                     resDiv.innerHTML = `❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})`;
