@@ -41,7 +41,7 @@
             <input type="tel" id="cusPhone" placeholder="Nhập số điện thoại">
             <label>Mã quà tặng:</label>
             <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
-            <button onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
+            <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
         </div>
 
         <div id="result"></div>
@@ -52,8 +52,10 @@
             <span style="color: #5d4037;">Điểm tích lũy</span>
         </div>
     </div>
+
 <script src="config.js"></script> 
 <script>
+    // 1. Tự điền thông tin khi mở trang
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
@@ -67,6 +69,7 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
     };
 
+    // 2. Hàm xử lý tích điểm chính
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -74,8 +77,13 @@
         const resultDiv = document.getElementById('result');
         const pointBox = document.getElementById('pointBox');
         const currentPoints = document.getElementById('currentPoints');
-        
-        // --- SỬA TẠI ĐÂY: Lấy URL từ file config.js ---
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        // Lấy link từ config.js
+        if (typeof CONFIG === 'undefined' || !CONFIG.scriptURL) {
+            alert("Lỗi: Không tìm thấy link trong config.js!");
+            return;
+        }
         const scriptURL = CONFIG.scriptURL; 
 
         if (!name || !phone || !code) {
@@ -84,21 +92,26 @@
             return;
         }
 
+        // Lưu thông tin khách hàng
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
 
+        // Trạng thái chờ
         resultDiv.innerHTML = "⌛ Đang kiểm tra...";
         resultDiv.className = "";
         pointBox.style.display = "none";
+        btnSubmit.disabled = true; // Chặn bấm liên tục
 
+        // Định nghĩa hàm nhận dữ liệu từ Google Script
         window.googleCallback = function(resData) {
-            // Logic xử lý hiển thị điểm (resData.points lúc này sẽ là 6 sau khi sửa Script)
+            btnSubmit.disabled = false;
+            
             if (resData.status === "SUCCESS") {
                 resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
-                currentPoints.innerText = resData.points;
+                currentPoints.innerText = resData.points; // Sẽ hiện 6 thay vì 14
                 pointBox.style.display = "block";
-                document.getElementById('inputCode').value = "";
+                document.getElementById('inputCode').value = ""; 
             } else if (resData.status === "USED") {
                 resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng.";
                 resultDiv.className = "error";
@@ -109,11 +122,24 @@
                 resultDiv.className = "error";
                 pointBox.style.display = "none";
             }
-            document.body.removeChild(scriptTag);
+            
+            // Xóa thẻ script sau khi hoàn tất để tránh kẹt trang
+            const oldScript = document.getElementById('api-call');
+            if (oldScript) oldScript.remove();
         };
 
+        // Tạo kết nối JSONP
         const scriptTag = document.createElement("script");
-        scriptTag.src = `${scriptURL}?code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&callback=googleCallback`;
+        scriptTag.id = "api-call";
+        scriptTag.src = `${scriptURL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&callback=googleCallback&t=${new Date().getTime()}`;
+        
+        // Xử lý khi rớt mạng/lỗi server
+        scriptTag.onerror = function() {
+            resultDiv.innerHTML = "❌ Lỗi kết nối! Vui lòng thử lại.";
+            resultDiv.className = "error";
+            btnSubmit.disabled = false;
+        };
+
         document.body.appendChild(scriptTag);
     }
 </script>
