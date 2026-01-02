@@ -134,6 +134,30 @@ async function checkAndSpin() {
         btn.disabled = false;
     }
 }
+function sendSpinResult(giftName) {
+    const phone = document.getElementById('phone').value.trim();
+    
+    // KIỂM TRA ĐIỂM TRƯỚC KHI QUAY
+    if (currentPoints < CONFIG.SPIN_POINTS) {
+        alert("Bạn không đủ lượt quay!");
+        return;
+    }
+
+    fetch(scriptURL, {
+        method: 'POST',
+        body: JSON.stringify({ 
+            action: "vong_quay",      // Đảm bảo action khác với "doi_thuong"
+            phone: phone, 
+            gift: giftName,           // Tên quà trúng thưởng (ví dụ: Thêm 1 lượt)
+            points_required: CONFIG.SPIN_POINTS // ÉP BUỘC TRỪ 1 ĐIỂM
+        })
+    })
+    .then(res => res.text())
+    .then(result => {
+        console.log("Kết quả ghi nhận:", result);
+        checkPointRealtime(); // Cập nhật lại số dư điểm
+    });
+}
     </script>
 </body>
 </html>
