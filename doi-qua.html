@@ -64,14 +64,15 @@
         statusDiv.innerHTML = "";
 
         // Gửi yêu cầu đến Google Sheets
-        fetch(scriptURL, {
-            method: 'POST',
-            body: JSON.stringify({ 
-                action: "doi_thuong", 
-                phone: phone,
-                points_required: minPoints 
-            })
-        })
+        // Gửi yêu cầu đổi quà kèm theo số điểm lấy từ config.js
+fetch(CONFIG.SCRIPT_URL, {
+    method: 'POST',
+    body: JSON.stringify({ 
+        action: "doi_thuong", 
+        phone: phone, 
+        points_required: CONFIG.REDEEM_POINTS // Dòng này cực kỳ quan trọng
+    })
+})
         .then(res => res.text())
         .then(result => {
             if (result === "SUCCESS") {
