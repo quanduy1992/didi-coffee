@@ -34,7 +34,7 @@
 <script>
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
-    let currentPoints = 0; // Biến lưu trữ điểm thực tế lấy từ server
+    let currentPoints = 0; 
     
     document.getElementById('reqPoints').innerText = minPoints;
 
@@ -55,7 +55,6 @@
             fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
                 .then(res => res.text())
                 .then(points => {
-                    // Cập nhật điểm vào biến toàn cục để handleRedeem sử dụng
                     currentPoints = parseInt(points) || 0;
                     display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${currentPoints}</strong> lượt tích lũy</div>`;
                 });
@@ -67,44 +66,23 @@
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
 
-        // KIỂM TRA ĐIỂM TRƯỚC KHI GỬI (Lấy minPoints từ config.js)
         if (currentPoints < minPoints) {
             statusDiv.innerHTML = `<div class='error'>❌ KHÔNG ĐỦ ĐIỂM<br>Cần ${minPoints} điểm (Hiện có: ${currentPoints})</div>`;
-            return; // Ngăn chặn fetch dữ liệu nếu không đủ điểm
+            return;
         }
 
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
+        // SỬA TẠI ĐÂY: Định nghĩa finalURL và thêm tham số points từ CONFIG
+        const finalURL = `${CONFIG.SCRIPT_URL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent("Tặng 1 Ly")}&points=${CONFIG.REDEEM_POINTS}`;
+
         fetch(finalURL)
-        .then(res => res.text())
-        .then(result => {
-            if (result === "SUCCESS") {
-                alert("Đổi quà thành công! Đã trừ " + CONFIG.REDEEM_POINTS + " điểm.");
-                checkPointRealtime();
-            }
-        });
         .then(res => res.text())
         .then(result => {
             if (result === "SUCCESS") {
                 statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời nhận quà</div>";
                 btn.style.display = "none";
-                // Lưu SĐT vào localStorage để lần sau không phải nhập lại
                 localStorage.setItem('userPhone', phone);
                 checkPointRealtime(); 
-            } else {
-                statusDiv.innerHTML = `<div class='error'>❌ KHÔNG ĐỦ ${minPoints} ĐIỂM</div>`;
-                btn.disabled = false;
-                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
-                checkPointRealtime();
-            }
-        })
-        .catch(error => {
-            statusDiv.innerHTML = `<div class='error'>❌ LỖI KẾT NỐI: Vui lòng thử lại</div>`;
-            btn.disabled = false;
-            btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
-        });
-    }
-</script>
-</body>
-</html>
+            } else
