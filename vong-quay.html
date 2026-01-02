@@ -59,4 +59,58 @@
         window.onload = function() {
             // Kiểm tra xem đã nhận được dữ liệu từ file config chưa
             if (typeof CONFIG !== 'undefined') {
-                document.getElementById('sub
+                document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+                drawWheel();
+            } else {
+                document.getElementById('sub-title').innerText = "Lỗi: Không tìm thấy file config.js";
+            }
+        };
+
+        async function checkAndSpin() {
+            const phoneInput = document.getElementById('phone');
+            const btn = document.getElementById('spinBtn');
+            const resDiv = document.getElementById('result');
+            const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
+
+            if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
+            
+            btn.disabled = true;
+            resDiv.style.color = "#27ae60";
+            resDiv.innerText = "⏳ Đang kiểm tra điểm...";
+
+            try {
+                // Lấy link và điểm từ CONFIG
+                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                const currentPoints = parseInt(await response.text()) || 0;
+
+                if (currentPoints >= CONFIG.SPIN_POINTS) {
+                    resDiv.innerText = "🎡 Đang quay...";
+                    const randomDegree = Math.floor(Math.random() * 360) + 1800;
+                    currentRotation += randomDegree;
+                    document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+
+                    // Ghi lệnh trừ điểm dựa trên CONFIG.SPIN_POINTS
+                    fetch(CONFIG.SCRIPT_URL, {
+                        method: "POST",
+                        body: JSON.stringify({ action: "doi_thuong", phone: phone, points_required: CONFIG.SPIN_POINTS })
+                    });
+
+                    setTimeout(() => {
+                        const actualDeg = currentRotation % 360;
+                        const giftIndex = GIFTS.length - 1 - Math.floor(actualDeg / (360 / GIFTS.length));
+                        resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
+                        btn.disabled = false;
+                    }, 4000);
+                } else {
+                    resDiv.style.color = "#e74c3c";
+                    resDiv.innerHTML = `❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})`;
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                resDiv.innerText = "⚠️ Lỗi kết nối, hãy thử lại!";
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
