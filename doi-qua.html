@@ -27,43 +27,78 @@
 
     <div id="status"></div>
 </div>
-<script src="config.js"></script> 
+<script src="config.js"></script>
 
 <script>
-    // 2. Gán link từ file config vào biến scriptURL
-    const scriptURL = CONFIG.SCRIPT_URL; 
+    // Kiểm tra nếu config.js đã tải thành công
+    const scriptURL = typeof CONFIG !== 'undefined' ? CONFIG.SCRIPT_URL : '';
+    const minPoints = typeof CONFIG !== 'undefined' ? CONFIG.REDEEM_POINTS : 20;
+
+    // Tự động điền SĐT nếu máy khách đã từng tích điểm trước đó
+    window.onload = function() {
+        const savedPhone = localStorage.getItem('userPhone');
+        if (savedPhone) {
+            document.getElementById('phone').value = savedPhone;
+        }
+    };
 
     function handleRedeem() {
-        const phone = document.getElementById('phone').value;
+        const phoneInput = document.getElementById('phone');
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
+        const phone = phoneInput.value.trim();
 
-        if (!phone) return alert("Không tìm thấy SĐT!");
+        if (!phone || phone.length < 10) {
+            alert("Vui lòng nhập đúng số điện thoại!");
+            return;
+        }
 
+        if (!scriptURL) {
+            alert("Lỗi: Không tìm thấy link Web App trong config.js!");
+            return;
+        }
+
+        // Vô hiệu hóa nút để tránh khách bấm nhiều lần
         btn.disabled = true;
-        statusDiv.innerHTML = "⌛ Đang kiểm tra điểm...";
+        btn.innerText = "⏳ ĐANG KIỂM TRA...";
+        statusDiv.innerHTML = "";
 
-        // 3. Gửi lệnh đến Google Sheets
+        // Gửi yêu cầu đến Google Sheets
         fetch(scriptURL, {
             method: 'POST',
-            body: JSON.stringify({ action: "doi_thuong", phone: phone })
+            body: JSON.stringify({ 
+                action: "doi_thuong", 
+                phone: phone,
+                points_required: minPoints 
+            })
         })
         .then(res => res.text())
         .then(result => {
-            // Kiểm tra phản hồi từ Sheets
             if (result === "SUCCESS") {
-                statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời bạn nhận quà</div>";
+                // HIỆN MÀU XANH KHI ĐỦ ĐIỂM
+                statusDiv.innerHTML = `
+                    <div style="background:#e8f5e9; color:#2e7d32; padding:20px; border:3px solid #2e7d32; border-radius:15px; font-weight:bold; font-size:22px; margin-top:20px;">
+                        ✅ ĐỔI THÀNH CÔNG!<br>
+                        <span style="font-size:16px;">Đã trừ ${minPoints} điểm</span>
+                    </div>`;
                 btn.style.display = "none";
+                phoneInput.style.display = "none";
             } else {
-                // Nếu chưa đủ 20 điểm, hiện thông báo lỗi đỏ
-                statusDiv.innerHTML = "<div class='error'>❌ CHƯA ĐỦ 20 ĐIỂM<br>Vui lòng tích thêm nhé!</div>";
+                // HIỆN MÀU ĐỎ KHI CHƯA ĐỦ ĐIỂM (Ví dụ: khách có 14 điểm)
+                statusDiv.innerHTML = `
+                    <div style="background:#ffebee; color:#c62828; padding:15px; border:2px solid #c62828; border-radius:10px; font-weight:bold; margin-top:20px;">
+                        ❌ CHƯA ĐỦ ${minPoints} ĐIỂM<br>
+                        <span style="font-size:14px;">Vui lòng tích thêm để nhận quà nhé!</span>
+                    </div>`;
                 btn.disabled = false;
-                btn.innerText = "THỬ LẠI";
+                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
             }
         })
-        .catch(() => {
-            statusDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối!</div>";
+        .catch(err => {
+            console.error(err);
+            alert("Lỗi kết nối mạng hoặc sai link Web App!");
             btn.disabled = false;
+            btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
         });
     }
 </script>
