@@ -4,7 +4,7 @@
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* PHẦN ĐỊNH DẠNG (CSS) - Giữ giao diện đẹp */
+        /* GIỮ NGUYÊN CSS ĐỂ KHÔNG BỊ MẤT ĐỊNH DẠNG */
         body { font-family: 'Arial', sans-serif; text-align: center; background: #fdf5e6; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .container { max-width: 400px; width: 100%; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; }
         h2 { color: #6f4e37; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -22,7 +22,7 @@
 <body>
     <div class="container">
         <h2>🎡 VÒNG QUAY DI DI</h2>
-        <p id="sub-title">Đổi 10 lượt tích lũy = 1 lượt quay</p>
+        <p id="sub-title">Đang tải cấu hình...</p>
         
         <div id="wheel-container">
             <div id="pointer"></div>
@@ -36,18 +36,13 @@
         <div id="result"></div>
     </div>
 
-    <script>
-        // --- CẤU HÌNH TRỰC TIẾP (Thay thế file config.js để tránh lỗi mất file) ---
-        const MY_CONFIG = {
-            SCRIPT_URL: 'DÁN_LINK_WEB_APP_CỦA_BẠN_VÀO_ĐÂY', 
-            SPIN_POINTS: 10 // Số điểm cần để quay
-        };
+    <script src="config.js"></script>
 
+    <script>
         const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
         const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
         let currentRotation = 0;
 
-        // Vẽ vòng quay ngay khi tải trang
         function drawWheel() {
             const canvas = document.getElementById('wheel');
             const ctx = canvas.getContext('2d');
@@ -62,54 +57,6 @@
         }
 
         window.onload = function() {
-            document.getElementById('sub-title').innerText = `Đổi ${MY_CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
-            drawWheel();
-        };
-
-        async function checkAndSpin() {
-            const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, "");
-            const btn = document.getElementById('spinBtn');
-            const resDiv = document.getElementById('result');
-
-            if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
-            
-            btn.disabled = true;
-            resDiv.style.color = "#27ae60";
-            resDiv.innerText = "⏳ Đang kiểm tra điểm...";
-
-            try {
-                // Kiểm tra điểm từ Apps Script
-                const response = await fetch(`${MY_CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-                const currentPoints = parseInt(await response.text()) || 0;
-
-                if (currentPoints >= MY_CONFIG.SPIN_POINTS) {
-                    resDiv.innerText = "🎡 Đang quay...";
-                    const randomDegree = Math.floor(Math.random() * 360) + 1800;
-                    currentRotation += randomDegree;
-                    document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
-
-                    // Gửi lệnh trừ điểm vào Sheets
-                    fetch(MY_CONFIG.SCRIPT_URL, {
-                        method: "POST",
-                        body: JSON.stringify({ action: "doi_thuong", phone: phone, points_required: MY_CONFIG.SPIN_POINTS })
-                    });
-
-                    setTimeout(() => {
-                        const actualDeg = currentRotation % 360;
-                        const giftIndex = GIFTS.length - 1 - Math.floor(actualDeg / (360 / GIFTS.length));
-                        resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
-                        btn.disabled = false;
-                    }, 4000);
-                } else {
-                    resDiv.style.color = "#e74c3c";
-                    resDiv.innerHTML = `❌ Không đủ điểm! (Bạn có ${currentPoints}/${MY_CONFIG.SPIN_POINTS})`;
-                    btn.disabled = false;
-                }
-            } catch (e) {
-                resDiv.innerText = "⚠️ Lỗi kết nối, hãy thử lại!";
-                btn.disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
+            // Kiểm tra xem đã nhận được dữ liệu từ file config chưa
+            if (typeof CONFIG !== 'undefined') {
+                document.getElementById('sub
