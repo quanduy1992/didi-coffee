@@ -96,11 +96,18 @@
                     });
 
                     setTimeout(() => {
-                        const actualDeg = currentRotation % 360;
-                        const giftIndex = GIFTS.length - 1 - Math.floor(actualDeg / (360 / GIFTS.length));
-                        resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
-                        btn.disabled = false;
-                    }, 4000);
+    // 1. Tính toán góc quay thực tế trong phạm vi 360 độ
+    const actualDeg = currentRotation % 360;
+
+    // 2. Tính toán chỉ số phần thưởng (Index)
+    // Cần trừ đi góc của kim chỉ (thường là ở vị trí 270 hoặc 90 độ tùy code)
+    // Công thức chuẩn cho kim ở đỉnh (Top):
+    const giftIndex = Math.floor(((360 - actualDeg) % 360) / (360 / GIFTS.length));
+
+    // 3. Hiển thị thông báo
+    resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
+    btn.disabled = false;
+}, 4000);
                 } else {
                     resDiv.style.color = "#e74c3c";
                     resDiv.innerHTML = `❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})`;
