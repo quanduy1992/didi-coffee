@@ -54,23 +54,19 @@
     </div>
 <script src="config.js"></script> 
 <script>
-    // --- 1. KHI TRANG WEB VỪA MỞ: TỰ ĐIỀN THÔNG TIN ---
     window.onload = function() {
-        // Tự điền mã từ Link QR (?code=DIDI1)
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
         if (codeFromURL) {
             document.getElementById('inputCode').value = codeFromURL.toUpperCase();
         }
 
-        // Tự điền Tên và SĐT từ bộ nhớ máy khách (nếu có)
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
     };
 
-    // --- 2. HÀM XỬ LÝ TÍCH ĐIỂM ---
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -79,7 +75,8 @@
         const pointBox = document.getElementById('pointBox');
         const currentPoints = document.getElementById('currentPoints');
         
-        const scriptURL = "https://script.google.com/macros/s/AKfycbxnTe1eJqcUVfqwXk8P1OldmT1hRxb7dc4D22F870b9Puf7Ma3FOQwfAC4cy6PPfMSy/exec";
+        // --- SỬA TẠI ĐÂY: Lấy URL từ file config.js ---
+        const scriptURL = CONFIG.scriptURL; 
 
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
@@ -87,7 +84,6 @@
             return;
         }
 
-        // LƯU THÔNG TIN VÀO BỘ NHỚ ĐIỆN THOẠI NGAY LÚC BẤM NÚT
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
 
@@ -96,12 +92,13 @@
         pointBox.style.display = "none";
 
         window.googleCallback = function(resData) {
+            // Logic xử lý hiển thị điểm (resData.points lúc này sẽ là 6 sau khi sửa Script)
             if (resData.status === "SUCCESS") {
                 resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
                 currentPoints.innerText = resData.points;
                 pointBox.style.display = "block";
-                document.getElementById('inputCode').value = ""; // Xóa mã sau khi dùng
+                document.getElementById('inputCode').value = "";
             } else if (resData.status === "USED") {
                 resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng.";
                 resultDiv.className = "error";
