@@ -76,14 +76,14 @@
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
-        fetch(scriptURL, {
-            method: 'POST',
-            body: JSON.stringify({ 
-                action: "doi_thuong", 
-                phone: phone, 
-                points_required: minPoints 
-            })
-        })
+        fetch(finalURL)
+        .then(res => res.text())
+        .then(result => {
+            if (result === "SUCCESS") {
+                alert("Đổi quà thành công! Đã trừ " + CONFIG.REDEEM_POINTS + " điểm.");
+                checkPointRealtime();
+            }
+        });
         .then(res => res.text())
         .then(result => {
             if (result === "SUCCESS") {
