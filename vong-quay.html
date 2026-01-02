@@ -90,65 +90,50 @@
                 document.getElementById('sub-title').innerText = "Lỗi: Không tìm thấy file config.js";
             }
         };
+async function checkAndSpin() {
+    const phoneInput = document.getElementById('phone');
+    const btn = document.getElementById('spinBtn');
+    const resDiv = document.getElementById('result');
+    const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
 
-        async function checkAndSpin() {
-            const phoneInput = document.getElementById('phone');
-            const btn = document.getElementById('spinBtn');
-            const resDiv = document.getElementById('result');
-            const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
+    if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
+    
+    btn.disabled = true;
+    resDiv.style.color = "#27ae60";
+    resDiv.innerText = "⏳ Đang kiểm tra điểm...";
 
-            if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
-            
-            // Lưu SĐT vào bộ nhớ để lần sau không cần nhập lại
-            localStorage.setItem('didi_customer_phone', phone);
+    try {
+        // 1. Kiểm tra điểm (GET)
+        const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+        const currentPoints = parseInt(await response.text()) || 0;
 
-            btn.disabled = true;
-            resDiv.style.color = "#27ae60";
-            resDiv.innerText = "⏳ Đang kiểm tra điểm...";
+        if (currentPoints >= CONFIG.SPIN_POINTS) {
+            resDiv.innerText = "🎡 Đang quay...";
+            const randomDegree = Math.floor(Math.random() * 360) + 1800;
+            currentRotation += randomDegree;
+            document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
-            try {
-                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-                const currentPoints = parseInt(await response.text()) || 0;
+            setTimeout(() => {
+                const actualDeg = currentRotation % 360;
+                const giftIndex = Math.floor(((360 - actualDeg) % 360) / (360 / GIFTS.length));
+                const giftName = GIFTS[giftIndex];
 
-                if (currentPoints >= CONFIG.SPIN_POINTS) {
-                    resDiv.innerText = "🎡 Đang quay...";
-                    const randomDegree = Math.floor(Math.random() * 360) + 1800;
-                    currentRotation += randomDegree;
-                    document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+                // 2. Ghi quà vào Sheets (Dùng GET để tránh lỗi Kết nối)
+                fetch(`${CONFIG.SCRIPT_URL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent(giftName)}`);
 
-                    // Tìm đoạn fetch trong file HTML và sửa lại như sau:
-// Gửi dữ liệu đi mà không chờ phản hồi để tránh lỗi chặn kết nối của trình duyệt
-fetch(CONFIG.SCRIPT_URL, {
-    method: "POST",
-    mode: "no-cors", // Thêm dòng này để trình duyệt không chặn kết nối
-    headers: { "Content-Type": "text/plain" }, // Dùng text/plain để tránh lỗi CORS
-    body: JSON.stringify({ 
-        action: "doi_thuong", 
-        phone: phone, 
-        gift: GIFTS[giftIndex] 
-    })
-}).then(() => {
-    console.log("Dữ liệu đã được gửi đi thành công!");
-}).catch(err => {
-    console.log("Lỗi gửi dữ liệu: ", err);
-});
-
-                    setTimeout(() => {
-                        const actualDeg = currentRotation % 360;
-                        const giftIndex = Math.floor(((360 - actualDeg) % 360) / (360 / GIFTS.length));
-                        resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
-                        btn.disabled = false;
-                    }, 4000);
-                } else {
-                    resDiv.style.color = "#e74c3c";
-                    resDiv.innerHTML = `❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})`;
-                    btn.disabled = false;
-                }
-            } catch (e) {
-                resDiv.innerText = "⚠️ Lỗi kết nối, hãy thử lại!";
+                resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${giftName}</span>`;
                 btn.disabled = false;
-            }
+            }, 4000);
+        } else {
+            resDiv.style.color = "#e74c3c";
+            resDiv.innerHTML = `❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})`;
+            btn.disabled = false;
         }
+    } catch (e) {
+        resDiv.innerText = "⚠️ Lỗi kết nối, hãy thử lại!";
+        btn.disabled = false;
+    }
+}
     </script>
 </body>
 </html>
