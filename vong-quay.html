@@ -4,7 +4,7 @@
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* GIỮ NGUYÊN CSS ĐỂ KHÔNG BỊ MẤT ĐỊNH DẠNG */
+        /* GIỮ NGUYÊN TOÀN BỘ CSS CỦA BẠN */
         body { font-family: 'Arial', sans-serif; text-align: center; background: #fdf5e6; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .container { max-width: 400px; width: 100%; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; }
         h2 { color: #6f4e37; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
@@ -47,13 +47,11 @@
             const canvas = document.getElementById('wheel');
             const ctx = canvas.getContext('2d');
             const arc = (Math.PI * 2) / GIFTS.length;
-
             ctx.clearRect(0, 0, 300, 300);
             ctx.save();
             ctx.translate(150, 150);
             ctx.rotate(-Math.PI / 2); 
             ctx.translate(-150, -150);
-
             GIFTS.forEach((gift, i) => {
                 ctx.beginPath();
                 ctx.fillStyle = COLORS[i];
@@ -72,17 +70,11 @@
         }
 
         window.onload = function() {
-            // TỰ ĐỘNG ĐIỀN SĐT: Ưu tiên URL, sau đó đến bộ nhớ trình duyệt
             const urlParams = new URLSearchParams(window.location.search);
             const phoneFromUrl = urlParams.get('phone');
             const savedPhone = localStorage.getItem('didi_customer_phone');
-
-            if (phoneFromUrl) {
-                document.getElementById('phone').value = phoneFromUrl;
-            } else if (savedPhone) {
-                document.getElementById('phone').value = savedPhone;
-            }
-
+            if (phoneFromUrl) { document.getElementById('phone').value = phoneFromUrl; } 
+            else if (savedPhone) { document.getElementById('phone').value = savedPhone; }
             if (typeof CONFIG !== 'undefined') {
                 document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
                 drawWheel();
@@ -90,65 +82,53 @@
                 document.getElementById('sub-title').innerText = "Lỗi: Không tìm thấy file config.js";
             }
         };
-async function checkAndSpin() {
-    const phoneInput = document.getElementById('phone');
-    const btn = document.getElementById('spinBtn');
-    const resDiv = document.getElementById('result');
-    const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
 
-    if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
-    
-    btn.disabled = true;
-    resDiv.style.color = "#27ae60";
-    resDiv.innerText = "⏳ Đang kiểm tra điểm...";
+        async function checkAndSpin() {
+            const phoneInput = document.getElementById('phone');
+            const btn = document.getElementById('spinBtn');
+            const resDiv = document.getElementById('result');
+            const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
 
-    try {
-        // 1. Kiểm tra điểm (GET)
-        const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-        const currentPoints = parseInt(await response.text()) || 0;
+            if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
+            
+            btn.disabled = true;
+            resDiv.style.color = "#27ae60";
+            resDiv.innerText = "⏳ Đang kiểm tra điểm...";
 
-        if (currentPoints >= CONFIG.SPIN_POINTS) {
-            resDiv.innerText = "🎡 Đang quay...";
-            const randomDegree = Math.floor(Math.random() * 360) + 1800;
-            currentRotation += randomDegree;
-            document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+            try {
+                // 1. Kiểm tra điểm
+                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                const currentPoints = parseInt(await response.text()) || 0;
 
-            setTimeout(() => {
-                const actualDeg = currentRotation % 360;
-                const giftIndex = Math.floor(((360 - actualDeg) % 360) / (360 / GIFTS.length));
-                const giftName = GIFTS[giftIndex];
+                if (currentPoints >= CONFIG.SPIN_POINTS) {
+                    resDiv.innerText = "🎡 Đang quay...";
+                    const randomDegree = Math.floor(Math.random() * 360) + 1800;
+                    currentRotation += randomDegree;
+                    document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
-                // 2. Ghi quà vào Sheets (Dùng GET để tránh lỗi Kết nối)
-                fetch(`${CONFIG.SCRIPT_URL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent(giftName)}`);
+                    setTimeout(() => {
+                        const actualDeg = currentRotation % 360;
+                        const giftIndex = Math.floor(((360 - actualDeg) % 360) / (360 / GIFTS.length));
+                        const giftName = GIFTS[giftIndex];
 
-                resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${giftName}</span>`;
+                        // --- SỬA LỖI TẠI ĐÂY: Gửi đúng ACTION và POINTS ---
+                        fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
+                        // ------------------------------------------------
+
+                        resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${giftName}</span>`;
+                        btn.disabled = false;
+                        localStorage.setItem('didi_customer_phone', phone);
+                    }, 4000);
+                } else {
+                    resDiv.style.color = "#e74c3c";
+                    resDiv.innerHTML = `❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})`;
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                resDiv.innerText = "⚠️ Lỗi kết nối, hãy thử lại!";
                 btn.disabled = false;
-            }, 4000);
-        } else {
-            resDiv.style.color = "#e74c3c";
-            resDiv.innerHTML = `❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})`;
-            btn.disabled = false;
-        }
-    } catch (e) {
-        resDiv.innerText = "⚠️ Lỗi kết nối, hãy thử lại!";
-        btn.disabled = false;
-    }
-}
-function sendSpinResult(giftName) {
-    const phone = document.getElementById('phone').value.trim();
-    
-    // Thêm tham số &points= lấy từ CONFIG.SPIN_POINTS
-    const finalURL = `${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`;
-
-    fetch(finalURL)
-        .then(res => res.text())
-        .then(result => {
-            if (result === "SUCCESS") {
-                console.log("Đã ghi nhận trừ " + CONFIG.SPIN_POINTS + " điểm");
-                checkPointRealtime(); 
             }
-        });
-}
+        }
     </script>
 </body>
 </html>
