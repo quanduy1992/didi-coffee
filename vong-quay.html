@@ -3,7 +3,28 @@
 <head>
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    </head>
+    <style>
+        /* PHẦN ĐỊNH DẠNG (CSS) - Giúp trang đẹp như bản cũ */
+        body { font-family: 'Arial', sans-serif; text-align: center; background: #fdf5e6; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .container { max-width: 400px; width: 100%; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; }
+        h2 { color: #6f4e37; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        p { color: #888; font-size: 14px; margin-bottom: 20px; }
+        
+        #wheel-container { position: relative; width: 300px; height: 300px; margin: 0 auto 25px; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #6f4e37; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); box-shadow: 0 0 15px rgba(111, 78, 55, 0.2); }
+        #pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #e74c3c; z-index: 10; filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); }
+        
+        .controls { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        input { padding: 14px; width: 90%; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; transition: border 0.3s; }
+        input:focus { border-color: #6f4e37; }
+        
+        #spinBtn { padding: 15px; background: #6f4e37; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 98%; font-size: 16px; transition: 0.3s; box-shadow: 0 4px 0 #4a3425; }
+        #spinBtn:active { transform: translateY(2px); box-shadow: 0 2px 0 #4a3425; }
+        #spinBtn:disabled { background: #ccc; box-shadow: 0 4px 0 #999; cursor: not-allowed; }
+        
+        #result { margin-top: 20px; font-weight: bold; font-size: 18px; min-height: 24px; color: #27ae60; }
+    </style>
+</head>
 <body>
     <div class="container">
         <h2>🎡 VÒNG QUAY DI DI</h2>
@@ -24,6 +45,7 @@
     <script src="config.js"></script>
 
     <script>
+        /* PHẦN LOGIC (JS) */
         const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
         const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
         let currentRotation = 0;
@@ -34,7 +56,7 @@
             const arc = (Math.PI * 2) / GIFTS.length;
             GIFTS.forEach((gift, i) => {
                 ctx.beginPath(); ctx.fillStyle = COLORS[i]; ctx.moveTo(150, 150);
-                ctx.arc(150, 150, 150, i * arc, (i + 1) * arc); ctx.fill();
+                ctx.arc(150, 150, 150, i * arc, (i + Arc) * arc); ctx.fill();
                 ctx.save(); ctx.fillStyle = "white"; ctx.font = "bold 14px Arial";
                 ctx.translate(150, 150); ctx.rotate(i * arc + arc / 2);
                 ctx.fillText(gift, 75, 5); ctx.restore();
@@ -60,18 +82,18 @@
             resDiv.innerText = "⏳ Đang kiểm tra điểm...";
 
             try {
-                // 1. Kiểm tra điểm từ Apps Script
+                // Kiểm tra điểm từ file config và Apps Script
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
                 const currentPoints = parseInt(await response.text()) || 0;
 
-                // 2. So sánh với điểm yêu cầu trong config.js
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
+                    resDiv.style.color = "#27ae60";
                     resDiv.innerText = "🎡 Đang quay...";
                     const randomDegree = Math.floor(Math.random() * 360) + 1800;
                     currentRotation += randomDegree;
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
-                    // Gọi lệnh trừ điểm trên Sheets
+                    // Ghi lệnh đổi thưởng vào Sheets
                     fetch(CONFIG.SCRIPT_URL, {
                         method: "POST",
                         body: JSON.stringify({ action: "doi_thuong", phone: phone, points_required: CONFIG.SPIN_POINTS })
@@ -80,19 +102,7 @@
                     setTimeout(() => {
                         const actualDeg = currentRotation % 360;
                         const giftIndex = GIFTS.length - 1 - Math.floor(actualDeg / (360 / GIFTS.length));
-                        resDiv.innerHTML = `🎉 Chúc mừng! Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
+                        resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
                         btn.disabled = false;
                     }, 4000);
                 } else {
-                    // 3. Thông báo không đủ điểm
-                    resDiv.innerHTML = `<span style="color:#e74c3c">❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})</span>`;
-                    btn.disabled = false;
-                }
-            } catch (e) {
-                resDiv.innerText = "⚠️ Lỗi kết nối, vui lòng thử lại!";
-                btn.disabled = false;
-            }
-        }
-    </script>
-</body>
-</html>
