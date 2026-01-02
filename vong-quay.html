@@ -117,13 +117,15 @@
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
                     // Tìm đoạn fetch trong file HTML và sửa lại như sau:
+// Gửi dữ liệu đi mà không chờ phản hồi để tránh lỗi chặn kết nối của trình duyệt
 fetch(CONFIG.SCRIPT_URL, {
     method: "POST",
+    mode: "no-cors", // Thêm dòng này để bỏ qua kiểm tra bảo mật trình duyệt
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ 
         action: "doi_thuong", 
         phone: phone, 
-        points_required: CONFIG.SPIN_POINTS,
-        gift: GIFTS[giftIndex] // THÊM DÒNG NÀY ĐỂ GỬI TÊN QUÀ
+        gift: GIFTS[giftIndex] 
     })
 });
 
