@@ -51,20 +51,12 @@
     
     if (phone.length >= 10) {
         display.innerHTML = "⏳ Đang kiểm tra...";
-        // Gọi link kèm action=get_points
         fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
-            .then(res => res.text()) // Nhận kết quả dạng chữ
+            .then(res => res.text())
             .then(points => {
-                // Kiểm tra nếu kết quả trả về là số hợp lệ
-                if (!isNaN(points)) {
-                    display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${points}</strong> điểm</div>`;
-                } else {
-                    display.innerHTML = "";
-                }
-            })
-            .catch(() => { display.innerHTML = ""; });
-    } else {
-        display.innerHTML = "";
+                // Hiển thị số lượt hiện có (ví dụ: 18)
+                display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${points}</strong> lượt tích lũy</div>`;
+            });
     }
 }
 
