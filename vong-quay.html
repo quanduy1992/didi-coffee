@@ -37,63 +37,44 @@
 
     <script src="config.js"></script>
 
-<script>
-    // Danh sách quà và màu sắc (có thể đưa vào config.js luôn nếu muốn)
-    const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
-    const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
-    let currentRotation = 0;
+// 1. Phải nhúng file config trước
+// <script src="config.js"></script>
 
-    // Tự động hiển thị số điểm cần quay từ file config
-    document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+const GIFTS = ["Giảm 10%", "Topping", "Tặng 1 Ly", "May Mắn", "Giảm 20k", "Thêm 1 lượt"];
+const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#3498db", "#2ecc71"];
 
-    async function checkAndSpin() {
-        const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, "");
-        const btn = document.getElementById('spinBtn');
-        const resDiv = document.getElementById('result');
+// Hàm vẽ vòng quay (Phải chạy khi trang vừa tải xong)
+function drawWheel() {
+    const canvas = document.getElementById('wheel');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const arc = (Math.PI * 2) / GIFTS.length;
 
-        if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
-        
-        btn.disabled = true;
-        resDiv.innerText = "⏳ Đang kiểm tra điểm...";
+    GIFTS.forEach((gift, i) => {
+        ctx.beginPath();
+        ctx.fillStyle = COLORS[i];
+        ctx.moveTo(150, 150);
+        ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
+        ctx.fill();
+        ctx.save();
+        ctx.fillStyle = "white";
+        ctx.font = "bold 14px Arial";
+        ctx.translate(150, 150);
+        ctx.rotate(i * arc + arc / 2);
+        ctx.fillText(gift, 75, 5);
+        ctx.restore();
+    });
+}
 
-        try {
-            // Lấy điểm từ Apps Script
-            const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-            const pointsText = await response.text();
-            const currentPoints = parseInt(pointsText) || 0;
-
-            // So sánh với biến SPIN_POINTS trong file config.js
-            if (currentPoints >= CONFIG.SPIN_POINTS) {
-                // Hiệu ứng quay...
-                const randomDegree = Math.floor(Math.random() * 360) + 1800;
-                currentRotation += randomDegree;
-                document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
-
-                // Gửi lệnh trừ điểm lên Sheets
-                fetch(CONFIG.SCRIPT_URL, {
-                    method: "POST",
-                    body: JSON.stringify({ 
-                        action: "doi_thuong", 
-                        phone: phone, 
-                        points_required: CONFIG.SPIN_POINTS // Dùng biến từ config
-                    })
-                });
-
-                setTimeout(() => {
-                    const actualDeg = currentRotation % 360;
-                    const giftIndex = GIFTS.length - 1 - Math.floor(actualDeg / (360 / GIFTS.length));
-                    resDiv.innerHTML = `🎉 Chúc mừng! <br> Quà: <span style="color:#e74c3c">${GIFTS[giftIndex]}</span>`;
-                    btn.disabled = false;
-                }, 4000);
-            } else {
-                resDiv.innerHTML = `<span style="color:#e74c3c">❌ Không đủ điểm! (Bạn có ${currentPoints}/${CONFIG.SPIN_POINTS})</span>`;
-                btn.disabled = false;
-            }
-        } catch (e) {
-            resDiv.innerText = "⚠️ Lỗi kết nối!";
-            btn.disabled = false;
-        }
+// Lệnh quan trọng: Tự động chạy khi mở trang
+window.onload = function() {
+    if (typeof CONFIG !== 'undefined') {
+        // Cập nhật dòng chữ hiển thị điểm từ file config
+        document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+        drawWheel(); // Vẽ các ô màu và chữ lên vòng quay
+    } else {
+        alert("Lỗi: Không tìm thấy file config.js hoặc file bị lỗi!");
     }
-</script>
+};
 </body>
 </html>
