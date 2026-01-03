@@ -2,49 +2,32 @@
 <html>
 <head>
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
         body { font-family: 'Segoe UI', 'Arial', sans-serif; text-align: center; background: #fdf5e6; margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; align-items: center; }
         .container { max-width: 400px; width: 100%; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; box-sizing: border-box; }
         h2 { color: #6f4e37; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         p { color: #888; font-size: 14px; margin-bottom: 20px; }
         #wheel-container { position: relative; width: 280px; height: 280px; margin: 0 auto 25px; }
-        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #6f4e37; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
+        #wheel { 
+            width: 100%; 
+            height: 100%; 
+            border-radius: 50%; 
+            border: 8px solid #6f4e37; 
+            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); 
+            -webkit-transition: -webkit-transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+        }
         #pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #e74c3c; z-index: 10; }
         .controls { display: flex; flex-direction: column; gap: 10px; align-items: center; }
         input { padding: 14px; width: 95%; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
         #spinBtn { padding: 15px; background: #6f4e37; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 95%; font-size: 16px; transition: 0.3s; }
         #spinBtn:disabled { background: #ccc; cursor: not-allowed; }
-        #spinBtn:active { transform: scale(0.98); }
         #result { margin-top: 15px; font-weight: bold; font-size: 16px; min-height: 24px; line-height: 1.5; }
 
-        .nav-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-top: 20px;
-            border-top: 1px dashed #795548;
-            padding-top: 15px;
-        }
-        .nav-item {
-            background-color: #efebe9;
-            color: #5d4037;
-            padding: 10px 5px;
-            border-radius: 8px;
-            font-size: 12px;
-            text-decoration: none;
-            font-weight: bold;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #d7ccc8;
-        }
-        .nav-item.active {
-            background-color: #795548;
-            color: white;
-        }
-        .nav-item i { font-style: normal; font-size: 18px; margin-bottom: 4px; }
+        .nav-menu { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 20px; border-top: 1px dashed #795548; padding-top: 15px; }
+        .nav-item { background-color: #efebe9; color: #5d4037; padding: 10px 5px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #d7ccc8; }
+        .nav-item.active { background-color: #795548; color: white; }
     </style>
 </head>
 <body>
@@ -72,19 +55,21 @@
 
     <script src="config.js"></script>
     <script>
+        // ĐÃ SỬA: Tên quà tặng phải khớp chính xác tuyệt đối giữa 2 mảng (kể cả hoa/thường)
+        const GIFTS = ["Tặng 1 ly", "Giảm 2k", "Tặng 2 ly", "Chúc May Mắn", "Tặng 4 Ly", "Tặng 3 ly", "Giảm 1k", "Chúc May Mắn"];
+        const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#9b59b6"];
+        
         const GIFT_DATA = [
             { name: "Tặng 1 ly", weight: 15 },
             { name: "Giảm 2k", weight: 14 }, 
             { name: "Tặng 2 ly", weight: 3 },  
-            { name: "Chúc may mắn", weight: 20 },
-            { name: "Tặng 4 ly", weight: 1 },
+            { name: "Chúc May Mắn", weight: 20 },
+            { name: "Tặng 4 Ly", weight: 1 },
             { name: "Tặng 3 ly", weight: 2 }, 
             { name: "Giảm 1k", weight: 25 },
-            { name: "Chúc may mắn", weight: 20 }
+            { name: "Chúc May Mắn", weight: 20 }
         ];
 
-        const GIFTS = ["Tặng 1 ly", "Giảm 2k", "Tặng 2 ly", "Chúc May Mắn", "Tặng 4 Ly", "Tặng 3 ly", "Giảm 1k", "Chúc May Mắn"];
-        const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#9b59b6"];
         let currentRotation = 0;
 
         function drawWheel() {
@@ -104,11 +89,11 @@
                 ctx.fill();
                 ctx.save();
                 ctx.fillStyle = "white";
-                ctx.font = "bold 14px Arial";
+                ctx.font = "bold 13px Arial";
                 ctx.translate(150, 150);
                 ctx.rotate(i * arc + arc / 2);
                 ctx.textAlign = "right";
-                ctx.fillText(gift, 130, 5);
+                ctx.fillText(gift, 135, 5);
                 ctx.restore();
             });
             ctx.restore();
@@ -118,15 +103,24 @@
             const urlParams = new URLSearchParams(window.location.search);
             const phoneFromUrl = urlParams.get('phone');
             const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
-            if (phoneFromUrl) { document.getElementById('phone').value = phoneFromUrl; } 
-            else if (savedPhone) { document.getElementById('phone').value = savedPhone; }
+            if (phoneFromUrl) document.getElementById('phone').value = phoneFromUrl;
+            else if (savedPhone) document.getElementById('phone').value = savedPhone;
+            
             if (typeof CONFIG !== 'undefined') {
                 document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
                 drawWheel();
-            } else {
-                document.getElementById('sub-title').innerText = "Lỗi: Không tìm thấy file config.js";
             }
         };
+
+        // Hàm bắn pháo hoa
+        function fireConfetti() {
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#f1c40f', '#e67e22', '#e74c3c', '#9b59b6', '#2ecc71']
+            });
+        }
 
         async function checkAndSpin() {
             const phoneInput = document.getElementById('phone');
@@ -142,40 +136,50 @@
 
             try {
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-                const responseText = await response.text();
-                // CẬP NHẬT: Dùng parseFloat để nhận được điểm lẻ 0.5
-                const currentPoints = parseFloat(responseText) || 0;
+                const currentPoints = parseFloat(await response.text()) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
                     resDiv.innerText = "🎡 Đang quay...";
+                    
+                    // 1. Tính toán trúng giải dựa trên trọng số
                     const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                     let random = Math.random() * totalWeight;
-                    let selectedGiftName = GIFT_DATA[0].name;
+                    let selectedGiftIndex = 0;
 
-                    for (const item of GIFT_DATA) {
-                        if (random < item.weight) {
-                            selectedGiftName = item.name;
+                    for (let i = 0; i < GIFT_DATA.length; i++) {
+                        if (random < GIFT_DATA[i].weight) {
+                            selectedGiftIndex = i; // Lấy index trực tiếp để quay chính xác
                             break;
                         }
-                        random -= item.weight;
+                        random -= GIFT_DATA[i].weight;
                     }
 
-                    const indexes = [];
-                    GIFTS.forEach((name, idx) => { if (name === selectedGiftName) indexes.push(idx); });
-                    const targetIndex = indexes[Math.floor(Math.random() * indexes.length)];
+                    const selectedGiftName = GIFT_DATA[selectedGiftIndex].name;
 
+                    // 2. Tính toán góc quay (Khớp chính xác với index đã chọn)
                     const arc = 360 / GIFTS.length;
-                    const targetDegree = 360 - (targetIndex * arc + arc / 2);
+                    const targetDegree = 360 - (selectedGiftIndex * arc + arc / 2);
                     const extraSpins = 1440; 
                     const currentActualRotation = currentRotation % 360;
                     const rotationNeeded = (targetDegree - currentActualRotation + 360) % 360;
+                    
                     currentRotation += extraSpins + rotationNeeded;
 
-                    document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+                    const wheelElement = document.getElementById('wheel');
+                    wheelElement.style.transform = `rotate(${currentRotation}deg)`;
 
                     setTimeout(() => {
+                        // Gửi dữ liệu về Google Sheets
                         fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(selectedGiftName)}&points=${CONFIG.SPIN_POINTS}`);
+                        
+                        // Hiển thị kết quả
                         resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${selectedGiftName}</span>`;
+                        
+                        // BẮN PHÁO HOA nếu không phải ô "Chúc May Mắn"
+                        if (selectedGiftName !== "Chúc May Mắn") {
+                            fireConfetti();
+                        }
+                        
                         btn.disabled = false;
                         localStorage.setItem('didi_customer_phone', phone);
                     }, 4000);
