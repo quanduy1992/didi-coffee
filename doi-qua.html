@@ -11,7 +11,7 @@
         h2 { color: #795548; margin: 0 0 10px 0; }
         input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 18px; text-align: center; background: #f9f9f9; outline: none; }
         button { width: 100%; padding: 15px; background-color: #795548; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:disabled { background-color: #ccc; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
         button:active { transform: scale(0.98); }
 
         #status { margin-top: 20px; min-height: 60px; font-weight: bold; }
@@ -53,7 +53,7 @@
     
     <div id="pointDisplay"></div> 
     <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
-    <button id="btnRedeem" onclick="handleRedeem()">XÁC NHẬN ĐỔI QUÀ</button>
+    <button id="btnRedeem" onclick="handleRedeem()" disabled>XÁC NHẬN ĐỔI QUÀ</button>
 
     <div id="status"></div>
 
@@ -72,20 +72,22 @@
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
-        // Ưu tiên lấy SĐT đã từng tích điểm thành công từ LocalStorage
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
+        const btn = document.getElementById('btnRedeem');
 
         if (savedPhone) {
             document.getElementById('phone').value = savedPhone;
-            // Kích hoạt quy trình tự động
+            // Khóa nút và đổi thông báo để khách biết đang tự động xử lý
+            btn.disabled = true;
+            btn.innerText = "⏳ ĐANG KIỂM TRA TỰ ĐỘNG...";
             autoProcess(savedPhone);
         }
     };
 
-    // Hàm quy trình tự động: Kiểm tra điểm -> Nếu đủ thì tự Đổi
     async function autoProcess(phone) {
         const display = document.getElementById('pointDisplay');
         const statusDiv = document.getElementById('status');
+        const btn = document.getElementById('btnRedeem');
         
         display.innerHTML = "⏳ Đang nhận diện khách hàng...";
         
@@ -97,28 +99,43 @@
             display.innerHTML = `<div class="point-box">Chào bạn! Bạn đang có: <strong>${currentPoints}</strong> lượt</div>`;
 
             if (currentPoints >= minPoints) {
-                statusDiv.innerHTML = "<div style='color: #f57f17; font-size: 14px;'>✨ Đang tự động đổi quà cho bạn...</div>";
-                // Đợi 1.2 giây để khách kịp thấy số điểm rồi tự bấm đổi
+                statusDiv.innerHTML = "<div style='color: #f57f17; font-size: 14px;'>✨ Đủ điểm! Hệ thống đang tự thực hiện...</div>";
+                // Đợi 1.2 giây để khách thấy điểm rồi tự chạy handleRedeem
                 setTimeout(() => {
                     handleRedeem();
                 }, 1200);
             } else {
                 statusDiv.innerHTML = `<div style='color: #8d6e63; font-size: 14px;'>Bạn chưa đủ điểm đổi quà tự động.<br>(Thiếu ${(minPoints - currentPoints).toFixed(1)} điểm)</div>`;
+                btn.disabled = true;
+                btn.innerText = "CHƯA ĐỦ ĐIỂM";
             }
         } catch (err) {
             display.innerHTML = "❌ Lỗi kết nối dữ liệu";
+            btn.disabled = false;
+            btn.innerText = "THỬ LẠI";
         }
     }
 
     function checkPointRealtime() {
         const phone = document.getElementById('phone').value.trim();
         const display = document.getElementById('pointDisplay');
+        const btn = document.getElementById('btnRedeem');
+
         if (phone.length >= 10) {
             fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
                 .then(res => res.text())
                 .then(points => {
                     currentPoints = parseFloat(points) || 0;
                     display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${currentPoints}</strong> lượt tích lũy</div>`;
+                    
+                    // Nếu nhập thủ công mà đủ điểm mới mở khóa nút
+                    if (currentPoints >= minPoints) {
+                        btn.disabled = false;
+                        btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
+                    } else {
+                        btn.disabled = true;
+                        btn.innerText = "CHƯA ĐỦ ĐIỂM";
+                    }
                 });
         }
     }
@@ -128,11 +145,7 @@
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
 
-        if (currentPoints < minPoints) {
-            statusDiv.innerHTML = `<div class='error'>❌ KHÔNG ĐỦ ĐIỂM<br>Cần ${minPoints} (Hiện có: ${currentPoints})</div>`;
-            return;
-        }
-
+        // Khóa nút ngay lập tức khi hàm được gọi (cả tự động lẫn thủ công)
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
@@ -143,9 +156,8 @@
         .then(result => {
             if (result === "SUCCESS") {
                 statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời bạn nhận quà tại quầy</div>";
-                btn.style.display = "none";
+                btn.style.display = "none"; // Ẩn luôn nút để khách không bấm lại được
                 localStorage.setItem('didi_customer_phone', phone);
-                // Cập nhật lại điểm hiển thị
                 setTimeout(() => checkPointRealtime(), 2000);
             } else {
                 statusDiv.innerHTML = `<div class='error'>❌ THẤT BẠI: KIỂM TRA LẠI ĐIỂM</div>`;
@@ -156,6 +168,7 @@
         .catch(error => {
             statusDiv.innerHTML = `<div class='error'>❌ LỖI KẾT NỐI: Vui lòng thử lại</div>`;
             btn.disabled = false;
+            btn.innerText = "THỬ LẠI";
         });
     }
 </script>
