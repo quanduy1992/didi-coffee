@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Di Di Coffee - Đổi Thưởng</title>
+    <title>Di Di Coffee - Đổi Thưởng Tự Động</title>
     <script src="config.js"></script> 
     <style>
         body { font-family: 'Segoe UI', 'Arial', sans-serif; background-color: #f4f1ea; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
@@ -19,7 +19,6 @@
         .success { color: #2e7d32; background: #e8f5e9; padding: 15px; border-radius: 10px; border: 2px solid #2e7d32; }
         .error { color: #c62828; background: #ffebee; padding: 15px; border-radius: 10px; border: 2px solid #c62828; }
 
-        /* --- PHẦN MENU ĐIỀU HƯỚNG GIỐNG INDEX --- */
         .nav-menu {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -42,10 +41,7 @@
             justify-content: center;
             border: 1px solid #d7ccc8;
         }
-        .nav-item.active {
-            background-color: #795548;
-            color: white;
-        }
+        .nav-item.active { background-color: #795548; color: white; }
         .nav-item i { font-style: normal; font-size: 18px; margin-bottom: 4px; }
     </style>
 </head>
@@ -62,20 +58,13 @@
     <div id="status"></div>
 
     <div class="nav-menu">
-        <a href="index.html" class="nav-item">
-            <i>⭐</i> Tích điểm
-        </a>
-        <a href="doi-qua.html" class="nav-item active">
-            <i>🎁</i> Đổi quà
-        </a>
-        <a href="vong-quay.html" class="nav-item">
-            <i>🎡</i> Quay thưởng
-        </a>
+        <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
+        <a href="doi-qua.html" class="nav-item active"><i>🎁</i> Đổi quà</a>
+        <a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
     </div>
 </div>
 
 <script>
-    // GIỮ NGUYÊN TOÀN BỘ LOGIC CŨ
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
     let currentPoints = 0; 
@@ -83,28 +72,53 @@
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
-        const savedPhone = localStorage.getItem('userPhone') || localStorage.getItem('didi_customer_phone');
+        // Ưu tiên lấy SĐT đã từng tích điểm thành công từ LocalStorage
+        const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
+
         if (savedPhone) {
             document.getElementById('phone').value = savedPhone;
-            checkPointRealtime(); 
+            // Kích hoạt quy trình tự động
+            autoProcess(savedPhone);
         }
     };
+
+    // Hàm quy trình tự động: Kiểm tra điểm -> Nếu đủ thì tự Đổi
+    async function autoProcess(phone) {
+        const display = document.getElementById('pointDisplay');
+        const statusDiv = document.getElementById('status');
+        
+        display.innerHTML = "⏳ Đang nhận diện khách hàng...";
+        
+        try {
+            const res = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+            const points = await res.text();
+            currentPoints = parseFloat(points) || 0;
+            
+            display.innerHTML = `<div class="point-box">Chào bạn! Bạn đang có: <strong>${currentPoints}</strong> lượt</div>`;
+
+            if (currentPoints >= minPoints) {
+                statusDiv.innerHTML = "<div style='color: #f57f17; font-size: 14px;'>✨ Đang tự động đổi quà cho bạn...</div>";
+                // Đợi 1.2 giây để khách kịp thấy số điểm rồi tự bấm đổi
+                setTimeout(() => {
+                    handleRedeem();
+                }, 1200);
+            } else {
+                statusDiv.innerHTML = `<div style='color: #8d6e63; font-size: 14px;'>Bạn chưa đủ điểm đổi quà tự động.<br>(Thiếu ${(minPoints - currentPoints).toFixed(1)} điểm)</div>`;
+            }
+        } catch (err) {
+            display.innerHTML = "❌ Lỗi kết nối dữ liệu";
+        }
+    }
 
     function checkPointRealtime() {
         const phone = document.getElementById('phone').value.trim();
         const display = document.getElementById('pointDisplay');
-        
         if (phone.length >= 10) {
-            display.innerHTML = "⏳ Đang kiểm tra...";
             fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
                 .then(res => res.text())
                 .then(points => {
-                    // CẬP NHẬT: Dùng parseFloat để nhận số thập phân (ví dụ 0.5)
                     currentPoints = parseFloat(points) || 0;
                     display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${currentPoints}</strong> lượt tích lũy</div>`;
-                })
-                .catch(err => {
-                    display.innerHTML = "❌ Lỗi tải dữ liệu";
                 });
         }
     }
@@ -115,7 +129,7 @@
         const btn = document.getElementById('btnRedeem');
 
         if (currentPoints < minPoints) {
-            statusDiv.innerHTML = `<div class='error'>❌ KHÔNG ĐỦ ĐIỂM<br>Cần ${minPoints} điểm (Hiện có: ${currentPoints})</div>`;
+            statusDiv.innerHTML = `<div class='error'>❌ KHÔNG ĐỦ ĐIỂM<br>Cần ${minPoints} (Hiện có: ${currentPoints})</div>`;
             return;
         }
 
@@ -128,21 +142,20 @@
         .then(res => res.text())
         .then(result => {
             if (result === "SUCCESS") {
-                statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời nhận quà</div>";
+                statusDiv.innerHTML = "<div class='success'>✅ ĐỔI THÀNH CÔNG!<br>Mời bạn nhận quà tại quầy</div>";
                 btn.style.display = "none";
-                localStorage.setItem('userPhone', phone);
-                checkPointRealtime(); 
+                localStorage.setItem('didi_customer_phone', phone);
+                // Cập nhật lại điểm hiển thị
+                setTimeout(() => checkPointRealtime(), 2000);
             } else {
-                statusDiv.innerHTML = `<div class='error'>❌ THẤT BẠI: KHÔNG ĐỦ ${minPoints} ĐIỂM</div>`;
+                statusDiv.innerHTML = `<div class='error'>❌ THẤT BẠI: KIỂM TRA LẠI ĐIỂM</div>`;
                 btn.disabled = false;
                 btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
-                checkPointRealtime();
             }
         })
         .catch(error => {
             statusDiv.innerHTML = `<div class='error'>❌ LỖI KẾT NỐI: Vui lòng thử lại</div>`;
             btn.disabled = false;
-            btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
         });
     }
 </script>
