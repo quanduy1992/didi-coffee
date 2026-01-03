@@ -26,14 +26,16 @@
         .nav-menu { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 20px; border-top: 1px dashed #795548; padding-top: 15px; }
         .nav-item { background-color: #efebe9; color: #5d4037; padding: 10px 5px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #d7ccc8; }
         .nav-item.active { background-color: #795548; color: white; }
-        
-        /* Cố định icon thẳng đứng */
         .nav-item i { font-style: normal !important; font-size: 18px; margin-bottom: 2px; display: inline-block; }
     </style>
 </head>
 <body>
-    <audio id="spinSound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/2005/2005-preview.mp3" type="audio/mpeg"></audio>
-    <audio id="winSound" preload="auto"><source src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" type="audio/mpeg"></audio>
+    <audio id="spinSound" loop preload="auto">
+        <source src="https://www.soundjay.com/misc/sounds/wooden-rattle-1.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" type="audio/mpeg">
+    </audio>
 
     <div class="container">
         <h2>🎡 VÒNG QUAY DI DI</h2>
@@ -101,17 +103,12 @@
 
         window.onload = function() {
             drawWheel();
-            
-            // KHÔI PHỤC TÍNH NĂNG TỰ ĐIỀN SỐ ĐIỆN THOẠI
             const urlParams = new URLSearchParams(window.location.search);
             const phoneFromUrl = urlParams.get('phone');
             const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
             
-            if (phoneFromUrl) {
-                document.getElementById('phone').value = phoneFromUrl;
-            } else if (savedPhone) {
-                document.getElementById('phone').value = savedPhone;
-            }
+            if (phoneFromUrl) document.getElementById('phone').value = phoneFromUrl;
+            else if (savedPhone) document.getElementById('phone').value = savedPhone;
             
             if (typeof CONFIG !== 'undefined') {
                 document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
@@ -126,7 +123,7 @@
 
             if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
             
-            // Kích hoạt âm thanh (bypass autoplay)
+            // Kích hoạt âm thanh (quan trọng cho Zalo/Chrome)
             spinAudio.play().then(() => spinAudio.pause()).catch(() => {});
             winAudio.play().then(() => winAudio.pause()).catch(() => {});
 
@@ -139,9 +136,9 @@
                 const currentPoints = parseFloat(await response.text()) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
-                    // Lưu lại số điện thoại cho lần sau
                     localStorage.setItem('didi_customer_phone', phone);
                     
+                    // Phát tiếng tạch tạch của vòng quay
                     spinAudio.currentTime = 0;
                     spinAudio.play();
 
@@ -162,14 +159,26 @@
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
                     setTimeout(() => {
-                        spinAudio.pause();
+                        spinAudio.pause(); // Dừng tiếng quay
                         fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
                         resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${giftName}</span>`;
                         
                         if (giftName !== "Chúc May Mắn") {
+                            // Phát nhạc pháo hoa và bắn confetti
                             winAudio.currentTime = 0;
                             winAudio.play();
-                            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+                            
+                            // Bắn pháo hoa nhiều đợt
+                            let duration = 3 * 1000;
+                            let animationEnd = Date.now() + duration;
+                            let defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+                            let interval = setInterval(function() {
+                                let timeLeft = animationEnd - Date.now();
+                                if (timeLeft <= 0) return clearInterval(interval);
+                                let particleCount = 50 * (timeLeft / duration);
+                                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+                            }, 250);
                         }
                         btn.disabled = false;
                     }, 4000);
