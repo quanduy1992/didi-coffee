@@ -136,6 +136,8 @@
         
         // Lấy số điểm cộng từ config, nếu không có thì mặc định là 1
         const pointsToAdd = (typeof CONFIG !== 'undefined' && CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
+// Thêm dòng này ngay bên dưới để đảm bảo nó là số thực:
+const finalPoints = parseFloat(pointsToAdd);
 
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
