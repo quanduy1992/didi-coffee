@@ -4,18 +4,48 @@
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        body { font-family: 'Arial', sans-serif; text-align: center; background: #fdf5e6; margin: 0; padding: 20px; display: flex; justify-content: center; }
-        .container { max-width: 400px; width: 100%; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; }
+        body { font-family: 'Segoe UI', 'Arial', sans-serif; text-align: center; background: #fdf5e6; margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; align-items: center; }
+        .container { max-width: 400px; width: 100%; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; box-sizing: border-box; }
         h2 { color: #6f4e37; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         p { color: #888; font-size: 14px; margin-bottom: 20px; }
-        #wheel-container { position: relative; width: 300px; height: 300px; margin: 0 auto 25px; }
+        #wheel-container { position: relative; width: 280px; height: 280px; margin: 0 auto 25px; }
         #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #6f4e37; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); }
         #pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #e74c3c; z-index: 10; }
         .controls { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        input { padding: 14px; width: 90%; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
-        #spinBtn { padding: 15px; background: #6f4e37; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 90%; font-size: 16px; }
+        input { padding: 14px; width: 95%; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
+        #spinBtn { padding: 15px; background: #6f4e37; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 95%; font-size: 16px; transition: 0.3s; }
         #spinBtn:disabled { background: #ccc; cursor: not-allowed; }
-        #result { margin-top: 20px; font-weight: bold; font-size: 18px; min-height: 24px; line-height: 1.5; }
+        #spinBtn:active { transform: scale(0.98); }
+        #result { margin-top: 15px; font-weight: bold; font-size: 16px; min-height: 24px; line-height: 1.5; }
+
+        /* --- PHẦN MENU ĐIỀU HƯỚNG ĐỒNG BỘ --- */
+        .nav-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 20px;
+            border-top: 1px dashed #795548;
+            padding-top: 15px;
+        }
+        .nav-item {
+            background-color: #efebe9;
+            color: #5d4037;
+            padding: 10px 5px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d7ccc8;
+        }
+        .nav-item.active {
+            background-color: #795548;
+            color: white;
+        }
+        .nav-item i { font-style: normal; font-size: 18px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -33,13 +63,23 @@
             <button id="spinBtn" onclick="checkAndSpin()">QUAY NGAY</button>
         </div>
         <div id="result"></div>
+
+        <div class="nav-menu">
+            <a href="index.html" class="nav-item">
+                <i>⭐</i> Tích điểm
+            </a>
+            <a href="doi-qua.html" class="nav-item">
+                <i>🎁</i> Đổi quà
+            </a>
+            <a href="vong-quay.html" class="nav-item active">
+                <i>🎡</i> Quay thưởng
+            </a>
+        </div>
     </div>
 
     <script src="config.js"></script>
-
     <script>
-        // --- CẤU HÌNH TỶ LỆ TRÚNG THƯỞNG ---
-        // Tổng weight không nhất thiết phải là 100. Số càng lớn tỉ lệ ra càng cao.
+        // --- GIỮ NGUYÊN TOÀN BỘ LOGIC CŨ CỦA BẠN ---
         const GIFT_DATA = [
             { name: "Giảm 1k", weight: 60 },  
             { name: "Miễn phí", weight: 10 }, 
@@ -47,7 +87,6 @@
             { name: "May Mắn", weight: 25 }   
         ];
 
-        // Danh sách hiển thị trên mặt vòng quay (Phải khớp với số lượng màu)
         const GIFTS = ["Giảm 1k", "Miễn phí", "Tặng 1 Ly", "May Mắn", "Giảm 1k", "Miễn phí", "Tặng 1 Ly", "May Mắn"];
         const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#9b59b6"];
         let currentRotation = 0;
@@ -82,7 +121,7 @@
         window.onload = function() {
             const urlParams = new URLSearchParams(window.location.search);
             const phoneFromUrl = urlParams.get('phone');
-            const savedPhone = localStorage.getItem('didi_customer_phone');
+            const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
             
             if (phoneFromUrl) { document.getElementById('phone').value = phoneFromUrl; } 
             else if (savedPhone) { document.getElementById('phone').value = savedPhone; }
@@ -108,14 +147,11 @@
             resDiv.innerText = "⏳ Đang kiểm tra điểm...";
 
             try {
-                // 1. Kiểm tra điểm từ máy chủ
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
                 const currentPoints = parseInt(await response.text()) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
                     resDiv.innerText = "🎡 Đang quay...";
-
-                    // --- LOGIC CHỌN QUÀ THEO TRỌNG SỐ ---
                     const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                     let random = Math.random() * totalWeight;
                     let selectedGiftName = GIFT_DATA[0].name;
@@ -128,18 +164,14 @@
                         random -= item.weight;
                     }
 
-                    // Tìm các vị trí của món quà này trên vòng quay
                     const indexes = [];
                     GIFTS.forEach((name, idx) => { if (name === selectedGiftName) indexes.push(idx); });
                     const targetIndex = indexes[Math.floor(Math.random() * indexes.length)];
 
-                    // --- TÍNH TOÁN GÓC QUAY ---
                     const arc = 360 / GIFTS.length;
-                    // Tính góc dừng để mũi tên (ở đỉnh 12h) chỉ đúng vào giữa ô
                     const targetDegree = 360 - (targetIndex * arc + arc / 2);
-                    const extraSpins = 1440; // Quay ít nhất 4 vòng (4 * 360)
+                    const extraSpins = 1440; 
                     
-                    // Tính toán vòng quay mới cộng dồn vào currentRotation
                     const currentActualRotation = currentRotation % 360;
                     const rotationNeeded = (targetDegree - currentActualRotation + 360) % 360;
                     currentRotation += extraSpins + rotationNeeded;
@@ -147,9 +179,7 @@
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
                     setTimeout(() => {
-                        // 2. Gửi kết quả trừ điểm về máy chủ
                         fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(selectedGiftName)}&points=${CONFIG.SPIN_POINTS}`);
-
                         resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${selectedGiftName}</span>`;
                         btn.disabled = false;
                         localStorage.setItem('didi_customer_phone', phone);

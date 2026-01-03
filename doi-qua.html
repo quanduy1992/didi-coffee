@@ -6,16 +6,47 @@
     <title>Di Di Coffee - Đổi Thưởng</title>
     <script src="config.js"></script> 
     <style>
-        body { font-family: 'Arial', sans-serif; background-color: #f4f1ea; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 320px; text-align: center; border: 2px solid #795548; }
+        body { font-family: 'Segoe UI', 'Arial', sans-serif; background-color: #f4f1ea; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 340px; text-align: center; border: 2px solid #795548; box-sizing: border-box; }
         h2 { color: #795548; margin: 0 0 10px 0; }
-        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 18px; text-align: center; background: #f9f9f9; }
-        button { width: 100%; padding: 15px; background-color: #795548; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; }
+        input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 18px; text-align: center; background: #f9f9f9; outline: none; }
+        button { width: 100%; padding: 15px; background-color: #795548; color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         button:disabled { background-color: #ccc; }
+        button:active { transform: scale(0.98); }
+
         #status { margin-top: 20px; min-height: 60px; font-weight: bold; }
         .point-box { background: #fff8e1; color: #f57f17; padding: 10px; border-radius: 8px; border: 1px dashed #f57f17; margin-bottom: 10px; font-size: 16px; }
         .success { color: #2e7d32; background: #e8f5e9; padding: 15px; border-radius: 10px; border: 2px solid #2e7d32; }
         .error { color: #c62828; background: #ffebee; padding: 15px; border-radius: 10px; border: 2px solid #c62828; }
+
+        /* --- PHẦN MENU ĐIỀU HƯỚNG GIỐNG INDEX --- */
+        .nav-menu {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 8px;
+            margin-top: 20px;
+            border-top: 1px dashed #795548;
+            padding-top: 15px;
+        }
+        .nav-item {
+            background-color: #efebe9;
+            color: #5d4037;
+            padding: 10px 5px;
+            border-radius: 8px;
+            font-size: 12px;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #d7ccc8;
+        }
+        .nav-item.active {
+            background-color: #795548;
+            color: white;
+        }
+        .nav-item i { font-style: normal; font-size: 18px; margin-bottom: 4px; }
     </style>
 </head>
 <body>
@@ -29,9 +60,22 @@
     <button id="btnRedeem" onclick="handleRedeem()">XÁC NHẬN ĐỔI QUÀ</button>
 
     <div id="status"></div>
+
+    <div class="nav-menu">
+        <a href="index.html" class="nav-item">
+            <i>⭐</i> Tích điểm
+        </a>
+        <a href="doi-qua.html" class="nav-item active">
+            <i>🎁</i> Đổi quà
+        </a>
+        <a href="vong-quay.html" class="nav-item">
+            <i>🎡</i> Quay thưởng
+        </a>
+    </div>
 </div>
 
 <script>
+    // GIỮ NGUYÊN TOÀN BỘ LOGIC CŨ CỦA BẠN
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
     let currentPoints = 0; 
@@ -39,7 +83,7 @@
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
-        const savedPhone = localStorage.getItem('userPhone');
+        const savedPhone = localStorage.getItem('userPhone') || localStorage.getItem('didi_customer_phone');
         if (savedPhone) {
             document.getElementById('phone').value = savedPhone;
             checkPointRealtime(); 
@@ -74,7 +118,6 @@
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
-        // SỬA TẠI ĐÂY: Định nghĩa finalURL và thêm tham số points từ CONFIG
         const finalURL = `${CONFIG.SCRIPT_URL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent("Tặng 1 Ly")}&points=${CONFIG.REDEEM_POINTS}`;
 
         fetch(finalURL)
