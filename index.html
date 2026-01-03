@@ -135,7 +135,10 @@
         const scriptURL = CONFIG.SCRIPT_URL; 
         
         // Lấy số điểm cộng từ config, nếu không có thì mặc định là 1
-        const pointsToAdd = (typeof CONFIG !== 'undefined' && CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
+        // Đảm bảo dòng này có add_points
+const pointsToAdd = (typeof CONFIG !== 'undefined' && CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
+
+scriptTag.src = `${scriptURL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
 // Thêm dòng này ngay bên dưới để đảm bảo nó là số thực:
 const finalPoints = parseFloat(pointsToAdd);
 
