@@ -75,7 +75,7 @@
 </div>
 
 <script>
-    // GIỮ NGUYÊN TOÀN BỘ LOGIC CŨ CỦA BẠN
+    // GIỮ NGUYÊN TOÀN BỘ LOGIC CŨ
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
     let currentPoints = 0; 
@@ -99,8 +99,12 @@
             fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
                 .then(res => res.text())
                 .then(points => {
-                    currentPoints = parseInt(points) || 0;
+                    // CẬP NHẬT: Dùng parseFloat để nhận số thập phân (ví dụ 0.5)
+                    currentPoints = parseFloat(points) || 0;
                     display.innerHTML = `<div class="point-box">Bạn đang có: <strong>${currentPoints}</strong> lượt tích lũy</div>`;
+                })
+                .catch(err => {
+                    display.innerHTML = "❌ Lỗi tải dữ liệu";
                 });
         }
     }
