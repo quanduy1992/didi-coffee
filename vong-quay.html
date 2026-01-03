@@ -31,6 +31,9 @@
     </style>
 </head>
 <body>
+    <audio id="spinSound" src="https://www.soundjay.com/misc/sounds/wooden-rattle-1.mp3" preload="auto"></audio>
+    <audio id="winSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
+
     <div class="container">
         <h2>🎡 VÒNG QUAY DI DI</h2>
         <p id="sub-title">Đang tải cấu hình...</p>
@@ -55,7 +58,6 @@
 
     <script src="config.js"></script>
     <script>
-        // ĐÃ SỬA: Tên quà tặng phải khớp chính xác tuyệt đối giữa 2 mảng (kể cả hoa/thường)
         const GIFTS = ["Tặng 1 ly", "Giảm 2k", "Tặng 2 ly", "Chúc May Mắn", "Tặng 4 Ly", "Tặng 3 ly", "Giảm 1k", "Chúc May Mắn"];
         const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#9b59b6"];
         
@@ -71,6 +73,8 @@
         ];
 
         let currentRotation = 0;
+        const spinSound = document.getElementById('spinSound');
+        const winSound = document.getElementById('winSound');
 
         function drawWheel() {
             const canvas = document.getElementById('wheel');
@@ -112,7 +116,6 @@
             }
         };
 
-        // Hàm bắn pháo hoa
         function fireConfetti() {
             confetti({
                 particleCount: 150,
@@ -139,24 +142,24 @@
                 const currentPoints = parseFloat(await response.text()) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
+                    // BẮT ĐẦU QUAY: Chạy âm thanh quay
+                    spinSound.currentTime = 0;
+                    spinSound.play().catch(e => console.log("Audio play blocked"));
+
                     resDiv.innerText = "🎡 Đang quay...";
-                    
-                    // 1. Tính toán trúng giải dựa trên trọng số
                     const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                     let random = Math.random() * totalWeight;
                     let selectedGiftIndex = 0;
 
                     for (let i = 0; i < GIFT_DATA.length; i++) {
                         if (random < GIFT_DATA[i].weight) {
-                            selectedGiftIndex = i; // Lấy index trực tiếp để quay chính xác
+                            selectedGiftIndex = i;
                             break;
                         }
                         random -= GIFT_DATA[i].weight;
                     }
 
                     const selectedGiftName = GIFT_DATA[selectedGiftIndex].name;
-
-                    // 2. Tính toán góc quay (Khớp chính xác với index đã chọn)
                     const arc = 360 / GIFTS.length;
                     const targetDegree = 360 - (selectedGiftIndex * arc + arc / 2);
                     const extraSpins = 1440; 
@@ -169,14 +172,15 @@
                     wheelElement.style.transform = `rotate(${currentRotation}deg)`;
 
                     setTimeout(() => {
-                        // Gửi dữ liệu về Google Sheets
+                        // DỪNG QUAY: Tắt âm thanh quay
+                        spinSound.pause();
+
                         fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(selectedGiftName)}&points=${CONFIG.SPIN_POINTS}`);
-                        
-                        // Hiển thị kết quả
                         resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${selectedGiftName}</span>`;
                         
-                        // BẮN PHÁO HOA nếu không phải ô "Chúc May Mắn"
+                        // KẾT THÚC: Pháo hoa + Âm thanh thắng giải
                         if (selectedGiftName !== "Chúc May Mắn") {
+                            winSound.play().catch(e => console.log("Audio play blocked"));
                             fireConfetti();
                         }
                         
