@@ -66,14 +66,12 @@
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
 
-        // Điền dữ liệu cũ (nếu có)
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
-        // TỰ ĐỘNG KÍCH HOẠT NẾU ĐÃ CÓ ĐỦ THÔNG TIN
+        // TỰ ĐỘNG KÍCH HOẠT CHO KHÁCH CŨ
         if (codeFromURL && savedName && savedPhone) {
-            console.log("Phát hiện khách quen, đang tự động tích điểm...");
             handleVerify();
         }
     };
@@ -93,16 +91,10 @@
             return;
         }
 
-        if (typeof CONFIG === 'undefined' || !CONFIG.SCRIPT_URL) {
-            alert("Lỗi: Không tìm thấy link SCRIPT_URL!");
-            return;
-        }
-
-        // Lưu thông tin khách để lần sau tự động tích điểm
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
 
-        resultDiv.innerHTML = "⌛ Đang xử lý tự động...";
+        resultDiv.innerHTML = "⌛ Đang xử lý...";
         resultDiv.className = "";
         pointBox.style.display = "none";
         btnSubmit.disabled = true;
@@ -112,6 +104,11 @@
         window.googleCallback = function(resData) {
             btnSubmit.disabled = false;
             if (resData.status === "SUCCESS") {
+                // HIỆU ỨNG RUNG KHI THÀNH CÔNG (Rung 2 nhịp)
+                if (navigator.vibrate) {
+                    navigator.vibrate([100, 50, 100]);
+                }
+
                 resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
                 currentPoints.innerText = resData.points; 
@@ -135,7 +132,7 @@
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
         
         scriptTag.onerror = function() {
-            resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
+            resultDiv.innerHTML = "❌ Lỗi kết nối!";
             resultDiv.className = "error";
             btnSubmit.disabled = false;
         };
