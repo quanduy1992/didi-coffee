@@ -9,50 +9,40 @@
         .container { max-width: 400px; width: 100%; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; box-sizing: border-box; }
         h2 { color: #6f4e37; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         p { color: #888; font-size: 14px; margin-bottom: 20px; }
-        
-        #wheel-container { position: relative; width: 280px; height: 280px; margin: 0 auto 25px; background: #eee; border-radius: 50%; }
-        #wheel { 
-            width: 100%; height: 100%; border-radius: 50%; border: 8px solid #6f4e37; 
-            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
-            -webkit-transition: -webkit-transform 4s cubic-bezier(0.15, 0, 0.15, 1);
-            display: block;
-        }
-        
+        #wheel-container { position: relative; width: 280px; height: 280px; margin: 0 auto 25px; }
+        #wheel { width: 100%; height: 100%; border-radius: 50%; border: 8px solid #6f4e37; transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); -webkit-transition: -webkit-transform 4s cubic-bezier(0.15, 0, 0.15, 1); display: block; }
         #pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #e74c3c; z-index: 10; }
-        
         .controls { display: flex; flex-direction: column; gap: 10px; align-items: center; }
         input { padding: 14px; width: 95%; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
         #spinBtn { padding: 15px; background: #6f4e37; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 95%; font-size: 16px; }
         #spinBtn:disabled { background: #ccc; }
         #result { margin-top: 15px; font-weight: bold; font-size: 16px; min-height: 24px; }
-
         .nav-menu { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 20px; border-top: 1px dashed #795548; padding-top: 15px; }
         .nav-item { background-color: #efebe9; color: #5d4037; padding: 10px 5px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #d7ccc8; }
         .nav-item.active { background-color: #795548; color: white; }
-        
-        /* FIX ICON THẲNG ĐỨNG */
         .nav-item i { font-style: normal !important; font-size: 20px; margin-bottom: 4px; display: inline-block; }
     </style>
 </head>
 <body>
-    <audio id="spinSound" src="https://www.soundjay.com/misc/sounds/wooden-rattle-1.mp3" preload="auto"></audio>
-    <audio id="winSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" preload="auto"></audio>
+    <audio id="spinSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/2005/2005-preview.mp3" type="audio/mpeg">
+    </audio>
+    <audio id="winSound" preload="auto">
+        <source src="https://assets.mixkit.co/active_storage/sfx/1435/1435-preview.mp3" type="audio/mpeg">
+    </audio>
 
     <div class="container">
         <h2>🎡 VÒNG QUAY DI DI</h2>
-        <p id="sub-title">Đang tải...</p>
-        
+        <p id="sub-title">Đang tải cấu hình...</p>
         <div id="wheel-container">
             <div id="pointer"></div>
             <canvas id="wheel" width="300" height="300"></canvas>
         </div>
-
         <div class="controls">
             <input type="tel" id="phone" placeholder="Nhập số điện thoại (10 số)">
             <button id="spinBtn" onclick="checkAndSpin()">QUAY NGAY</button>
         </div>
         <div id="result"></div>
-
         <div class="nav-menu">
             <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
             <a href="doi-qua.html" class="nav-item"><i>🎁</i> Đổi quà</a>
@@ -72,6 +62,8 @@
         ];
 
         let currentRotation = 0;
+        const spinAudio = document.getElementById('spinSound');
+        const winAudio = document.getElementById('winSound');
 
         function drawWheel() {
             const canvas = document.getElementById('wheel');
@@ -100,24 +92,24 @@
             ctx.restore();
         }
 
-        // Quan trọng: Gọi vẽ vòng quay nhiều lần để chống lỗi "trắng tinh" trên Chrome
-        window.addEventListener('load', () => {
+        window.onload = () => {
             drawWheel();
-            setTimeout(drawWheel, 500); 
-            
             if (typeof CONFIG !== 'undefined') {
                 document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
             }
-        });
+        };
 
         async function checkAndSpin() {
-            const phoneInput = document.getElementById('phone');
+            const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, "");
             const btn = document.getElementById('spinBtn');
             const resDiv = document.getElementById('result');
-            const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
 
             if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
-            
+
+            // MẸO: Kích hoạt âm thanh ngay khi bấm nút (vượt rào cản Autoplay)
+            spinAudio.play().then(() => spinAudio.pause()).catch(() => {});
+            winAudio.play().then(() => winAudio.pause()).catch(() => {});
+
             btn.disabled = true;
             resDiv.style.color = "#27ae60";
             resDiv.innerText = "⏳ Đang kiểm tra...";
@@ -127,9 +119,11 @@
                 const currentPoints = parseFloat(await response.text()) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
-                    document.getElementById('spinSound').play().catch(() => {});
+                    // Phát âm thanh quay
+                    spinAudio.currentTime = 0;
+                    spinAudio.play();
+
                     resDiv.innerText = "🎡 Đang quay...";
-                    
                     const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                     let random = Math.random() * totalWeight;
                     let selectedIndex = 0;
@@ -146,10 +140,13 @@
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
                     setTimeout(() => {
+                        spinAudio.pause();
                         fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
                         resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${giftName}</span>`;
+                        
                         if (giftName !== "Chúc May Mắn") {
-                            document.getElementById('winSound').play().catch(() => {});
+                            winAudio.currentTime = 0;
+                            winAudio.play();
                             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
                         }
                         btn.disabled = false;
