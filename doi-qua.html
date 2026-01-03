@@ -20,11 +20,18 @@
         .time-stamp { font-size: 14px; color: #1b5e20; margin-top: 8px; font-weight: normal; border-top: 1px solid #c8e6c9; padding-top: 8px; }
         
         .btn-confirm { background-color: #2e7d32; margin-top: 15px; box-shadow: 0 4px 10px rgba(46, 125, 50, 0.3); }
-        .btn-confirm:active { background-color: #1b5e20; }
 
         .nav-menu { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 20px; border-top: 1px dashed #795548; padding-top: 15px; }
         .nav-item { background-color: #efebe9; color: #5d4037; padding: 10px 5px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold; display: flex; flex-direction: column; align-items: center; border: 1px solid #d7ccc8; }
         .nav-item.active { background-color: #795548; color: white; }
+
+        /* CHỈNH ICON THẲNG ĐỨNG - KHÔNG BỊ NGHIÊNG */
+        .nav-item i { 
+            font-style: normal !important; 
+            font-size: 18px; 
+            margin-bottom: 2px; 
+            display: inline-block;
+        }
     </style>
 </head>
 <body>
@@ -54,16 +61,16 @@
 
     window.onload = function() {
         validateSession(); 
+        const urlParams = new URLSearchParams(window.location.search);
+        const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
-        if (savedPhone) {
-            document.getElementById('phone').value = savedPhone;
-            autoProcess(savedPhone);
+        
+        const finalPhone = phoneFromUrl || savedPhone;
+        if (finalPhone) {
+            document.getElementById('phone').value = finalPhone;
+            autoProcess(finalPhone);
         }
     };
-
-    document.addEventListener("visibilitychange", function() {
-        if (document.visibilityState === 'visible') validateSession();
-    });
 
     function validateSession() {
         const lastRedeem = localStorage.getItem('last_redeem_timestamp');
@@ -87,7 +94,7 @@
             display.innerHTML = `<div class="point-box">Chào bạn! Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
 
             if (currentPoints >= minPoints) {
-                setTimeout(() => handleRedeem(), 1000);
+                setTimeout(() => handleRedeem(), 800);
             } else {
                 btn.innerText = "CHƯA ĐỦ ĐIỂM";
             }
@@ -117,14 +124,22 @@
         const phone = document.getElementById('phone').value.trim();
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
+        const display = document.getElementById('pointDisplay');
 
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
         fetch(`${CONFIG.SCRIPT_URL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent("Tặng 1 Ly")}&points=${CONFIG.REDEEM_POINTS}`)
         .then(res => res.text())
-        .then(result => {
+        .then(async result => {
             if (result === "SUCCESS") {
+                // LOAD LẠI ĐIỂM NGAY LẬP TỨC TRƯỚC KHI HIỆN THÀNH CÔNG
+                try {
+                    const resPoint = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                    const newPoints = await resPoint.text();
+                    display.innerHTML = `<div class="point-box">Chào bạn! Hiện có: <strong>${newPoints}</strong> điểm</div>`;
+                } catch (e) {}
+
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN');
                 
@@ -139,23 +154,16 @@
                 localStorage.setItem('last_redeem_timestamp', now.getTime());
                 localStorage.setItem('didi_customer_phone', phone);
             } else {
-                statusDiv.innerHTML = `<div class='error'>❌ THẤT BẠI</div>`;
+                statusDiv.innerHTML = `<div class='error' style='color:red;'>❌ THẤT BẠI</div>`;
                 btn.disabled = false;
+                btn.innerText = "THỬ LẠI";
             }
         });
     }
 
-    // CẬP NHẬT: Bỏ alert, đóng tab hoặc chuyển hướng im lặng
     function confirmAndClose() {
         localStorage.removeItem('last_redeem_timestamp');
-        
-        // Cố gắng đóng tab
-        window.close();
-        
-        // Nếu sau 200ms vẫn chưa đóng được tab (do trình duyệt chặn), chuyển hướng im lặng
-        setTimeout(() => {
-            window.location.href = "index.html";
-        }, 200);
+        window.location.href = "index.html";
     }
 
     function resetUI() {
