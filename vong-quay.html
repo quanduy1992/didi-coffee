@@ -18,7 +18,6 @@
         #spinBtn:active { transform: scale(0.98); }
         #result { margin-top: 15px; font-weight: bold; font-size: 16px; min-height: 24px; line-height: 1.5; }
 
-        /* --- PHẦN MENU ĐIỀU HƯỚNG ĐỒNG BỘ --- */
         .nav-menu {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -65,21 +64,14 @@
         <div id="result"></div>
 
         <div class="nav-menu">
-            <a href="index.html" class="nav-item">
-                <i>⭐</i> Tích điểm
-            </a>
-            <a href="doi-qua.html" class="nav-item">
-                <i>🎁</i> Đổi quà
-            </a>
-            <a href="vong-quay.html" class="nav-item active">
-                <i>🎡</i> Quay thưởng
-            </a>
+            <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
+            <a href="doi-qua.html" class="nav-item"><i>🎁</i> Đổi quà</a>
+            <a href="vong-quay.html" class="nav-item active"><i>🎡</i> Quay thưởng</a>
         </div>
     </div>
 
     <script src="config.js"></script>
     <script>
-        // --- GIỮ NGUYÊN TOÀN BỘ LOGIC CŨ CỦA BẠN ---
         const GIFT_DATA = [
             { name: "Giảm 1k", weight: 60 },  
             { name: "Miễn phí", weight: 10 }, 
@@ -122,10 +114,8 @@
             const urlParams = new URLSearchParams(window.location.search);
             const phoneFromUrl = urlParams.get('phone');
             const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
-            
             if (phoneFromUrl) { document.getElementById('phone').value = phoneFromUrl; } 
             else if (savedPhone) { document.getElementById('phone').value = savedPhone; }
-            
             if (typeof CONFIG !== 'undefined') {
                 document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
                 drawWheel();
@@ -148,7 +138,9 @@
 
             try {
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-                const currentPoints = parseInt(await response.text()) || 0;
+                const responseText = await response.text();
+                // CẬP NHẬT: Dùng parseFloat để nhận được điểm lẻ 0.5
+                const currentPoints = parseFloat(responseText) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
                     resDiv.innerText = "🎡 Đang quay...";
@@ -171,7 +163,6 @@
                     const arc = 360 / GIFTS.length;
                     const targetDegree = 360 - (targetIndex * arc + arc / 2);
                     const extraSpins = 1440; 
-                    
                     const currentActualRotation = currentRotation % 360;
                     const rotationNeeded = (targetDegree - currentActualRotation + 360) % 360;
                     currentRotation += extraSpins + rotationNeeded;
