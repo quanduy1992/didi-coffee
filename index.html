@@ -30,7 +30,7 @@
         }
         .point-number { font-size: 30px; color: #795548; display: block; font-weight: bold; }
         
-        /* --- PHẦN MỚI THÊM: Menu điều hướng --- */
+        /* --- Menu điều hướng --- */
         .nav-menu {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -58,7 +58,6 @@
             color: white;
         }
         .nav-item i { font-style: normal; font-size: 18px; margin-bottom: 4px; }
-        /* -------------------------------------- */
 
         .error { color: #d32f2f; }
         .success { color: #2e7d32; }
@@ -119,7 +118,7 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
     };
 
-    // 2. Hàm xử lý tích điểm (Dựa trên code gốc của bạn)
+    // 2. Hàm xử lý tích điểm
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -134,6 +133,9 @@
             return;
         }
         const scriptURL = CONFIG.SCRIPT_URL; 
+        
+        // Lấy số điểm cộng từ config, nếu không có thì mặc định là 1
+        const pointsToAdd = (typeof CONFIG !== 'undefined' && CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
 
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
@@ -173,7 +175,8 @@
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        scriptTag.src = `${scriptURL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&callback=googleCallback&t=${new Date().getTime()}`;
+        // CẬP NHẬT: Thêm tham số &add_points để gửi số điểm cần cộng lên Server
+        scriptTag.src = `${scriptURL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
         
         scriptTag.onerror = function() {
             resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
