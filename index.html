@@ -12,53 +12,14 @@
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; font-size: 15px; outline: none; }
         button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
         button:active { transform: scale(0.98); }
-        
         #result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
-        
-        .point-box { 
-            background: #fff8e1; 
-            padding: 20px; 
-            border-radius: 15px; 
-            margin-top: 20px; 
-            border: 2px solid #795548; 
-            display: none; 
-            animation: fadeIn 0.5s; 
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        .point-box { background: #fff8e1; padding: 20px; border-radius: 15px; margin-top: 20px; border: 2px solid #795548; display: none; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         .point-number { font-size: 30px; color: #795548; display: block; font-weight: bold; }
-        
-        /* --- Menu điều hướng --- */
-        .nav-menu {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 8px;
-            margin-top: 20px;
-            border-top: 1px dashed #795548;
-            padding-top: 15px;
-        }
-        .nav-item {
-            background-color: #efebe9;
-            color: #5d4037;
-            padding: 10px 5px;
-            border-radius: 8px;
-            font-size: 12px;
-            text-decoration: none;
-            font-weight: bold;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid #d7ccc8;
-        }
-        .nav-item.active {
-            background-color: #795548;
-            color: white;
-        }
+        .nav-menu { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 20px; border-top: 1px dashed #795548; padding-top: 15px; }
+        .nav-item { background-color: #efebe9; color: #5d4037; padding: 10px 5px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #d7ccc8; }
+        .nav-item.active { background-color: #795548; color: white; }
         .nav-item i { font-style: normal; font-size: 18px; margin-bottom: 4px; }
-
         .error { color: #d32f2f; }
         .success { color: #2e7d32; }
     </style>
@@ -66,7 +27,6 @@
 <body>
     <div class="card">
         <h2 id="shopTitle">☕ DI DI COFFEE</h2>
-        
         <div id="form-input">
             <label>Tên khách hàng:</label>
             <input type="text" id="cusName" placeholder="Nhập tên của bạn">
@@ -76,49 +36,34 @@
             <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
             <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
         </div>
-
         <div id="result"></div>
-
         <div id="pointBox" class="point-box">
             <span style="color: #5d4037;">Bạn hiện có:</span>
             <span class="point-number" id="currentPoints">0</span>
             <span style="color: #5d4037;">Điểm tích lũy</span>
         </div>
-
         <div class="nav-menu">
-            <a href="index.html" class="nav-item active">
-                <i>⭐</i> Tích điểm
-            </a>
-            <a href="doi-qua.html" class="nav-item">
-                <i>🎁</i> Đổi quà
-            </a>
-            <a href="vong-quay.html" class="nav-item">
-                <i>🎡</i> Quay thưởng
-            </a>
+            <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
+            <a href="doi-qua.html" class="nav-item"><i>🎁</i> Đổi quà</a>
+            <a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
         </div>
     </div>
 
 <script src="config.js"></script> 
 <script>
-    // 1. Khởi tạo khi trang tải xong
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
             document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
         }
-
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
-        if (codeFromURL) {
-            document.getElementById('inputCode').value = codeFromURL.toUpperCase();
-        }
-
+        if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
     };
 
-    // 2. Hàm xử lý tích điểm
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -128,33 +73,26 @@
         const currentPoints = document.getElementById('currentPoints');
         const btnSubmit = document.getElementById('btnSubmit');
 
-        if (typeof CONFIG === 'undefined' || !CONFIG.SCRIPT_URL) {
-            alert("Lỗi: Không tìm thấy link SCRIPT_URL trong config.js!");
-            return;
-        }
-        const scriptURL = CONFIG.SCRIPT_URL; 
-        
-        // Lấy số điểm cộng từ config, nếu không có thì mặc định là 1
-        // Đảm bảo dòng này có add_points
-const pointsToAdd = (typeof CONFIG !== 'undefined' && CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
-
-scriptTag.src = `${scriptURL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
-// Thêm dòng này ngay bên dưới để đảm bảo nó là số thực:
-const finalPoints = parseFloat(pointsToAdd);
-
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
             resultDiv.className = "error";
             return;
         }
 
+        if (typeof CONFIG === 'undefined' || !CONFIG.SCRIPT_URL) {
+            alert("Lỗi: Không tìm thấy link SCRIPT_URL!");
+            return;
+        }
+
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
-
         resultDiv.innerHTML = "⌛ Đang kiểm tra...";
         resultDiv.className = "";
         pointBox.style.display = "none";
         btnSubmit.disabled = true;
+
+        // Lấy điểm từ config (0.5)
+        const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
 
         window.googleCallback = function(resData) {
             btnSubmit.disabled = false;
@@ -172,7 +110,6 @@ const finalPoints = parseFloat(pointsToAdd);
             } else {
                 resultDiv.innerHTML = "❌ Mã không tồn tại!";
                 resultDiv.className = "error";
-                pointBox.style.display = "none";
             }
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
@@ -180,8 +117,8 @@ const finalPoints = parseFloat(pointsToAdd);
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        // CẬP NHẬT: Thêm tham số &add_points để gửi số điểm cần cộng lên Server
-        scriptTag.src = `${scriptURL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
+        // Gửi add_points=0.5 lên Server
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
         
         scriptTag.onerror = function() {
             resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
