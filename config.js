@@ -1,7 +1,7 @@
 // File này lưu trữ các cấu hình dùng chung cho toàn bộ hệ thống Di Di Coffee
 const CONFIG = {
     // Dán link Web App của bạn vào đây một lần duy nhất
-    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxp2ICw8kKesgaq5WNCNu97QPhWyMH8T3zHqJMxcAFiwJwfZ1-vYiED8OgI9_iS7jXy4A/exec',
+    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbz8coyEytcc7GH4EqUTr_0ln93a091e_la27zvR3umClR_l2DTuBNWkvJpn3xNW4bQiIw/exec',
     
     // Bạn có thể thêm các cấu hình khác sau này tại đây
     REDEEM_POINTS: 2,
