@@ -3,15 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Di Di Coffee - Tích Điểm</title>
+    <title>Di Di Coffee - Tích Điểm & Quà Tặng</title>
     <style>
         body { background-color: #f5eee6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; font-family: 'Segoe UI', sans-serif; }
         .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; width: 340px; }
         h2 { color: #5d4037; margin: 0 0 20px 0; }
         label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: #5d4037; font-size: 14px; }
         input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; margin-bottom: 15px; box-sizing: border-box; font-size: 15px; outline: none; }
-        button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
+        button { width: 100%; background-color: #795548; color: white; border: none; padding: 14px; border-radius: 10px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; transition: 0.3s; }
+        button:disabled { background-color: #ccc; }
+        
         #result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
+        
         .point-box { 
             background: #fff8e1; 
             padding: 20px; 
@@ -25,7 +28,24 @@
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        .point-number { font-size: 30px; color: #795548; display: block; }
+        .point-number { font-size: 30px; color: #795548; display: block; font-weight: bold; }
+        
+        /* Phần mới thêm cho Đổi quà & Quay thưởng */
+        .action-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .btn-secondary {
+            background-color: #a1887f;
+            padding: 10px;
+            font-size: 14px;
+        }
+        .btn-reward {
+            background-color: #ef6c00;
+        }
+
         .error { color: #d32f2f; }
         .success { color: #2e7d32; }
     </style>
@@ -50,6 +70,11 @@
             <span style="color: #5d4037;">Bạn hiện có:</span>
             <span class="point-number" id="currentPoints">0</span>
             <span style="color: #5d4037;">Điểm tích lũy</span>
+
+            <div class="action-group">
+                <button class="btn-secondary" onclick="handleRedeem()">🎁 ĐỔI QUÀ</button>
+                <button class="btn-secondary btn-reward" onclick="handleLuckyWheel()">🎡 QUAY THƯỞNG</button>
+            </div>
         </div>
     </div>
 
@@ -57,7 +82,6 @@
 <script>
     // 1. Khởi tạo khi trang tải xong
     window.onload = function() {
-        // Tự lấy tên quán từ config.js
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
             document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
         }
@@ -74,7 +98,7 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
     };
 
-    // 2. Hàm xử lý tích điểm
+    // 2. Hàm xử lý tích điểm (Giữ nguyên logic cũ của bạn)
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -84,7 +108,6 @@
         const currentPoints = document.getElementById('currentPoints');
         const btnSubmit = document.getElementById('btnSubmit');
 
-        // --- SỬA TẠI ĐÂY: Khớp với tên biến SCRIPT_URL trong config.js của bạn ---
         if (typeof CONFIG === 'undefined' || !CONFIG.SCRIPT_URL) {
             alert("Lỗi: Không tìm thấy link SCRIPT_URL trong config.js!");
             return;
@@ -105,14 +128,11 @@
         pointBox.style.display = "none";
         btnSubmit.disabled = true;
 
-        // Callback nhận kết quả từ Google Script
         window.googleCallback = function(resData) {
             btnSubmit.disabled = false;
-            
             if (resData.status === "SUCCESS") {
                 resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
-                // Hiển thị số điểm thực tế (đã trừ quà)
                 currentPoints.innerText = resData.points; 
                 pointBox.style.display = "block";
                 document.getElementById('inputCode').value = ""; 
@@ -126,24 +146,36 @@
                 resultDiv.className = "error";
                 pointBox.style.display = "none";
             }
-            
-            // Dọn dẹp thẻ script để tránh kẹt trang lần sau
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
 
-        // Gọi API dùng JSONP để tránh lỗi CORS
+        callApi(scriptURL, { action: "tich_diem", code, name, phone });
+    }
+
+    // 3. Hàm Đổi quà
+    function handleRedeem() {
+        alert("Tính năng Đổi quà đang được cập nhật. Vui lòng liên hệ nhân viên tại quầy!");
+        // Bạn có thể thêm logic gọi API action=doi_qua tại đây
+    }
+
+    // 4. Hàm Quay thưởng
+    function handleLuckyWheel() {
+        alert("Vòng quay may mắn sẽ mở khi bạn đủ 10 điểm!");
+        // Bạn có thể chuyển hướng sang trang quay thưởng: window.location.href = 'lucky-wheel.html';
+    }
+
+    // Hàm phụ trợ gọi API để tránh lặp code
+    function callApi(url, params) {
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        // Thêm action=tich_diem để script xử lý đúng logic
-        scriptTag.src = `${scriptURL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&callback=googleCallback&t=${new Date().getTime()}`;
-        
+        const query = Object.keys(params).map(k => `${k}=${encodeURIComponent(params[k])}`).join('&');
+        scriptTag.src = `${url}?${query}&callback=googleCallback&t=${new Date().getTime()}`;
         scriptTag.onerror = function() {
-            resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
-            resultDiv.className = "error";
-            btnSubmit.disabled = false;
+            document.getElementById('result').innerHTML = "❌ Lỗi kết nối máy chủ!";
+            document.getElementById('result').className = "error";
+            document.getElementById('btnSubmit').disabled = false;
         };
-
         document.body.appendChild(scriptTag);
     }
 </script>
