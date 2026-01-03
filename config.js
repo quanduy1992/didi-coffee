@@ -6,6 +6,6 @@ const CONFIG = {
     // Bạn có thể thêm các cấu hình khác sau này tại đây
     REDEEM_POINTS: 2,
     SPIN_POINTS: 1,
-    POINTS_PER_CODE: 0.5,
+    POINTS_PER_CODE: 2.5,
     SHOP_NAME: 'Di Di Coffee'
 };
