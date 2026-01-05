@@ -5,9 +5,8 @@
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" async></script>
     <style>
-        /* Cố định Z-index để không bị hoa mai che mất */
         #wheel-container {
             position: relative;
             width: 300px;
@@ -20,7 +19,7 @@
             transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
             border-radius: 50%;
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
-            display: block; /* Đảm bảo canvas hiện diện */
+            display: block;
         }
         #pointer {
             position: absolute;
@@ -37,13 +36,6 @@
     </style>
 </head>
 <body>
-    <audio id="spinSound" loop preload="auto">
-        <source src="https://www.soundjay.com/misc/sounds/wooden-rattle-1.mp3" type="audio/mpeg">
-    </audio>
-    <audio id="winSound" preload="auto">
-        <source src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" type="audio/mpeg">
-    </audio>
-
     <div class="card"> 
         <h2 id="shopTitle">🎡 VÒNG QUAY DI DI</h2>
         <p id="sub-title" style="color: #8d6e63; font-size: 14px; margin-top: -10px;">Đang tải cấu hình...</p>
@@ -80,8 +72,6 @@
         ];
 
         let currentRotation = 0;
-        const spinAudio = document.getElementById('spinSound');
-        const winAudio = document.getElementById('winSound');
 
         function drawWheel() {
             const canvas = document.getElementById('wheel');
@@ -118,7 +108,6 @@
             ctx.stroke();
         }
 
-        // Ưu tiên vẽ vòng quay ngay khi trang vừa đọc xong phần HTML
         document.addEventListener('DOMContentLoaded', () => {
             drawWheel();
             if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
@@ -130,7 +119,6 @@
         });
 
         async function checkAndSpin() {
-            // ... (Giữ nguyên logic hàm checkAndSpin của bạn) ...
             const phoneInput = document.getElementById('phone');
             const btn = document.getElementById('spinBtn');
             const resDiv = document.getElementById('result');
@@ -160,8 +148,7 @@
                     }
                     const giftName = GIFT_DATA[selectedIndex].name;
 
-                    spinAudio.currentTime = 0;
-                    spinAudio.play();
+                    // ĐÃ LOẠI BỎ LỆNH PHÁT ÂM THANH
                     const arc = 360 / GIFTS.length;
                     const targetDegree = 360 - (selectedIndex * arc + arc / 2);
                     currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
@@ -171,7 +158,6 @@
                     fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
 
                     setTimeout(() => {
-                        spinAudio.pause();
                         const estimatedNewPoints = currentPoints - CONFIG.SPIN_POINTS;
                         const now = new Date();
                         const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
@@ -185,9 +171,10 @@
                         `;
                         
                         if (giftName !== "Chúc May Mắn") {
-                            winAudio.currentTime = 0;
-                            winAudio.play();
-                            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                            // Pháo giấy vẫn nổ bình thường
+                            if (typeof confetti === 'function') {
+                                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                            }
                         }
                         btn.disabled = false;
                         btn.innerText = "QUAY TIẾP";
