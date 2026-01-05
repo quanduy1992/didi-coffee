@@ -18,7 +18,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
         function updateObstacles() {
             obstacles = [];
-            // Quét tiêu đề, nhãn, ô nhập, nút, hình ảnh trang trí và menu
             const elements = card.querySelectorAll('h2, label, input, button, .success-box, p, .nav-menu, span, img');
             elements.forEach(el => {
                 const rect = el.getBoundingClientRect();
@@ -46,7 +45,7 @@ window.addEventListener('DOMContentLoaded', () => {
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(rotation * Math.PI / 180);
-            ctx.fillStyle = "#FFD700"; // Màu vàng mai
+            ctx.fillStyle = "#FFD700"; 
             for (let i = 0; i < 5; i++) {
                 ctx.beginPath();
                 ctx.ellipse(0, -size/2, size/1.5, size, 0, 0, Math.PI * 2);
@@ -55,7 +54,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             ctx.beginPath(); 
             ctx.arc(0, 0, size/2.5, 0, Math.PI * 2);
-            ctx.fillStyle = "#FF8C00"; // Nhụy cam
+            ctx.fillStyle = "#FF8C00"; 
             ctx.fill();
             ctx.restore();
         }
@@ -73,7 +72,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.speedX = Math.random() * 0.4 - 0.2;
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 1 - 0.5;
+                
                 this.isRolling = false;
+                this.rollDistance = 0; // Quãng đường đã lăn
+                this.maxRoll = Math.random() * 20 + 15; // Chỉ cho phép lăn từ 15-35px là rớt
                 this.hasBouncedOn = null;
             }
 
@@ -84,25 +86,30 @@ window.addEventListener('DOMContentLoaded', () => {
                 let nextX = this.x + this.speedX;
                 let hitAny = false;
 
-                obstacles.forEach(ob => {
-                    // Kiểm tra chạm cánh hoa vào vật cản
-                    if (nextX > ob.left && nextX < ob.right && 
-                        (nextY + this.size) >= ob.top && (nextY + this.size) <= ob.top + 5) {
-                        
-                        hitAny = true;
-                        if (!this.isRolling) {
-                            this.speedY = -0.4; // Nảy nhẹ
-                            // Lăn về hướng mép gần nhất
-                            this.speedX = (this.x < (ob.left + ob.right)/2) ? -0.7 : 0.7;
-                            this.isRolling = true;
-                        } else {
-                            this.y = ob.top - this.size;
-                            this.speedY = 0; 
+                // Nếu chưa lăn đủ quãng đường thì mới kiểm tra va chạm để lăn tiếp
+                if (this.rollDistance < this.maxRoll) {
+                    obstacles.forEach(ob => {
+                        if (nextX > ob.left && nextX < ob.right && 
+                            (nextY + this.size) >= ob.top && (nextY + this.size) <= ob.top + 5 &&
+                            this.hasBouncedOn !== ob.id) {
+                            
+                            hitAny = true;
+                            if (!this.isRolling) {
+                                this.speedY = -0.4; // Nảy nhẹ 1 cái
+                                this.speedX = (this.x < (ob.left + ob.right)/2) ? -0.7 : 0.7;
+                                this.isRolling = true;
+                                this.hasBouncedOn = ob.id;
+                            } else {
+                                this.y = ob.top - this.size;
+                                this.speedY = 0; 
+                                this.rollDistance += Math.abs(this.speedX); // Cộng dồn quãng đường lăn
+                            }
                         }
-                    }
-                });
+                    });
+                }
 
-                if (!hitAny) {
+                // Nếu không chạm gì HOẶC đã lăn đủ quãng đường tối đa -> Cho rơi xuống
+                if (!hitAny || this.rollDistance >= this.maxRoll) {
                     this.isRolling = false;
                     if (this.speedY < 0.7) this.speedY += 0.05; 
                 }
@@ -111,10 +118,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.x += this.speedX;
                 this.rotation += this.spin;
 
-                // Giới hạn biên trái phải của card
-                if (this.x < 5) { this.x = 5; this.speedX *= -1; }
-                if (this.x > canvas.width - 5) { this.x = canvas.width - 5; this.speedX *= -1; }
-                
+                if (this.x < 5 || this.x > canvas.width - 5) this.speedX *= -1;
                 if (this.y > canvas.height) this.reset();
             }
 
@@ -125,8 +129,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         resize();
-        // Số lượng hoa rơi (7 bông cho thoáng trang)
-        for(let i=0; i<15; i++) { 
+        for(let i=0; i<10; i++) { 
             flowers.push(new FallingFlower(Math.random() * 500)); 
         }
 
