@@ -1,11 +1,13 @@
-/* --- DI DI COFFEE - TẾT RỰC RỠ CÓ CÀNH MAI & LÌ XÌ --- */
+/* --- DI DI COFFEE - TẾT RỰC RỠ 2026 --- */
 
 body { 
     background-color: #fff5f5; 
-    /* Nền bao lì xì và hoa đào rơi chìm toàn trang */
-    background-image: url('https://i.imgur.com/GisLscA.png'); 
-    background-size: cover;
-    background-attachment: fixed;
+    /* Tạo hiệu ứng nền hoa đào rơi nhẹ nhàng bằng gradient */
+    background-image: 
+        radial-gradient(circle at 20% 30%, #ffcdd2 2px, transparent 0),
+        radial-gradient(circle at 70% 10%, #ffcdd2 3px, transparent 0),
+        radial-gradient(circle at 40% 80%, #ffcdd2 2px, transparent 0);
+    background-size: 100px 100px;
     display: flex; 
     justify-content: center; 
     align-items: center; 
@@ -15,40 +17,51 @@ body {
 }
 
 .card { 
-    background: rgba(255, 255, 255, 0.95); /* Trắng trong suốt nhẹ */
+    background: white; 
     padding: 25px; 
     border-radius: 20px; 
-    box-shadow: 0 10px 25px rgba(211, 47, 47, 0.3); 
+    box-shadow: 0 10px 25px rgba(211, 47, 47, 0.2); 
     text-align: center; 
     width: 340px; 
-    border: 3px solid #d32f2f; 
+    border: 2px solid #d32f2f; 
     position: relative;
     box-sizing: border-box;
-    /* CÀNH MAI TRANG TRÍ GÓC DƯỚI */
-    background-image: url('https://i.imgur.com/O61LpYV.png');
-    background-position: bottom right;
-    background-repeat: no-repeat;
-    background-size: 120px;
+    overflow: visible; /* Để đèn lồng và bao lì xì nhô ra ngoài */
+    
+    /* THÊM CÀNH MAI Ở GÓC DƯỚI BẰNG BIỂU TƯỢNG UNICODE ĐỂ KHÔNG BỊ LỖI ẢNH */
+    background-image: linear-gradient(to top right, rgba(255, 235, 59, 0.1) 20%, transparent 40%);
 }
 
-/* Đèn lồng treo lơ lửng hơn */
+/* Đèn lồng treo bên trái - Có hiệu ứng đung đưa nhẹ */
 .card::before { 
     content: '🏮'; 
     position: absolute; 
-    top: -25px; 
+    top: -20px; 
     left: -15px; 
-    font-size: 40px; 
-    filter: drop-shadow(2px 4px 6px rgba(0,0,0,0.2));
+    font-size: 35px; 
+    z-index: 10;
+    filter: drop-shadow(2px 2px 5px rgba(0,0,0,0.2));
 }
 
-/* Bao lì xì góc phải */
+/* Bao lì xì bên phải */
 .card::after { 
     content: '🧧'; 
     position: absolute; 
-    top: -25px; 
+    top: -20px; 
     right: -15px; 
+    font-size: 35px; 
+    z-index: 10;
+    filter: drop-shadow(-2px 2px 5px rgba(0,0,0,0.2));
+}
+
+/* Biểu tượng cành mai/bánh chưng ở góc dưới bên phải card */
+.card-decoration {
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
     font-size: 40px;
-    filter: drop-shadow(-2px 4px 6px rgba(0,0,0,0.2));
+    opacity: 0.8;
+    pointer-events: none;
 }
 
 h2 { 
@@ -58,7 +71,6 @@ h2 {
     display: flex; 
     align-items: center; 
     justify-content: center;
-    font-weight: 800;
 }
 h2::before, h2::after { content: '🌸'; margin: 0 8px; font-size: 18px; }
 
@@ -74,16 +86,16 @@ label {
 input { 
     width: 100%; 
     padding: 12px; 
-    border: 1.5px solid #ffcdd2; 
+    border: 1px solid #ffcdd2; 
     border-radius: 10px; 
     margin-bottom: 15px; 
     box-sizing: border-box; 
     font-size: 15px; 
     outline: none;
-    background: white;
+    background: #fff;
 }
 
-input:focus { border-color: #d32f2f; background: #fff8f8; }
+input:focus { border-color: #d32f2f; box-shadow: 0 0 5px rgba(211, 47, 47, 0.2); }
 
 button { 
     width: 100%; 
@@ -98,18 +110,17 @@ button {
     margin-top: 5px; 
     transition: 0.3s;
     box-shadow: 0 4px 0 #b71c1c;
-    text-transform: uppercase;
 }
 
 button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b71c1c; }
+button:disabled { background-color: #ccc; box-shadow: none; }
 
-/* Menu điều hướng phía dưới */
 .nav-menu { 
     display: grid; 
     grid-template-columns: 1fr 1fr 1fr; 
     gap: 8px; 
     margin-top: 20px; 
-    border-top: 1.5px dashed #d32f2f; 
+    border-top: 1px dashed #d32f2f; 
     padding-top: 15px; 
 }
 
@@ -117,7 +128,7 @@ button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b71c1c; }
     background-color: #fff; 
     color: #d32f2f; 
     padding: 10px 2px; 
-    border-radius: 10px; 
+    border-radius: 8px; 
     font-size: 11px; 
     text-decoration: none; 
     font-weight: bold; 
@@ -126,14 +137,7 @@ button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b71c1c; }
     align-items: center; 
     border: 1.5px solid #ffca28;
     box-sizing: border-box;
-    transition: 0.2s;
 }
 
-.nav-item.active { 
-    background-color: #d32f2f; 
-    color: white; 
-    border-color: #d32f2f;
-    box-shadow: 0 4px 10px rgba(211, 47, 47, 0.3);
-}
-
-.nav-item i { font-style: normal !important; font-size: 20px; margin-bottom: 4px; }
+.nav-item.active { background-color: #d32f2f; color: white; border-color: #d32f2f; }
+.nav-item i { font-style: normal !important; font-size: 18px; margin-bottom: 4px; }
