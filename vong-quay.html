@@ -4,30 +4,7 @@
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <style>
-        body { font-family: 'Segoe UI', 'Arial', sans-serif; text-align: center; background: #fdf5e6; margin: 0; padding: 20px; display: flex; justify-content: center; min-height: 100vh; align-items: center; }
-        .container { max-width: 400px; width: 100%; background: white; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid #eee; box-sizing: border-box; }
-        h2 { color: #6f4e37; margin-bottom: 5px; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        p { color: #888; font-size: 14px; margin-bottom: 20px; }
-        #wheel-container { position: relative; width: 280px; height: 280px; margin: 0 auto 25px; }
-        #wheel { 
-            width: 100%; height: 100%; border-radius: 50%; border: 8px solid #6f4e37; 
-            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1); 
-            -webkit-transition: -webkit-transform 4s cubic-bezier(0.15, 0, 0.15, 1);
-            display: block;
-        }
-        #pointer { position: absolute; top: -15px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 15px solid transparent; border-right: 15px solid transparent; border-top: 30px solid #e74c3c; z-index: 10; }
-        .controls { display: flex; flex-direction: column; gap: 10px; align-items: center; }
-        input { padding: 14px; width: 95%; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
-        #spinBtn { padding: 15px; background: #6f4e37; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; width: 95%; font-size: 16px; transition: 0.3s; }
-        #spinBtn:disabled { background: #ccc; cursor: not-allowed; }
-        #result { margin-top: 15px; font-weight: bold; font-size: 16px; min-height: 24px; line-height: 1.5; }
-
-        .nav-menu { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 20px; border-top: 1px dashed #795548; padding-top: 15px; }
-        .nav-item { background-color: #efebe9; color: #5d4037; padding: 10px 5px; border-radius: 8px; font-size: 12px; text-decoration: none; font-weight: bold; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 1px solid #d7ccc8; }
-        .nav-item.active { background-color: #795548; color: white; }
-        .nav-item i { font-style: normal !important; font-size: 18px; margin-bottom: 2px; display: inline-block; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <audio id="spinSound" loop preload="auto">
@@ -194,4 +171,5 @@
         }
     </script>
 </body>
+
 </html>
