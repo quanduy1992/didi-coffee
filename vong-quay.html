@@ -1,10 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
+    <meta charset="UTF-8">
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* CSS riêng cho Vòng quay để bổ trợ style.css */
+        #wheel-container {
+            position: relative;
+            width: 300px;
+            margin: 20px auto;
+            z-index: 2;
+        }
+        #wheel {
+            width: 100%;
+            height: auto;
+            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+        #pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            background: #d32f2f;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 10;
+            border-bottom: 2px solid #fff;
+        }
+        .controls {
+            position: relative;
+            z-index: 2;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
     <audio id="spinSound" loop preload="auto">
@@ -14,19 +48,20 @@
         <source src="https://assets.mixkit.co/active_storage/sfx/2019/2019-preview.mp3" type="audio/mpeg">
     </audio>
 
-    <div class="container">
-        <h2>🎡 VÒNG QUAY DI DI</h2>
-        <p id="sub-title">Đang tải cấu hình...</p>
+    <div class="card"> <h2 id="shopTitle">🎡 VÒNG QUAY DI DI</h2>
+        <p id="sub-title" style="color: #8d6e63; font-size: 14px; margin-top: -10px;">Đang tải cấu hình...</p>
         
         <div id="wheel-container">
             <div id="pointer"></div>
             <canvas id="wheel" width="300" height="300"></canvas>
         </div>
 
-        <div class="controls">
-            <input type="tel" id="phone" placeholder="Nhập số điện thoại (10 số)">
+        <div class="controls" id="form-input">
+            <label>Số điện thoại:</label>
+            <input type="tel" id="phone" placeholder="Nhập số điện thoại để quay">
             <button id="spinBtn" onclick="checkAndSpin()">QUAY NGAY</button>
         </div>
+
         <div id="result"></div>
 
         <div class="nav-menu">
@@ -39,7 +74,7 @@
     <script src="config.js"></script>
     <script>
         const GIFTS = ["Tặng 1 ly", "Giảm 2k", "Tặng 2 ly", "Chúc May Mắn", "Tặng 4 Ly", "Tặng 3 ly", "Giảm 1k", "Chúc May Mắn"];
-        const COLORS = ["#f1c40f", "#e67e22", "#e74c3c", "#9b59b6", "#f1c40f", "#e67e22", "#e74c3c", "#9b59b6"];
+        const COLORS = ["#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f"]; // Đổi màu đỏ vàng cho hợp không khí Tết
         const GIFT_DATA = [
             { name: "Tặng 1 ly", weight: 15 }, { name: "Giảm 2k", weight: 14 }, 
             { name: "Tặng 2 ly", weight: 3 }, { name: "Chúc May Mắn", weight: 20 },
@@ -64,22 +99,37 @@
                 ctx.beginPath();
                 ctx.fillStyle = COLORS[i];
                 ctx.moveTo(150, 150);
-                ctx.arc(150, 150, 150, i * arc, (i + 1) * arc);
+                ctx.arc(150, 150, 145, i * arc, (i + 1) * arc);
                 ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
                 ctx.save();
-                ctx.fillStyle = "white";
+                ctx.fillStyle = COLORS[i] === "#f1c40f" ? "#d32f2f" : "white";
                 ctx.font = "bold 13px Arial";
                 ctx.translate(150, 150);
                 ctx.rotate(i * arc + arc / 2);
                 ctx.textAlign = "right";
-                ctx.fillText(gift, 135, 5);
+                ctx.fillText(gift, 130, 5);
                 ctx.restore();
             });
             ctx.restore();
+            
+            // Vẽ tâm vòng quay
+            ctx.beginPath();
+            ctx.arc(150, 150, 15, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+            ctx.stroke();
         }
 
         window.onload = function() {
             drawWheel();
+            if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
+                document.getElementById('shopTitle').innerText = "🎡 " + CONFIG.SHOP_NAME;
+            }
+            
             const urlParams = new URLSearchParams(window.location.search);
             const phoneFromUrl = urlParams.get('phone');
             const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
@@ -98,15 +148,17 @@
             const resDiv = document.getElementById('result');
             const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
 
-            if (phone.length < 10) { alert("Vui lòng nhập đúng SĐT!"); return; }
+            if (phone.length < 10) { 
+                resDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đúng SĐT!</div>";
+                return; 
+            }
             
-            // Kích hoạt âm thanh (quan trọng cho Zalo/Chrome)
             spinAudio.play().then(() => spinAudio.pause()).catch(() => {});
             winAudio.play().then(() => winAudio.pause()).catch(() => {});
 
             btn.disabled = true;
-            resDiv.style.color = "#27ae60";
-            resDiv.innerText = "⏳ Đang kiểm tra...";
+            btn.innerText = "⌛ ĐANG KIỂM TRA...";
+            resDiv.innerHTML = "";
 
             try {
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
@@ -114,12 +166,9 @@
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
                     localStorage.setItem('didi_customer_phone', phone);
-                    
-                    // Phát tiếng tạch tạch của vòng quay
                     spinAudio.currentTime = 0;
                     spinAudio.play();
 
-                    resDiv.innerText = "🎡 Đang quay...";
                     const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                     let random = Math.random() * totalWeight;
                     let selectedIndex = 0;
@@ -135,41 +184,56 @@
 
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
-                    setTimeout(() => {
-                        spinAudio.pause(); // Dừng tiếng quay
-                        fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
-                        resDiv.innerHTML = `🎉 Chúc mừng! <br> Bạn nhận được: <span style="color:#e74c3c">${giftName}</span>`;
+                    setTimeout(async () => {
+                        spinAudio.pause();
+                        // Trừ điểm trên server
+                        await fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
+                        
+                        // Lấy lại điểm mới
+                        let newP = "---";
+                        try {
+                            const r2 = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                            newP = await r2.text();
+                        } catch(e){}
+
+                        const now = new Date();
+                        const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+
+                        // Hiển thị khung thông báo giống trang tích điểm/đổi quà
+                        resDiv.innerHTML = `
+                            <div class="success-box">
+                                <div>${giftName === 'Chúc May Mắn' ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
+                                <span class="time">Thời gian quay: ${timeStr}</span>
+                                <span class="points-info">Số điểm còn lại: <span>${newP}</span></span>
+                            </div>
+                        `;
                         
                         if (giftName !== "Chúc May Mắn") {
-                            // Phát nhạc pháo hoa và bắn confetti
                             winAudio.currentTime = 0;
                             winAudio.play();
-                            
-                            // Bắn pháo hoa nhiều đợt
+                            // Bắn pháo hoa
                             let duration = 3 * 1000;
                             let animationEnd = Date.now() + duration;
-                            let defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-
                             let interval = setInterval(function() {
                                 let timeLeft = animationEnd - Date.now();
                                 if (timeLeft <= 0) return clearInterval(interval);
-                                let particleCount = 50 * (timeLeft / duration);
-                                confetti(Object.assign({}, defaults, { particleCount, origin: { x: Math.random(), y: Math.random() - 0.2 } }));
+                                confetti({ particleCount: 40, spread: 70, origin: { x: Math.random(), y: Math.random() - 0.2 } });
                             }, 250);
                         }
                         btn.disabled = false;
+                        btn.innerText = "QUAY TIẾP";
                     }, 4000);
                 } else {
-                    resDiv.style.color = "#e74c3c";
-                    resDiv.innerHTML = `❌ Không đủ điểm! (Có ${currentPoints}/${CONFIG.SPIN_POINTS})`;
+                    resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Hiện có: ${currentPoints})</div>`;
                     btn.disabled = false;
+                    btn.innerText = "QUAY NGAY";
                 }
             } catch (e) {
-                resDiv.innerText = "⚠️ Lỗi kết nối!";
+                resDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối máy chủ!</div>";
                 btn.disabled = false;
+                btn.innerText = "THỬ LẠI";
             }
         }
     </script>
 </body>
-
 </html>
