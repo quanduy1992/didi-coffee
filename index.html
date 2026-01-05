@@ -5,6 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Di Di Coffee - Tích Điểm</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Thêm hiệu ứng cho nút khi bị khóa để khách biết không thể nhấn */
+        button:disabled {
+            background-color: #cccccc !important;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+    </style>
 </head>
 <body>
     <div class="card">
@@ -44,17 +52,12 @@
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
 
-        // 1. Tự động điền thông tin cũ nếu có
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
-        // 2. Nếu là khách cũ VÀ có mã code từ URL -> Tự động kích hoạt
         if (codeFromURL && savedName && savedPhone) {
-            const btnSubmit = document.getElementById('btnSubmit');
-            btnSubmit.disabled = true; // Làm mờ nút ngay lập tức
-            btnSubmit.innerText = "ĐANG TỰ ĐỘNG TÍCH ĐIỂM...";
-            handleVerify();
+            handleVerify(); // Gọi hàm xử lý
         }
     };
 
@@ -70,32 +73,28 @@
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
             resultDiv.className = "error";
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
             return;
         }
 
-        // Lưu thông tin vào máy khách
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
 
-        resultDiv.innerHTML = "⌛ Đang xử lý dữ liệu...";
-        resultDiv.className = "";
-        if (pointBox) pointBox.style.display = "none";
+        // --- BẮT ĐẦU TRẠNG THÁI KHÓA NÚT ---
+        btnSubmit.disabled = true; // Không cho phép nhấn
+        btnSubmit.innerHTML = "⌛ Đang xử lý dữ liệu..."; // Đổi chữ trên nút
         
-        // Vô hiệu hóa nút để tránh nhấn trùng
-        btnSubmit.disabled = true;
+        resultDiv.innerHTML = ""; // Xóa thông báo cũ
+        if (pointBox) pointBox.style.display = "none";
 
         const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
 
-        // Callback xử lý dữ liệu trả về từ Google Sheets
         window.googleCallback = function(resData) {
+            // --- MỞ KHÓA NÚT KHI CÓ KẾT QUẢ ---
             btnSubmit.disabled = false;
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
             if (resData.status === "SUCCESS") {
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
                 resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
                 if (currentPoints) currentPoints.innerText = resData.points; 
@@ -111,18 +110,16 @@
                 resultDiv.className = "error";
             }
 
-            // Dọn dẹp script sau khi gọi xong
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
 
-        // Tạo thẻ script để gọi API (JSONP)
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
         
-        // Xử lý khi script lỗi (không kết nối được server)
         scriptTag.onerror = function() {
+            // --- MỞ KHÓA NÚT NẾU LỖI MẠNG ---
             resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
             resultDiv.className = "error";
             btnSubmit.disabled = false;
