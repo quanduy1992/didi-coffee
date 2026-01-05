@@ -9,13 +9,15 @@
 </head>
 <body>
 
-<div class="container">
-    <h2>☕ DI DI COFFEE</h2>
-    <p style="color: #8d6e63;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
+<div class="card"> <h2 id="shopTitle">☕ DI DI COFFEE</h2>
+    <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
     
     <div id="pointDisplay"></div> 
-    <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
-    <button id="btnRedeem" onclick="handleRedeem()" disabled>XÁC NHẬN ĐỔI QUÀ</button>
+    <div id="form-input">
+        <label>Số điện thoại:</label>
+        <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
+        <button id="btnRedeem" onclick="handleRedeem()" disabled style="width: 100%; margin-top: 10px;">XÁC NHẬN ĐỔI QUÀ</button>
+    </div>
 
     <div id="status"></div>
 
@@ -33,6 +35,9 @@
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
+        if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
+            document.querySelector('h2').innerText = "☕ " + CONFIG.SHOP_NAME;
+        }
         validateSession(); 
         const urlParams = new URLSearchParams(window.location.search);
         const phoneFromUrl = urlParams.get('phone');
@@ -56,7 +61,7 @@
     async function autoProcess(phone) {
         const display = document.getElementById('pointDisplay');
         const btn = document.getElementById('btnRedeem');
-        display.innerHTML = "⏳ Đang nhận diện...";
+        display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang nhận diện...</div>";
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
         
@@ -64,15 +69,17 @@
             const res = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
             const points = await res.text();
             currentPoints = parseFloat(points) || 0;
-            display.innerHTML = `<div class="point-box">Chào bạn! Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
+            display.innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào bạn! Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
 
             if (currentPoints >= minPoints) {
+                btn.disabled = false;
+                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
                 setTimeout(() => handleRedeem(), 800);
             } else {
                 btn.innerText = "CHƯA ĐỦ ĐIỂM";
             }
         } catch (err) {
-            display.innerHTML = "❌ Lỗi kết nối";
+            display.innerHTML = "<div style='color:red; text-align:center;'>❌ Lỗi kết nối</div>";
             btn.disabled = false;
             btn.innerText = "THỬ LẠI";
         }
@@ -86,7 +93,7 @@
                 .then(res => res.text())
                 .then(points => {
                     currentPoints = parseFloat(points) || 0;
-                    document.getElementById('pointDisplay').innerHTML = `<div class="point-box">Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
+                    document.getElementById('pointDisplay').innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
                     btn.disabled = currentPoints < minPoints;
                     btn.innerText = currentPoints < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
                 });
@@ -106,28 +113,33 @@
         .then(res => res.text())
         .then(async result => {
             if (result === "SUCCESS") {
-                // LOAD LẠI ĐIỂM NGAY LẬP TỨC TRƯỚC KHI HIỆN THÀNH CÔNG
+                let newPointsDisplay = "---";
                 try {
                     const resPoint = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-                    const newPoints = await resPoint.text();
-                    display.innerHTML = `<div class="point-box">Chào bạn! Hiện có: <strong>${newPoints}</strong> điểm</div>`;
+                    newPointsDisplay = await resPoint.text();
                 } catch (e) {}
 
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN');
                 
+                // Ẩn phần hiển thị điểm cũ và nút bấm
+                display.style.display = "none";
+                btn.style.display = "none";
+
+                // Hiển thị giao diện mới giống phần Tích điểm
                 statusDiv.innerHTML = `
-                    <div class="success-card">
-                        ✅ ĐỔI THÀNH CÔNG!
-                        <div class="time-stamp">Thời gian: ${timeStr}</div>
+                    <div class="success-box">
+                        <div>✅ ĐỔI THÀNH CÔNG!</div>
+                        <span class="time">Thời gian: ${timeStr}</span>
+                        <span class="points-info">Số điểm còn lại: <span>${newPointsDisplay}</span></span>
                     </div>
                     <button class="btn-confirm" onclick="confirmAndClose()">CHỜ NHÂN VIÊN GIAO QUÀ</button>
                 `;
-                btn.style.display = "none";
+                
                 localStorage.setItem('last_redeem_timestamp', now.getTime());
                 localStorage.setItem('didi_customer_phone', phone);
             } else {
-                statusDiv.innerHTML = `<div class='error' style='color:red;'>❌ THẤT BẠI</div>`;
+                statusDiv.innerHTML = `<div style='color:red; text-align:center; margin-top:10px;'>❌ THẤT BẠI: ${result}</div>`;
                 btn.disabled = false;
                 btn.innerText = "THỬ LẠI";
             }
@@ -145,5 +157,4 @@
     }
 </script>
 </body>
-
 </html>
