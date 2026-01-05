@@ -1,68 +1,52 @@
-/* --- DI DI COFFEE - PHONG CÁCH TẾT RỰC RỠ 2026 --- */
-
-:root {
-    --do-tet: #d32f2f;
-    --vang-tet: #ffca28;
-    --nau-cafe: #5d4037;
-    --nen-tet: #fff5f5;
-}
+/* --- DI DI COFFEE - TẾT RỰC RỠ & GỌN GÀNG --- */
 
 body { 
-    background-color: #fce4ec; /* Màu nền hồng nhạt nhẹ nhàng */
+    background-color: #fff5f5; 
+    background-image: radial-gradient(#ffcdd2 0.5px, transparent 0.5px);
+    background-size: 20px 20px;
     display: flex; 
     justify-content: center; 
     align-items: center; 
     min-height: 100vh; 
     margin: 0; 
     font-family: 'Segoe UI', sans-serif;
-    /* Hiệu ứng cánh hoa đào rơi nhẹ nhàng trên nền */
-    background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
 }
 
 .card { 
     background: white; 
-    padding: 30px; 
+    padding: 25px; /* Giảm padding một chút cho gọn */
     border-radius: 20px; 
-    box-shadow: 0 10px 30px rgba(211, 47, 47, 0.2); 
+    box-shadow: 0 10px 25px rgba(211, 47, 47, 0.2); 
     text-align: center; 
-    width: 340px; 
-    border: 3px solid var(--do-tet); /* Viền đỏ đậm chất Tết */
+    width: 340px; /* Cố định chiều rộng để không bị chè bè */
+    border: 2px solid #d32f2f; 
     position: relative;
-    overflow: hidden; /* Để chứa các hình trang trí góc */
+    box-sizing: border-box; /* Quan trọng để không bị tràn */
 }
 
-/* Trang trí góc trên: Đèn lồng và Bao lì xì */
-.card::before {
-    content: '🏮';
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    font-size: 35px;
-    z-index: 10;
-}
+/* Biểu tượng Tết ở 2 góc */
+.card::before { content: '🏮'; position: absolute; top: -15px; left: -10px; font-size: 30px; }
+.card::after { content: '🧧'; position: absolute; top: -15px; right: -10px; font-size: 30px; }
 
-.card::after {
-    content: '🧧';
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    font-size: 35px;
-    z-index: 10;
-}
-
-/* Tiêu đề với hoa đào hai bên */
 h2 { 
-    color: var(--do-tet); 
-    margin: 10px 0 20px 0; 
-    font-size: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    color: #d32f2f; 
+    margin: 0 0 20px 0; 
+    font-size: 22px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
 }
-h2::before { content: '🌸'; margin-right: 8px; font-size: 20px; }
-h2::after { content: '🌸'; margin-left: 8px; font-size: 20px; }
+h2::before, h2::after { content: '🌸'; margin: 0 8px; font-size: 18px; }
 
-label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: var(--nau-cafe); font-size: 14px; }
+/* Căn chỉnh lại các ô nhập liệu cho thẳng hàng */
+label { 
+    display: block; 
+    text-align: left; 
+    margin-bottom: 5px; 
+    font-weight: bold; 
+    color: #5d4037; 
+    font-size: 14px; 
+}
 
 input { 
     width: 100%; 
@@ -70,18 +54,18 @@ input {
     border: 1px solid #ddd; 
     border-radius: 10px; 
     margin-bottom: 15px; 
-    box-sizing: border-box; 
+    box-sizing: border-box; /* Đảm bảo input không tràn khỏi card */
     font-size: 15px; 
     outline: none; 
-    background: rgba(255, 255, 255, 0.9);
+    display: block; /* Ép mỗi input nằm 1 dòng riêng biệt */
 }
 
-input:focus { border-color: var(--do-tet); box-shadow: 0 0 5px rgba(211, 47, 47, 0.2); }
+input:focus { border-color: #d32f2f; }
 
-/* Nút bấm Đỏ Tết rực rỡ */
+/* Nút bấm đỏ Tết */
 button { 
     width: 100%; 
-    background-color: var(--do-tet); 
+    background-color: #d32f2f; 
     color: white; 
     border: none; 
     padding: 14px; 
@@ -89,55 +73,40 @@ button {
     font-weight: bold; 
     cursor: pointer; 
     font-size: 16px; 
-    margin-top: 10px; 
+    margin-top: 5px; 
     transition: 0.3s;
-    box-shadow: 0 4px 0 #b71c1c; /* Tạo hiệu ứng nút bấm 3D */
+    box-shadow: 0 4px 0 #b71c1c;
 }
-
-button:disabled { background-color: #ccc; box-shadow: none; cursor: not-allowed; }
 button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b71c1c; }
+button:disabled { background-color: #ccc; box-shadow: none; }
 
-#result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
+#result { margin-top: 15px; font-weight: bold; min-height: 24px; }
 
-/* Box hiển thị điểm tích lũy màu vàng mai */
+/* Box điểm tích lũy */
 .point-box { 
-    background: #fff9c4; 
-    padding: 20px; 
+    background: #fff8e1; 
+    padding: 15px; 
     border-radius: 15px; 
-    margin-top: 20px; 
-    border: 2px solid var(--vang-tet); 
+    margin-top: 15px; 
+    border: 2px solid #ffca28; 
     display: none; 
-    animation: fadeIn 0.5s; 
-    position: relative;
 }
+.point-number { font-size: 30px; color: #d32f2f; display: block; font-weight: bold; }
 
-/* Thêm icon Bánh Chưng nhỏ trang trí phần tích điểm */
-.point-box::after {
-    content: '🍱'; 
-    position: absolute;
-    bottom: 5px;
-    right: 5px;
-    font-size: 20px;
-}
-
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-.point-number { font-size: 30px; color: var(--do-tet); display: block; font-weight: bold; }
-
-/* Menu điều hướng */
+/* Menu điều hướng - Sửa lỗi chè bè */
 .nav-menu { 
     display: grid; 
     grid-template-columns: 1fr 1fr 1fr; 
     gap: 8px; 
     margin-top: 20px; 
-    border-top: 1px dashed var(--do-tet); 
+    border-top: 1px dashed #d32f2f; 
     padding-top: 15px; 
 }
 
 .nav-item { 
     background-color: #fff; 
-    color: var(--do-tet); 
-    padding: 10px 5px; 
+    color: #d32f2f; 
+    padding: 10px 2px; 
     border-radius: 8px; 
     font-size: 11px; 
     text-decoration: none; 
@@ -145,12 +114,9 @@ button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b71c1c; }
     display: flex; 
     flex-direction: column; 
     align-items: center; 
-    justify-content: center; 
-    border: 1px solid var(--vang-tet); 
+    border: 1px solid #ffca28;
+    box-sizing: border-box;
 }
 
-.nav-item.active { background-color: var(--do-tet); color: white; border-color: var(--do-tet); }
-.nav-item i { font-style: normal !important; font-size: 18px; margin-bottom: 4px; display: inline-block; }
-
-.error { color: #d32f2f; }
-.success { color: #2e7d32; font-size: 18px; }
+.nav-item.active { background-color: #d32f2f; color: white; border-color: #d32f2f; }
+.nav-item i { font-style: normal !important; font-size: 18px; margin-bottom: 4px; }
