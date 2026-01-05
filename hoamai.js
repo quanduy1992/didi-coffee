@@ -60,19 +60,30 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         class FallingFlower {
-            constructor(initialWait) { 
-                this.initialWait = initialWait;
-                this.reset(true); 
+            constructor(isInstant) { 
+                this.initialWait = isInstant ? 0 : Math.random() * 300; 
+                this.reset(true, isInstant); 
             }
-            reset(isFirstTime = false) {
+            
+            reset(isFirstTime = false, isInstant = false) {
                 this.x = Math.random() * canvas.width;
-                this.y = isFirstTime ? -Math.random() * canvas.height * 1.5 - 50 : -30;
+                
+                if (isFirstTime && isInstant) {
+                    // Nếu muốn xuất hiện ngay, cho hoa nằm rải rác sẵn trên màn hình
+                    this.y = Math.random() * canvas.height;
+                } else if (isFirstTime && !isInstant) {
+                    // Những bông còn lại sẽ rơi từ từ sau đó
+                    this.y = -Math.random() * canvas.height - 50;
+                } else {
+                    // Khi reset (rơi hết màn hình), luôn bắt đầu lại từ đỉnh
+                    this.y = -30;
+                }
+
                 this.size = Math.random() * 3 + 4;
                 this.speedY = Math.random() * 0.4 + 0.3;
-                this.speedX = Math.random() * 0.2 - 0.1; // Khởi đầu rơi thẳng hơn
+                this.speedX = Math.random() * 0.2 - 0.1;
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 1 - 0.5;
-                
                 this.isRolling = false;
                 this.rollDistance = 0;
                 this.maxRoll = Math.random() * 20 + 15; 
@@ -94,8 +105,7 @@ window.addEventListener('DOMContentLoaded', () => {
                             
                             hitAny = true;
                             if (!this.isRolling) {
-                                this.speedY = -0.3; // Nảy nhẹ
-                                // QUYẾT ĐỊNH HƯỚNG LĂN NGẪU NHIÊN 50/50 (TRÁI HOẶC PHẢI)
+                                this.speedY = -0.3;
                                 this.speedX = Math.random() > 0.5 ? 0.6 : -0.6; 
                                 this.isRolling = true;
                                 this.hasBouncedOn = ob.id;
@@ -109,25 +119,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (!hitAny || this.rollDistance >= this.maxRoll) {
-                    if (this.isRolling) {
-                        // Khi vừa dứt lăn, trả lại một chút tốc độ rơi thẳng để hoa không bị dạt biên
-                        this.speedX *= 0.5; 
-                    }
+                    if (this.isRolling) this.speedX *= 0.5; 
                     this.isRolling = false;
                     if (this.speedY < 0.7) this.speedY += 0.05; 
-                    this.rollDistance = 0; // Reset quãng đường lăn cho vật cản tiếp theo
+                    if (!hitAny) this.rollDistance = 0; 
                 }
 
                 this.y += this.speedY;
                 this.x += this.speedX;
                 this.rotation += this.spin;
 
-                // Va chạm biên thì bật lại để hoa luôn ở trong Card
-                if (this.x < 5 || this.x > canvas.width - 5) {
-                    this.speedX *= -1;
-                    this.isRolling = false; // Ngừng lăn nếu chạm biên
-                }
-
+                if (this.x < 5 || this.x > canvas.width - 5) this.speedX *= -1;
                 if (this.y > canvas.height) this.reset();
             }
 
@@ -138,9 +140,9 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         resize();
-        for(let i=0; i<10; i++) { 
-            flowers.push(new FallingFlower(Math.random() * 500)); 
-        }
+        // Tạo 10 bông hoa: 5 bông hiện ngay lập tức, 5 bông rơi dần sau
+        for(let i=0; i<5; i++) { flowers.push(new FallingFlower(true)); }
+        for(let i=0; i<5; i++) { flowers.push(new FallingFlower(false)); }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
