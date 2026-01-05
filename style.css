@@ -102,36 +102,57 @@ button {
     align-items: center;
     justify-content: center;
 }
-/* Style cho khung thông báo thành công giống mẫu */
-.success-box {
-    background-color: #e8f5e9;
-    border: 2px solid #2e7d32;
-    color: #2e7d32;
-    padding: 15px;
-    border-radius: 10px;
-    margin: 15px 0;
-    text-align: center;
-    font-weight: bold;
-}
+/* Hiệu ứng trực quan để khách biết nút đang bị khóa */
+        button:disabled {
+            background-color: #cccccc !important;
+            color: #666666 !important;
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
 
-.success-box .time {
-    display: block;
-    font-size: 0.9em;
-    color: #4caf50;
-    margin-top: 5px;
-    font-weight: normal;
-    border-top: 1px solid #c8e6c9;
-    padding-top: 5px;
-}
+        /* Giao diện khung xanh thông báo thành công */
+        .success-box {
+            background-color: #e8f5e9;
+            border: 1px solid #2e7d32;
+            color: #2e7d32;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+        }
 
-#currentPoints {
-    color: #d32f2f;
-    font-size: 1.2em;
-}
+        .success-box .time {
+            display: block;
+            font-size: 0.85em;
+            color: #4caf50;
+            margin-top: 5px;
+            font-weight: normal;
+            border-top: 1px solid #c8e6c9;
+            padding-top: 5px;
+        }
+
+        .success-box .points-info {
+            display: block;
+            margin-top: 5px;
+            font-size: 1em;
+            color: #2e7d32;
+        }
+
+        .success-box .points-info span {
+            color: #d32f2f; /* Màu đỏ cho con số điểm */
+            font-size: 1.1em;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
 .nav-item.active { background-color: #d32f2f; color: white; border-color: #d32f2f; }
 .nav-item * { font-style: normal !important; }
 
 /* XÓA BỎ HOÀN TOÀN CÀNH MAI */
-
 .card-footer-decor, .mai-decor, .banh-chung { display: none !important; }
-
