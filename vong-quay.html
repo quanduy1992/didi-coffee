@@ -4,19 +4,15 @@
     <meta charset="UTF-8">
     <title>DI DI COFFEE - Vòng Quay May Mắn</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link rel="stylesheet" href="style.css">
-    <script src="hoamai.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <style>
-        .wheel-container, #wheel {
-            position: relative;
-            z-index: 99 !important; /* Đảm bảo vòng quay luôn nằm trên cùng */
-        }
+        /* Cố định Z-index để không bị hoa mai che mất */
         #wheel-container {
             position: relative;
             width: 300px;
             margin: 20px auto;
-            z-index: 2;
+            z-index: 10 !important;
         }
         #wheel {
             width: 100%;
@@ -24,6 +20,7 @@
             transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
             border-radius: 50%;
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            display: block; /* Đảm bảo canvas hiện diện */
         }
         #pointer {
             position: absolute;
@@ -34,7 +31,7 @@
             height: 40px;
             background: #d32f2f;
             clip-path: polygon(50% 100%, 0 0, 100% 0);
-            z-index: 10;
+            z-index: 11;
             border-bottom: 2px solid #fff;
         }
     </style>
@@ -121,7 +118,8 @@
             ctx.stroke();
         }
 
-        window.onload = function() {
+        // Ưu tiên vẽ vòng quay ngay khi trang vừa đọc xong phần HTML
+        document.addEventListener('DOMContentLoaded', () => {
             drawWheel();
             if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
                 document.getElementById('shopTitle').innerText = "🎡 " + CONFIG.SHOP_NAME;
@@ -129,9 +127,10 @@
             }
             const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
             if (savedPhone) document.getElementById('phone').value = savedPhone;
-        };
+        });
 
         async function checkAndSpin() {
+            // ... (Giữ nguyên logic hàm checkAndSpin của bạn) ...
             const phoneInput = document.getElementById('phone');
             const btn = document.getElementById('spinBtn');
             const resDiv = document.getElementById('result');
@@ -147,14 +146,11 @@
             resDiv.innerHTML = "";
 
             try {
-                // 1. KIỂM TRA ĐIỂM XONG MỚI QUAY
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
                 const currentPoints = parseFloat(await response.text()) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
                     localStorage.setItem('didi_customer_phone', phone);
-                    
-                    // 2. TÍNH TOÁN KẾT QUẢ
                     const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                     let random = Math.random() * totalWeight;
                     let selectedIndex = 0;
@@ -164,7 +160,6 @@
                     }
                     const giftName = GIFT_DATA[selectedIndex].name;
 
-                    // 3. HIỆU ỨNG QUAY (4 GIÂY)
                     spinAudio.currentTime = 0;
                     spinAudio.play();
                     const arc = 360 / GIFTS.length;
@@ -173,19 +168,14 @@
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
                     btn.innerText = "🎡 ĐANG QUAY...";
 
-                    // 4. GỬI KẾT QUẢ LÊN SERVER NGAY (CHẠY NGẦM)
                     fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
 
-                    // 5. HIỆN KẾT QUẢ TỨC THÌ SAU ĐÚNG 4 GIÂY
                     setTimeout(() => {
                         spinAudio.pause();
-                        
-                        // Tự tính số điểm còn lại để hiển thị ngay (không đợi server)
                         const estimatedNewPoints = currentPoints - CONFIG.SPIN_POINTS;
                         const now = new Date();
                         const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
 
-                        // TRẢ KẾT QUẢ NGAY LẬP TỨC TẠI ĐÂY
                         resDiv.innerHTML = `
                             <div class="success-box">
                                 <div>${giftName === 'Chúc May Mắn' ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
@@ -201,7 +191,7 @@
                         }
                         btn.disabled = false;
                         btn.innerText = "QUAY TIẾP";
-                    }, 4000); // Khớp hoàn toàn với thời gian transition CSS (4s)
+                    }, 4000);
 
                 } else {
                     resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Hiện có: ${currentPoints})</div>`;
@@ -215,9 +205,7 @@
             }
         }
     </script>
+    
+    <script src="hoamai.js"></script>
 </body>
 </html>
-
-
-
-
