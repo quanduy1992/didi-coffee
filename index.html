@@ -5,9 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Di Di Coffee - Tích Điểm</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+        /* Đảm bảo khung card có thể chứa được hoa rơi bên trong */
+        .card {
+            position: relative;
+            overflow: hidden; /* Không để hoa bay ra ngoài khung viền */
+        }
+        #flower-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Để không bị cản trở khi bấm nút */
+            z-index: 1;
+        }
+        /* Đưa nội dung lên trên hoa */
+        #shopTitle, #form-input, #pointBox, #result, .nav-menu {
+            position: relative;
+            z-index: 2;
+        }
+    </style>
 </head>
 <body>
     <div class="card">
+        <canvas id="flower-canvas"></canvas>
+
         <h2 id="shopTitle">☕ DI DI COFFEE</h2>
         <div id="form-input">
             <label>Tên khách hàng:</label>
@@ -34,20 +57,67 @@
 
 <script src="config.js"></script> 
 <script>
+    // --- ĐOẠN MÃ TẠO HIỆU ỨNG HOA MAI ---
+    const canvas = document.getElementById('flower-canvas');
+    const ctx = canvas.getContext('2d');
+    let flowers = [];
+    const flowerImg = new Image();
+    flowerImg.src = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/15/Yellow_apricot_blossom.png/600px-Yellow_apricot_blossom.png';
+
+    function resize() {
+        canvas.width = canvas.parentElement.offsetWidth;
+        canvas.height = canvas.parentElement.offsetHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    class Flower {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height - canvas.height;
+            this.size = Math.random() * 10 + 10;
+            this.speed = Math.random() * 1.5 + 0.5;
+            this.velX = Math.random() * 1 - 0.5;
+            this.rotation = Math.random() * 360;
+            this.spin = Math.random() * 2 - 1;
+        }
+        update() {
+            this.y += this.speed;
+            this.x += this.velX;
+            this.rotation += this.spin;
+            if (this.y > canvas.height) this.reset();
+        }
+        draw() {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation * Math.PI / 180);
+            ctx.drawImage(flowerImg, -this.size/2, -this.size/2, this.size, this.size);
+            ctx.restore();
+        }
+    }
+
+    for(let i=0; i<20; i++) { flowers.push(new Flower()); }
+
+    function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        flowers.forEach(f => { f.update(); f.draw(); });
+        requestAnimationFrame(animate);
+    }
+    flowerImg.onload = animate;
+    // --- KẾT THÚC ĐOẠN MÃ HOA MAI ---
+
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
             document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
         }
-
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
-
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
-
         if (codeFromURL && savedName && savedPhone) {
             setTimeout(handleVerify, 500);
         }
@@ -89,10 +159,8 @@
 
             if (resData.status === "SUCCESS") {
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-
                 resultDiv.innerHTML = `
                     <div class="success-box">
                         <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
@@ -100,7 +168,6 @@
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;
-                
                 document.getElementById('inputCode').value = ""; 
             } 
             else if (resData.status === "USED") {
@@ -113,7 +180,6 @@
             } else {
                 resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
             }
-
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
@@ -130,7 +196,6 @@
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
-
         document.body.appendChild(scriptTag);
     }
 </script>
