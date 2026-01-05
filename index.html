@@ -5,15 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Di Di Coffee - Tích Điểm</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* Hiệu ứng trực quan để khách biết nút đang bị khóa */
-        button:disabled {
-            background-color: #cccccc !important;
-            color: #666666 !important;
-            cursor: not-allowed;
-            opacity: 0.7;
-        }
-    </style>
 </head>
 <body>
     <div class="card">
@@ -28,8 +19,8 @@
             <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
         </div>
         
-        <div id="pointBox" style="display:none; margin-top: 10px; font-weight: bold;">
-            Số điểm hiện tại: <span id="currentPoints">0</span>
+        <div id="pointBox" style="display:none;">
+            <span id="currentPoints">0</span>
         </div>
         
         <div id="result"></div>
@@ -57,7 +48,6 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
-        // Tự động kích hoạt khi quét mã (Delay 0.5s để tránh treo trên mobile)
         if (codeFromURL && savedName && savedPhone) {
             setTimeout(handleVerify, 500);
         }
@@ -68,79 +58,66 @@
         const phone = document.getElementById('cusPhone').value.trim();
         const code = document.getElementById('inputCode').value.trim().toUpperCase();
         const resultDiv = document.getElementById('result');
-        const pointBox = document.getElementById('pointBox');
-        const currentPoints = document.getElementById('currentPoints');
         const btnSubmit = document.getElementById('btnSubmit');
 
         if (!name || !phone || !code) {
-            resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
-            resultDiv.className = "error";
+            resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đầy đủ thông tin!</div>";
             return;
         }
 
-        // --- TRẠNG THÁI KHÓA NÚT ---
         btnSubmit.disabled = true; 
         btnSubmit.innerHTML = "⌛ Đang xử lý dữ liệu..."; 
         resultDiv.innerHTML = ""; 
-        if (pointBox) pointBox.style.display = "none";
 
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
 
         const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
 
-        // Cơ chế Timeout phòng ngừa lỗi treo trên điện thoại (10 giây)
         const safetyTimeout = setTimeout(function() {
             if (btnSubmit.disabled) {
                 btnSubmit.disabled = false;
                 btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-                resultDiv.innerHTML = "❌ Kết nối chậm, vui lòng thử lại!";
-                resultDiv.className = "error";
+                resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, vui lòng thử lại!</div>";
             }
         }, 10000);
 
         window.googleCallback = function(resData) {
-    btnSubmit.disabled = false;
-    btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+            clearTimeout(safetyTimeout);
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
-    if (resData.status === "SUCCESS") {
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+            if (resData.status === "SUCCESS") {
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
-        // Lấy thời gian hiện tại
-        const now = new Date();
-        const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+                const now = new Date();
+                const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
 
-        // 1. Hiển thị thông báo thành công trước (Giao diện giống ảnh mẫu)
-        resultDiv.innerHTML = `
-            <div class="success-box">
-                ✅ TÍCH ĐIỂM THÀNH CÔNG!
-                <span class="time">Thời gian: ${timeStr}</span>
-            </div>
-        `;
-        resultDiv.className = ""; // Xóa class success cũ nếu có
+                // Đưa cả thông báo, thời gian và điểm vào trong success-box
+                resultDiv.innerHTML = `
+                    <div class="success-box">
+                        <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
+                        <span class="time">Thời gian: ${timeStr}</span>
+                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
+                    </div>
+                `;
+                
+                document.getElementById('inputCode').value = ""; 
+            } 
+            else if (resData.status === "USED") {
+                resultDiv.innerHTML = `
+                    <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
+                        <div>⚠️ Mã này đã được sử dụng.</div>
+                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
+            }
 
-        // 2. Sau đó mới hiển thị tổng điểm tích lũy
-        if (currentPoints) currentPoints.innerText = resData.points; 
-        if (pointBox) {
-            pointBox.style.display = "block";
-            pointBox.style.textAlign = "center";
-            pointBox.style.marginTop = "10px";
-        }
-        
-        document.getElementById('inputCode').value = ""; 
-    } 
-    // ... các phần xử lý lỗi USED hoặc ERROR giữ nguyên ...
-    else if (resData.status === "USED") {
-        resultDiv.innerHTML = "<div class='error'>⚠️ Mã này đã được sử dụng.</div>";
-        if (currentPoints) currentPoints.innerText = resData.points;
-        if (pointBox) pointBox.style.display = "block";
-    } else {
-        resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
-    }
-
-    const oldScript = document.getElementById('api-call');
-    if (oldScript) oldScript.remove();
-};
+            const oldScript = document.getElementById('api-call');
+            if (oldScript) oldScript.remove();
+        };
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
@@ -148,8 +125,7 @@
         
         scriptTag.onerror = function() {
             clearTimeout(safetyTimeout);
-            resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
-            resultDiv.className = "error";
+            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
             btnSubmit.disabled = false;
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
             const oldScript = document.getElementById('api-call');
