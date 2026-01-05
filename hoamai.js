@@ -14,17 +14,16 @@ window.addEventListener('DOMContentLoaded', () => {
         card.prepend(canvas);
         const ctx = canvas.getContext('2d');
         let flowers = [];
-        let staticFlowers = []; // Danh sách hoa cố định ở nền
+        let staticFlowers = [];
         let obstacles = [];
 
         function updateObstacles() {
             obstacles = [];
-            // Quét tất cả: Tiêu đề, Nhãn (label), Ô nhập, Nút bấm, và các hộp thông báo
             const elements = card.querySelectorAll('h2, label, input, button, .success-box, p, .nav-menu, span');
             elements.forEach(el => {
                 const rect = el.getBoundingClientRect();
                 const cardRect = card.getBoundingClientRect();
-                if (rect.width > 0 && rect.height > 0) { // Chỉ lấy các phần tử đang hiển thị
+                if (rect.width > 0 && rect.height > 0) {
                     obstacles.push({
                         left: rect.left - cardRect.left,
                         right: rect.right - cardRect.left,
@@ -40,11 +39,10 @@ window.addEventListener('DOMContentLoaded', () => {
             canvas.width = card.offsetWidth;
             canvas.height = card.offsetHeight;
             updateObstacles();
-            createStaticFlowers(); // Tạo lại hoa nền khi đổi kích thước
+            createStaticFlowers();
         }
         window.addEventListener('resize', resize);
 
-        // Hàm vẽ bông hoa mai dùng chung
         function drawFlower(x, y, size, rotation, alpha = 1) {
             ctx.save();
             ctx.globalAlpha = alpha;
@@ -64,13 +62,11 @@ window.addEventListener('DOMContentLoaded', () => {
             ctx.restore();
         }
 
-        // Tạo 3-4 bông hoa nằm cố định ở các góc cho đẹp
         function createStaticFlowers() {
             staticFlowers = [
-                { x: 20, y: 20, size: 8, rot: 45, alpha: 0.6 },
-                { x: canvas.width - 30, y: 100, size: 6, rot: 120, alpha: 0.4 },
-                { x: 40, y: canvas.height - 80, size: 7, rot: 10, alpha: 0.5 },
-                { x: canvas.width - 50, y: canvas.height - 40, size: 9, rot: 200, alpha: 0.6 }
+                { x: 20, y: 20, size: 8, rot: 45, alpha: 0.5 },
+                { x: canvas.width - 35, y: 80, size: 6, rot: 110, alpha: 0.4 },
+                { x: 30, y: canvas.height - 70, size: 7, rot: 15, alpha: 0.4 }
             ];
         }
 
@@ -82,61 +78,75 @@ window.addEventListener('DOMContentLoaded', () => {
             reset(isFirstTime = false) {
                 this.x = Math.random() * canvas.width;
                 this.y = isFirstTime ? -Math.random() * canvas.height * 1.5 - 50 : -30;
-                this.size = Math.random() * 5 + 4;
+                this.size = Math.random() * 4 + 4;
                 this.speedY = Math.random() * 0.4 + 0.3;
-                this.speedX = Math.random() * 0.2 - 0.1;
+                this.speedX = Math.random() * 0.4 - 0.2;
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 1 - 0.5;
+                this.isRolling = false; // Trạng thái đang lăn trên bề mặt
                 this.hasBouncedOn = null;
             }
+
             update() {
                 if (this.initialWait > 0) { this.initialWait--; return; }
+
                 let nextY = this.y + this.speedY;
                 let nextX = this.x + this.speedX;
+                let hitAny = false;
 
                 obstacles.forEach(ob => {
+                    // Kiểm tra chạm cạnh trên của vật cản
                     if (nextX > ob.left && nextX < ob.right && 
-                        (nextY + this.size) > ob.top && (nextY + this.size) < ob.bottom && 
-                        (this.y + this.size) <= ob.top && this.hasBouncedOn !== ob.id) {
-                        this.speedY = -1.2; 
-                        this.speedX = (Math.random() - 0.5) * 0.4;
-                        this.hasBouncedOn = ob.id;
-                        this.y = ob.top - this.size - 1; 
+                        (nextY + this.size) >= ob.top && (nextY + this.size) <= ob.top + 5) {
+                        
+                        hitAny = true;
+                        // Nảy cực nhẹ
+                        if (!this.isRolling) {
+                            this.speedY = -0.5; 
+                            // Lực đẩy ngang để tạo hiệu ứng lăn (ngẫu nhiên trái hoặc phải)
+                            this.speedX = this.speedX > 0 ? 0.8 : -0.8;
+                            this.isRolling = true;
+                        } else {
+                            // Nếu đang lăn, giữ y bám sát bề mặt
+                            this.y = ob.top - this.size;
+                            this.speedY = 0; 
+                        }
                     }
                 });
 
-                if (this.speedY < 0.6) this.speedY += 0.04; 
+                if (!hitAny) {
+                    this.isRolling = false;
+                    // Trọng lực kéo xuống khi không chạm gì
+                    if (this.speedY < 0.7) this.speedY += 0.05; 
+                }
+
                 this.y += this.speedY;
                 this.x += this.speedX;
                 this.rotation += this.spin;
-                if (this.x < 0) this.x = 0;
-                if (this.x > canvas.width) this.x = canvas.width;
+
+                if (this.x < 5) { this.x = 5; this.speedX *= -1; }
+                if (this.x > canvas.width - 5) { this.x = canvas.width - 5; this.speedX *= -1; }
                 if (this.y > canvas.height) this.reset();
             }
+
             draw() {
                 if (this.initialWait > 0 || this.y < -this.size * 2) return;
                 drawFlower(this.x, this.y, this.size, this.rotation);
             }
         }
 
-        // Khởi tạo
         resize();
-        for(let i=0; i<25; i++) { 
-            flowers.push(new FallingFlower(Math.random() * 400)); 
+        for(let i=0; i<15; i++) { 
+            flowers.push(new FallingFlower(Math.random() * 500)); 
         }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 1. Vẽ hoa cố định ở nền trước (mờ hơn)
             staticFlowers.forEach(sf => drawFlower(sf.x, sf.y, sf.size, sf.rot, sf.alpha));
-            
-            // 2. Vẽ hoa đang rơi và nảy
             flowers.forEach(f => { f.update(); f.draw(); });
-            
             requestAnimationFrame(animate);
         }
         animate();
-        setInterval(updateObstacles, 2000); 
+        setInterval(updateObstacles, 2500); 
     }
 });
