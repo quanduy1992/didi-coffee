@@ -18,7 +18,13 @@
             <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
             <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
         </div>
+        
+        <div id="pointBox" style="display:none; margin-top: 10px; font-weight: bold;">
+            Số điểm hiện tại: <span id="currentPoints">0</span>
+        </div>
+        
         <div id="result"></div>
+        
         <div class="nav-menu">
             <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
             <a href="doi-qua.html" class="nav-item"><i>🎁</i> Đổi quà</a>
@@ -38,12 +44,16 @@
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
 
+        // 1. Tự động điền thông tin cũ nếu có
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
-        // TỰ ĐỘNG KÍCH HOẠT CHO KHÁCH CŨ
+        // 2. Nếu là khách cũ VÀ có mã code từ URL -> Tự động kích hoạt
         if (codeFromURL && savedName && savedPhone) {
+            const btnSubmit = document.getElementById('btnSubmit');
+            btnSubmit.disabled = true; // Làm mờ nút ngay lập tức
+            btnSubmit.innerText = "ĐANG TỰ ĐỘNG TÍCH ĐIỂM...";
             handleVerify();
         }
     };
@@ -60,54 +70,67 @@
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "❌ Vui lòng nhập đầy đủ thông tin!";
             resultDiv.className = "error";
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
             return;
         }
 
+        // Lưu thông tin vào máy khách
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
 
-        resultDiv.innerHTML = "⌛ Đang xử lý...";
+        resultDiv.innerHTML = "⌛ Đang xử lý dữ liệu...";
         resultDiv.className = "";
-        pointBox.style.display = "none";
+        if (pointBox) pointBox.style.display = "none";
+        
+        // Vô hiệu hóa nút để tránh nhấn trùng
         btnSubmit.disabled = true;
 
         const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
 
+        // Callback xử lý dữ liệu trả về từ Google Sheets
         window.googleCallback = function(resData) {
             btnSubmit.disabled = false;
+            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+
             if (resData.status === "SUCCESS") {
-                // HIỆU ỨNG RUNG KHI THÀNH CÔNG (Rung 2 nhịp)
-                if (navigator.vibrate) {
-                    navigator.vibrate([100, 50, 100]);
-                }
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
                 resultDiv.innerHTML = "✅ Tích điểm thành công!";
                 resultDiv.className = "success";
-                currentPoints.innerText = resData.points; 
-                pointBox.style.display = "block";
+                if (currentPoints) currentPoints.innerText = resData.points; 
+                if (pointBox) pointBox.style.display = "block";
                 document.getElementById('inputCode').value = ""; 
             } else if (resData.status === "USED") {
                 resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng.";
                 resultDiv.className = "error";
-                currentPoints.innerText = resData.points;
-                pointBox.style.display = "block";
+                if (currentPoints) currentPoints.innerText = resData.points;
+                if (pointBox) pointBox.style.display = "block";
             } else {
-                resultDiv.innerHTML = "❌ Mã không tồn tại!";
+                resultDiv.innerHTML = "❌ Lỗi: " + (resData.message || "Mã không hợp lệ!");
                 resultDiv.className = "error";
             }
+
+            // Dọn dẹp script sau khi gọi xong
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
 
+        // Tạo thẻ script để gọi API (JSONP)
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
         
+        // Xử lý khi script lỗi (không kết nối được server)
         scriptTag.onerror = function() {
-            resultDiv.innerHTML = "❌ Lỗi kết nối!";
+            resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
             resultDiv.className = "error";
             btnSubmit.disabled = false;
+            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+            const oldScript = document.getElementById('api-call');
+            if (oldScript) oldScript.remove();
         };
+
         document.body.appendChild(scriptTag);
     }
 </script>
