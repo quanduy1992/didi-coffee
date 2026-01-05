@@ -65,7 +65,7 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         // CHỈ TẠO 8 BÔNG HOA (Số lượng vừa phải, không quá nhiều)
-        for(let i=0; i<8; i++) { flowers.push(new Flower()); }
+        for(let i=0; i<15; i++) { flowers.push(new Flower()); }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -76,3 +76,4 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(resize, 300);
     }
 });
+
