@@ -1,28 +1,68 @@
-/* --- GIAO DIỆN GỐC --- */
+/* --- DI DI COFFEE - PHONG CÁCH TẾT RỰC RỠ 2026 --- */
+
+:root {
+    --do-tet: #d32f2f;
+    --vang-tet: #ffca28;
+    --nau-cafe: #5d4037;
+    --nen-tet: #fff5f5;
+}
+
 body { 
-    background-color: #fcf4f4; /* Đổi sang màu kem hồng nhạt cho hợp không khí Tết */
+    background-color: #fce4ec; /* Màu nền hồng nhạt nhẹ nhàng */
     display: flex; 
     justify-content: center; 
     align-items: center; 
     min-height: 100vh; 
     margin: 0; 
-    font-family: 'Segoe UI', sans-serif; 
+    font-family: 'Segoe UI', sans-serif;
+    /* Hiệu ứng cánh hoa đào rơi nhẹ nhàng trên nền */
+    background-image: url('https://www.transparenttextures.com/patterns/natural-paper.png');
 }
 
 .card { 
     background: white; 
     padding: 30px; 
     border-radius: 20px; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+    box-shadow: 0 10px 30px rgba(211, 47, 47, 0.2); 
     text-align: center; 
     width: 340px; 
-    border: 2px solid #d32f2f; /* Thêm viền đỏ Tết */
+    border: 3px solid var(--do-tet); /* Viền đỏ đậm chất Tết */
     position: relative;
+    overflow: hidden; /* Để chứa các hình trang trí góc */
 }
 
-h2 { color: #d32f2f; margin: 0 0 20px 0; } /* Chuyển tiêu đề sang màu đỏ */
+/* Trang trí góc trên: Đèn lồng và Bao lì xì */
+.card::before {
+    content: '🏮';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    font-size: 35px;
+    z-index: 10;
+}
 
-label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: #5d4037; font-size: 14px; }
+.card::after {
+    content: '🧧';
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    font-size: 35px;
+    z-index: 10;
+}
+
+/* Tiêu đề với hoa đào hai bên */
+h2 { 
+    color: var(--do-tet); 
+    margin: 10px 0 20px 0; 
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+h2::before { content: '🌸'; margin-right: 8px; font-size: 20px; }
+h2::after { content: '🌸'; margin-left: 8px; font-size: 20px; }
+
+label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: var(--nau-cafe); font-size: 14px; }
 
 input { 
     width: 100%; 
@@ -33,13 +73,15 @@ input {
     box-sizing: border-box; 
     font-size: 15px; 
     outline: none; 
+    background: rgba(255, 255, 255, 0.9);
 }
 
-input:focus { border-color: #d32f2f; }
+input:focus { border-color: var(--do-tet); box-shadow: 0 0 5px rgba(211, 47, 47, 0.2); }
 
+/* Nút bấm Đỏ Tết rực rỡ */
 button { 
     width: 100%; 
-    background-color: #d32f2f; /* Đổi nút sang màu đỏ */
+    background-color: var(--do-tet); 
     color: white; 
     border: none; 
     padding: 14px; 
@@ -48,75 +90,67 @@ button {
     cursor: pointer; 
     font-size: 16px; 
     margin-top: 10px; 
-    transition: 0.3s; 
+    transition: 0.3s;
+    box-shadow: 0 4px 0 #b71c1c; /* Tạo hiệu ứng nút bấm 3D */
 }
 
-button:disabled { background-color: #ccc; cursor: not-allowed; }
-button:active { transform: scale(0.98); }
+button:disabled { background-color: #ccc; box-shadow: none; cursor: not-allowed; }
+button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b71c1c; }
 
 #result { margin-top: 20px; font-weight: bold; min-height: 24px; line-height: 1.5; }
 
+/* Box hiển thị điểm tích lũy màu vàng mai */
 .point-box { 
-    background: #fff8e1; 
+    background: #fff9c4; 
     padding: 20px; 
     border-radius: 15px; 
     margin-top: 20px; 
-    border: 2px solid #ffca28; /* Viền vàng hoa mai */
+    border: 2px solid var(--vang-tet); 
     display: none; 
     animation: fadeIn 0.5s; 
+    position: relative;
+}
+
+/* Thêm icon Bánh Chưng nhỏ trang trí phần tích điểm */
+.point-box::after {
+    content: '🍱'; 
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    font-size: 20px;
 }
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.point-number { font-size: 30px; color: #d32f2f; display: block; font-weight: bold; }
+.point-number { font-size: 30px; color: var(--do-tet); display: block; font-weight: bold; }
 
+/* Menu điều hướng */
 .nav-menu { 
     display: grid; 
     grid-template-columns: 1fr 1fr 1fr; 
     gap: 8px; 
     margin-top: 20px; 
-    border-top: 1px dashed #d32f2f; 
+    border-top: 1px dashed var(--do-tet); 
     padding-top: 15px; 
 }
 
 .nav-item { 
     background-color: #fff; 
-    color: #d32f2f; 
+    color: var(--do-tet); 
     padding: 10px 5px; 
     border-radius: 8px; 
-    font-size: 12px; 
+    font-size: 11px; 
     text-decoration: none; 
     font-weight: bold; 
     display: flex; 
     flex-direction: column; 
     align-items: center; 
     justify-content: center; 
-    border: 1px solid #ffca28; 
+    border: 1px solid var(--vang-tet); 
 }
 
-.nav-item.active { background-color: #d32f2f; color: white; border-color: #d32f2f; }
+.nav-item.active { background-color: var(--do-tet); color: white; border-color: var(--do-tet); }
 .nav-item i { font-style: normal !important; font-size: 18px; margin-bottom: 4px; display: inline-block; }
 
 .error { color: #d32f2f; }
-.success { color: #2e7d32; }
-
-/* --- STYLE TRANG TRÍ TẾT --- */
-h2::before { content: '🌸 '; }
-h2::after { content: ' 🌸'; }
-
-/* Thêm icon bao lì xì góc card */
-.card::after {
-    content: '🧧';
-    position: absolute;
-    top: -15px;
-    right: -15px;
-    font-size: 30px;
-}
-
-.card::before {
-    content: '🏮';
-    position: absolute;
-    top: -15px;
-    left: -15px;
-    font-size: 30px;
-}
+.success { color: #2e7d32; font-size: 18px; }
