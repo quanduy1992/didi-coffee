@@ -18,7 +18,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
         function updateObstacles() {
             obstacles = [];
-            const elements = card.querySelectorAll('h2, input, button, .success-box, p, .nav-menu');
+            const elements = card.querySelectorAll('h2, input, button, .success-box, p, .nav-menu, .points-info');
             elements.forEach(el => {
                 const rect = el.getBoundingClientRect();
                 const cardRect = card.getBoundingClientRect();
@@ -42,17 +42,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
         class Flower {
             constructor(initialWait) { 
-                this.initialWait = initialWait; // Thời gian chờ trước khi xuất hiện lần đầu
+                this.initialWait = initialWait;
                 this.reset(true); 
             }
             
             reset(isFirstTime = false) {
                 this.x = Math.random() * canvas.width;
-                // Nếu là lần đầu, đẩy hoa lên thật cao ngoài màn hình để rơi xuống từ từ
-                // Hoặc dùng vị trí âm để tạo độ trễ xuất hiện
-                this.y = isFirstTime ? -Math.random() * canvas.height * 1.5 - 50 : -20;
-                
-                this.size = Math.random() * 5 + 3;
+                this.y = isFirstTime ? -Math.random() * canvas.height * 1.5 - 50 : -30;
+                this.size = Math.random() * 5 + 4; // Kích thước cánh hoa
                 this.speedY = Math.random() * 0.4 + 0.3;
                 this.speedX = Math.random() * 0.2 - 0.1;
                 this.rotation = Math.random() * 360;
@@ -61,7 +58,6 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
             update() {
-                // Hoa chỉ rơi xuống nếu đã hết thời gian chờ (initialWait)
                 if (this.initialWait > 0) {
                     this.initialWait--;
                     return;
@@ -71,13 +67,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 let nextX = this.x + this.speedX;
 
                 obstacles.forEach(ob => {
+                    // CHỈNH SỬA TẠI ĐÂY: Dùng (nextY + this.size) thay vì nextY
+                    // Hoa nảy ngay khi mép dưới cánh hoa chạm vào cạnh trên (ob.top)
                     if (nextX > ob.left && nextX < ob.right && 
-                        nextY > ob.top && nextY < ob.bottom && 
-                        this.y <= ob.top && this.hasBouncedOn !== ob.id) {
+                        (nextY + this.size) > ob.top && (nextY + this.size) < ob.bottom && 
+                        (this.y + this.size) <= ob.top && this.hasBouncedOn !== ob.id) {
                         
                         this.speedY = -1.2; 
                         this.speedX = (Math.random() - 0.5) * 0.4;
                         this.hasBouncedOn = ob.id;
+                        // Đẩy hoa lên ngay phía trên vật cản để tránh bị "dính"
+                        this.y = ob.top - this.size - 1; 
                     }
                 });
 
@@ -93,27 +93,29 @@ window.addEventListener('DOMContentLoaded', () => {
             }
 
             draw() {
-                if (this.initialWait > 0 || this.y < -this.size) return;
+                if (this.initialWait > 0 || this.y < -this.size * 2) return;
                 
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation * Math.PI / 180);
+                
+                // Vẽ hoa mai vàng
                 ctx.fillStyle = "#FFD700"; 
                 for (let i = 0; i < 5; i++) {
                     ctx.beginPath();
-                    ctx.ellipse(0, -this.size, this.size/1.5, this.size, 0, 0, Math.PI * 2);
+                    ctx.ellipse(0, -this.size/2, this.size/1.5, this.size, 0, 0, Math.PI * 2);
                     ctx.fill();
                     ctx.rotate((72 * Math.PI) / 180);
                 }
-                ctx.beginPath(); ctx.arc(0, 0, this.size/2.5, 0, Math.PI * 2);
-                ctx.fillStyle = "#FF8C00"; ctx.fill();
+                ctx.beginPath(); 
+                ctx.arc(0, 0, this.size/2.5, 0, Math.PI * 2);
+                ctx.fillStyle = "#FF8C00"; 
+                ctx.fill();
                 ctx.restore();
             }
         }
 
-        // Tạo 8 bông hoa với thời gian chờ (delay) ngẫu nhiên
         for(let i=0; i<25; i++) { 
-            // Mỗi bông hoa sẽ chờ từ 0 đến 300 khung hình mới bắt đầu rơi
             flowers.push(new Flower(Math.random() * 400)); 
         }
 
@@ -123,6 +125,7 @@ window.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(animate);
         }
         animate();
-        setTimeout(updateObstacles, 1000); 
+        // Cập nhật vật cản thường xuyên hơn để bắt trúng các thông báo hiện ra sau
+        setInterval(updateObstacles, 2000); 
     }
 });
