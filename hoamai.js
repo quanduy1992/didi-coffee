@@ -1,4 +1,4 @@
-// Tự động thêm CSS vào trang để hoa rơi đúng trong khung card
+// Tự động thêm CSS vào trang
 const style = document.createElement('style');
 style.innerHTML = `
     .card { position: relative !important; overflow: hidden !important; z-index: 1; }
@@ -7,13 +7,16 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
 
-// Tạo thẻ Canvas và chèn vào trong thẻ .card
 window.addEventListener('DOMContentLoaded', () => {
     const card = document.querySelector('.card');
     if (card) {
+        // Xóa canvas cũ nếu lỡ có hai cái
+        const oldCanvas = document.getElementById('flower-canvas');
+        if (oldCanvas) oldCanvas.remove();
+
         const canvas = document.createElement('canvas');
         canvas.id = 'flower-canvas';
-        card.prepend(canvas); // Đưa canvas lên đầu trong thẻ card
+        card.prepend(canvas);
 
         const ctx = canvas.getContext('2d');
         let flowers = [];
@@ -29,12 +32,12 @@ window.addEventListener('DOMContentLoaded', () => {
             constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * canvas.width;
-                this.y = Math.random() * canvas.height - canvas.height;
-                this.size = Math.random() * 6 + 4;
-                this.speed = Math.random() * 0.3 + 0.2;
-                this.velX = Math.random() * 1 - 0.5;
+                this.y = Math.random() * -canvas.height; // Xuất hiện từ trên cao hơn
+                this.size = Math.random() * 5 + 3; // Hoa nhỏ hơn cho thanh thoát
+                this.speed = Math.random() * 0.3 + 0.2; // SIÊU CHẬM
+                this.velX = Math.random() * 0.5 - 0.25; // Bay ngang nhẹ hơn
                 this.rotation = Math.random() * 360;
-                this.spin = Math.random() * 2 - 1;
+                this.spin = Math.random() * 1 - 0.5; // Xoay chậm hơn
             }
             update() {
                 this.y += this.speed;
@@ -61,7 +64,8 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        for(let i=0; i<5; i++) { flowers.push(new Flower()); }
+        // CHỈ TẠO 8 BÔNG HOA (Số lượng vừa phải, không quá nhiều)
+        for(let i=0; i<8; i++) { flowers.push(new Flower()); }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -71,7 +75,4 @@ window.addEventListener('DOMContentLoaded', () => {
         animate();
         setTimeout(resize, 300);
     }
-
 });
-
-
