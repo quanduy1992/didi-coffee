@@ -4,8 +4,9 @@ const CONFIG = {
     SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxdJ-d41pxTLbtXTHXql6SeVdY4Qrt_RByn3p-h57hwqDiIlHQDAOIcWH8lAEiT4-dfkQ/exec',
     
     // Bạn có thể thêm các cấu hình khác sau này tại đây
-    REDEEM_POINTS: 2,
-    SPIN_POINTS: 1,
-    POINTS_PER_CODE: 2.5,
+    REDEEM_POINTS: 20,
+    SPIN_POINTS: 15,
+    POINTS_PER_CODE: 1,
     SHOP_NAME: 'Di Di Coffee'
+
 };
