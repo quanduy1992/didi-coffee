@@ -142,14 +142,14 @@
             resDiv.innerHTML = "";
 
             try {
-                // BƯỚC 1: Kiểm tra điểm xong mới cho quay
+                // 1. KIỂM TRA ĐIỂM XONG MỚI QUAY
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
                 const currentPoints = parseFloat(await response.text()) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
                     localStorage.setItem('didi_customer_phone', phone);
                     
-                    // BƯỚC 2: Tính toán kết quả
+                    // 2. TÍNH TOÁN KẾT QUẢ
                     const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                     let random = Math.random() * totalWeight;
                     let selectedIndex = 0;
@@ -159,7 +159,7 @@
                     }
                     const giftName = GIFT_DATA[selectedIndex].name;
 
-                    // BƯỚC 3: Bắt đầu hiệu ứng quay
+                    // 3. HIỆU ỨNG QUAY (4 GIÂY)
                     spinAudio.currentTime = 0;
                     spinAudio.play();
                     const arc = 360 / GIFTS.length;
@@ -168,26 +168,24 @@
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
                     btn.innerText = "🎡 ĐANG QUAY...";
 
-                    // BƯỚC 4: Gửi lệnh trừ điểm lên server NGAY LẬP TỨC (Chạy ngầm khi đang quay)
-                    const updatePromise = fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
+                    // 4. GỬI KẾT QUẢ LÊN SERVER NGAY (CHẠY NGẦM)
+                    fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
 
-                    // BƯỚC 5: Đợi đúng 4 giây (thời gian transition CSS) rồi hiện kết quả
-                    setTimeout(async () => {
+                    // 5. HIỆN KẾT QUẢ TỨC THÌ SAU ĐÚNG 4 GIÂY
+                    setTimeout(() => {
                         spinAudio.pause();
                         
-                        // Đảm bảo lệnh trừ điểm đã xong và lấy điểm mới
-                        await updatePromise;
-                        const r2 = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-                        const newP = await r2.text();
-
+                        // Tự tính số điểm còn lại để hiển thị ngay (không đợi server)
+                        const estimatedNewPoints = currentPoints - CONFIG.SPIN_POINTS;
                         const now = new Date();
                         const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
 
+                        // TRẢ KẾT QUẢ NGAY LẬP TỨC TẠI ĐÂY
                         resDiv.innerHTML = `
                             <div class="success-box">
                                 <div>${giftName === 'Chúc May Mắn' ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
                                 <span class="time">Thời gian quay: ${timeStr}</span>
-                                <span class="points-info">Số điểm còn lại: <span>${newP}</span></span>
+                                <span class="points-info">Số điểm còn lại: <span>${estimatedNewPoints}</span></span>
                             </div>
                         `;
                         
@@ -198,7 +196,7 @@
                         }
                         btn.disabled = false;
                         btn.innerText = "QUAY TIẾP";
-                    }, 4000);
+                    }, 4000); // Khớp hoàn toàn với thời gian transition CSS (4s)
 
                 } else {
                     resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Hiện có: ${currentPoints})</div>`;
