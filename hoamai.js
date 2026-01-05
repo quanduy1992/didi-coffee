@@ -1,4 +1,3 @@
-// Tự động thêm CSS vào trang
 const style = document.createElement('style');
 style.innerHTML = `
     .card { position: relative !important; overflow: hidden !important; z-index: 1; }
@@ -10,20 +9,33 @@ document.head.appendChild(style);
 window.addEventListener('DOMContentLoaded', () => {
     const card = document.querySelector('.card');
     if (card) {
-        // Xóa canvas cũ nếu lỡ có hai cái
-        const oldCanvas = document.getElementById('flower-canvas');
-        if (oldCanvas) oldCanvas.remove();
-
         const canvas = document.createElement('canvas');
         canvas.id = 'flower-canvas';
         card.prepend(canvas);
-
         const ctx = canvas.getContext('2d');
         let flowers = [];
+        let obstacles = []; // Danh sách các vật cản (chữ, ô nhập)
+
+        function updateObstacles() {
+            obstacles = [];
+            // Lấy vị trí của Tiêu đề, các Input và Nút bấm
+            const elements = card.querySelectorAll('h2, input, button, .success-box, p');
+            elements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                const cardRect = card.getBoundingClientRect();
+                obstacles.push({
+                    left: rect.left - cardRect.left,
+                    right: rect.right - cardRect.left,
+                    top: rect.top - cardRect.top,
+                    bottom: rect.bottom - cardRect.top
+                });
+            });
+        }
 
         function resize() {
             canvas.width = card.offsetWidth;
             canvas.height = card.offsetHeight;
+            updateObstacles();
         }
         window.addEventListener('resize', resize);
         resize();
@@ -32,17 +44,36 @@ window.addEventListener('DOMContentLoaded', () => {
             constructor() { this.reset(); }
             reset() {
                 this.x = Math.random() * canvas.width;
-                this.y = Math.random() * -canvas.height; // Xuất hiện từ trên cao hơn
-                this.size = Math.random() * 5 + 3; // Hoa nhỏ hơn cho thanh thoát
-                this.speed = Math.random() * 0.5 + 0.2; // SIÊU CHẬM
-                this.velX = Math.random() * 0.5 - 0.25; // Bay ngang nhẹ hơn
+                this.y = -20;
+                this.size = Math.random() * 5 + 3;
+                this.speedY = Math.random() * 0.5 + 0.5; // Tốc độ rơi
+                this.speedX = Math.random() * 0.4 - 0.2;
                 this.rotation = Math.random() * 360;
-                this.spin = Math.random() * 1 - 0.5; // Xoay chậm hơn
+                this.spin = Math.random() * 1 - 0.5;
+                this.bounceCount = 0; // Giới hạn nảy để không bị kẹt
             }
             update() {
-                this.y += this.speed;
-                this.x += this.velX;
+                let nextY = this.y + this.speedY;
+                let nextX = this.x + this.speedX;
+
+                // Kiểm tra va chạm với các vật cản (chữ, ô nhập)
+                obstacles.forEach(ob => {
+                    if (nextX > ob.left && nextX < ob.right && 
+                        nextY > ob.top && nextY < ob.bottom && this.y <= ob.top) {
+                        
+                        this.speedY *= -0.4; // Nảy ngược lên (giảm lực)
+                        nextY = ob.top - 2;   // Đẩy hoa lên trên vật cản 1 chút
+                        this.speedX += (Math.random() - 0.5); // Văng ngang ngẫu nhiên
+                    }
+                });
+
+                // Nếu đang nảy lên, sau đó trọng lực sẽ kéo xuống lại
+                if (this.speedY < 0.3) this.speedY += 0.02; 
+
+                this.y = nextY;
+                this.x = nextX;
                 this.rotation += this.spin;
+
                 if (this.y > canvas.height) this.reset();
             }
             draw() {
@@ -56,15 +87,12 @@ window.addEventListener('DOMContentLoaded', () => {
                     ctx.fill();
                     ctx.rotate((72 * Math.PI) / 180);
                 }
-                ctx.beginPath();
-                ctx.arc(0, 0, this.size/2.5, 0, Math.PI * 2);
-                ctx.fillStyle = "#FF8C00";
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(0, 0, this.size/2.5, 0, Math.PI * 2);
+                ctx.fillStyle = "#FF8C00"; ctx.fill();
                 ctx.restore();
             }
         }
 
-        // CHỈ TẠO 8 BÔNG HOA (Số lượng vừa phải, không quá nhiều)
         for(let i=0; i<25; i++) { flowers.push(new Flower()); }
 
         function animate() {
@@ -73,9 +101,7 @@ window.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(animate);
         }
         animate();
-        setTimeout(resize, 300);
+        // Cập nhật lại vị trí vật cản sau khi trang ổn định
+        setTimeout(updateObstacles, 1000); 
     }
 });
-
-
-
