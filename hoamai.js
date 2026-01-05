@@ -14,12 +14,11 @@ window.addEventListener('DOMContentLoaded', () => {
         card.prepend(canvas);
         const ctx = canvas.getContext('2d');
         let flowers = [];
-        let obstacles = []; // Danh sách các vật cản (chữ, ô nhập)
+        let obstacles = [];
 
         function updateObstacles() {
             obstacles = [];
-            // Lấy vị trí của Tiêu đề, các Input và Nút bấm
-            const elements = card.querySelectorAll('h2, input, button, .success-box, p');
+            const elements = card.querySelectorAll('h2, input, button, .success-box, p, .nav-menu');
             elements.forEach(el => {
                 const rect = el.getBoundingClientRect();
                 const cardRect = card.getBoundingClientRect();
@@ -27,7 +26,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     left: rect.left - cardRect.left,
                     right: rect.right - cardRect.left,
                     top: rect.top - cardRect.top,
-                    bottom: rect.bottom - cardRect.top
+                    bottom: rect.bottom - cardRect.top,
+                    id: Math.random() // Định danh để mỗi hoa chỉ nảy 1 lần trên 1 vật cản
                 });
             });
         }
@@ -46,33 +46,39 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.x = Math.random() * canvas.width;
                 this.y = -20;
                 this.size = Math.random() * 5 + 3;
-                this.speedY = Math.random() * 0.5 + 0.5; // Tốc độ rơi
-                this.speedX = Math.random() * 0.4 - 0.2;
+                this.speedY = Math.random() * 0.4 + 0.3; // Rơi chậm
+                this.speedX = Math.random() * 0.2 - 0.1; // Lắc ngang rất nhẹ
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 1 - 0.5;
-                this.bounceCount = 0; // Giới hạn nảy để không bị kẹt
+                this.hasBouncedOn = null; // Lưu vật cản vừa nảy để không nảy lại ngay lập tức
             }
             update() {
                 let nextY = this.y + this.speedY;
                 let nextX = this.x + this.speedX;
 
-                // Kiểm tra va chạm với các vật cản (chữ, ô nhập)
+                // Kiểm tra va chạm
                 obstacles.forEach(ob => {
+                    // Nếu chạm vào vùng vật cản và chưa từng nảy trên vật cản này
                     if (nextX > ob.left && nextX < ob.right && 
-                        nextY > ob.top && nextY < ob.bottom && this.y <= ob.top) {
+                        nextY > ob.top && nextY < ob.bottom && 
+                        this.y <= ob.top && this.hasBouncedOn !== ob.id) {
                         
-                        this.speedY *= -0.4; // Nảy ngược lên (giảm lực)
-                        nextY = ob.top - 2;   // Đẩy hoa lên trên vật cản 1 chút
-                        this.speedX += (Math.random() - 0.5); // Văng ngang ngẫu nhiên
+                        this.speedY = -1.5; // Nảy ngược lên một chút
+                        this.speedX = (Math.random() - 0.5) * 0.5; // Văng ngang rất ít
+                        this.hasBouncedOn = ob.id; // Đánh dấu đã nảy xong
                     }
                 });
 
-                // Nếu đang nảy lên, sau đó trọng lực sẽ kéo xuống lại
-                if (this.speedY < 0.3) this.speedY += 0.02; 
+                // Trọng lực kéo xuống lại sau khi nảy
+                if (this.speedY < 0.6) this.speedY += 0.05; 
 
-                this.y = nextY;
-                this.x = nextX;
+                this.y += this.speedY;
+                this.x += this.speedX;
                 this.rotation += this.spin;
+
+                // Giữ hoa trong phạm vi màn hình ngang
+                if (this.x < 0) this.x = 0;
+                if (this.x > canvas.width) this.x = canvas.width;
 
                 if (this.y > canvas.height) this.reset();
             }
@@ -93,6 +99,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // Tạo 8 bông hoa cho thanh thoát
         for(let i=0; i<25; i++) { flowers.push(new Flower()); }
 
         function animate() {
@@ -101,7 +108,6 @@ window.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(animate);
         }
         animate();
-        // Cập nhật lại vị trí vật cản sau khi trang ổn định
         setTimeout(updateObstacles, 1000); 
     }
 });
