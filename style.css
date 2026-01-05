@@ -1,66 +1,67 @@
 /* --- DI DI COFFEE - TẾT CHUẨN 2026 --- */
 
 body { 
-    background-color: #fff5f5; 
-    /* 1. NỀN BAO LÌ XÌ RƠI CHÌM (Thay cho nền hoa đào cũ) */
-    background-image: url('https://img.pikbest.com/origin/09/20/03/749pIkbEsT8XG.png!sw800'); 
-    background-size: 300px;
-    background-repeat: repeat;
+    background-color: #fdf5e6; 
+    /* 1. NỀN BAO LÌ XÌ RƠI CHÌM */
+    background-image: 
+        radial-gradient(circle at 10% 10%, rgba(211, 47, 47, 0.1) 2px, transparent 0),
+        radial-gradient(circle at 30% 50%, rgba(211, 47, 47, 0.1) 3px, transparent 0),
+        radial-gradient(circle at 70% 20%, rgba(211, 47, 47, 0.1) 2px, transparent 0),
+        radial-gradient(circle at 90% 80%, rgba(211, 47, 47, 0.1) 3px, transparent 0);
+    background-size: 150px 150px;
     display: flex; 
     justify-content: center; 
     align-items: center; 
     min-height: 100vh; 
     margin: 0; 
     font-family: 'Segoe UI', sans-serif;
+    position: relative;
+}
+
+/* Thêm biểu tượng bao lì xì bay lơ lửng ngoài nền */
+body::before {
+    content: '🧧 🧧 🧧';
+    position: fixed;
+    top: 5%; left: 5%;
+    font-size: 30px;
+    opacity: 0.2;
 }
 
 .card { 
     background: white; 
     padding: 25px; 
-    border-radius: 20px; 
-    box-shadow: 0 10px 25px rgba(211, 47, 47, 0.2); 
+    border-radius: 25px; 
+    box-shadow: 0 10px 30px rgba(211, 47, 47, 0.2); 
     text-align: center; 
-    width: 340px; 
+    width: 350px; 
     border: 2px solid #d32f2f; 
     position: relative;
     box-sizing: border-box;
-    overflow: hidden; /* Đảm bảo cành mai không tràn ra ngoài */
-
-    /* 2. CÀNH MAI VÀ BÁNH CHƯNG Ở GÓC DƯỚI */
-    background-image: url('https://png.pngtree.com/png-clipart/20221227/original/pngtree-tet-vietnam-apricot-blossom-and-banh-chung-png-image_8813338.png');
-    background-position: bottom right;
-    background-repeat: no-repeat;
-    background-size: 130px; /* Chỉnh to nhỏ tùy ý bạn */
+    overflow: hidden; /* Giữ cành mai không tràn ra ngoài */
 }
 
-/* Đèn lồng và Bao lì xì ở 2 góc trên */
-.card::before { 
-    content: '🏮'; 
-    position: absolute; 
-    top: -5px; 
-    left: -5px; 
-    font-size: 35px; 
-    z-index: 10;
-}
-
-.card::after { 
-    content: '🧧'; 
-    position: absolute; 
-    top: -5px; 
-    right: -5px; 
-    font-size: 35px; 
-    z-index: 10;
+/* 2. CÀNH MAI VÀ BÁNH CHƯNG Ở GÓC DƯỚI */
+.card::after {
+    content: '🌸🌿 🍱';
+    position: absolute;
+    bottom: -10px;
+    right: 5px;
+    font-size: 50px; /* Làm to biểu tượng cành mai & bánh chưng */
+    opacity: 0.9;
+    pointer-events: none;
+    line-height: 1;
 }
 
 h2 { 
-    color: #d32f2f; 
+    color: #5d4037; 
     margin: 10px 0 20px 0; 
-    font-size: 22px; 
-    display: flex; 
-    align-items: center; 
+    font-size: 24px;
+    display: flex;
+    align-items: center;
     justify-content: center;
+    font-weight: bold;
 }
-h2::before, h2::after { content: '🌸'; margin: 0 8px; font-size: 18px; }
+h2::before, h2::after { content: '🧨'; margin: 0 10px; font-size: 20px; }
 
 label { 
     display: block; 
@@ -68,62 +69,60 @@ label {
     margin-bottom: 5px; 
     font-weight: bold; 
     color: #5d4037; 
-    font-size: 14px; 
+    font-size: 15px; 
 }
 
 input { 
     width: 100%; 
     padding: 12px; 
-    border: 1px solid #ddd; 
-    border-radius: 10px; 
+    border: 1.5px solid #eee; 
+    border-radius: 12px; 
     margin-bottom: 15px; 
     box-sizing: border-box; 
-    font-size: 15px; 
+    font-size: 16px; 
     outline: none;
 }
+
+input:focus { border-color: #d32f2f; }
 
 button { 
     width: 100%; 
     background-color: #d32f2f; 
     color: white; 
     border: none; 
-    padding: 14px; 
-    border-radius: 10px; 
+    padding: 15px; 
+    border-radius: 12px; 
     font-weight: bold; 
     cursor: pointer; 
-    font-size: 16px; 
-    margin-top: 5px; 
-    transition: 0.3s;
-    box-shadow: 0 4px 0 #b71c1c;
+    font-size: 18px; 
+    margin-top: 10px;
 }
 
-button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b71c1c; }
-
-/* Menu điều hướng phía dưới */
+/* PHẦN ĐIỀU HƯỚNG */
 .nav-menu { 
     display: grid; 
     grid-template-columns: 1fr 1fr 1fr; 
-    gap: 8px; 
-    margin-top: 20px; 
-    border-top: 1px dashed #d32f2f; 
-    padding-top: 15px; 
+    gap: 10px; 
+    margin-top: 30px; 
+    border-top: 1px dashed #ccc; 
+    padding-top: 20px;
     position: relative;
     z-index: 2; /* Để menu nằm trên cành mai */
 }
 
 .nav-item { 
-    background: rgba(255, 255, 255, 0.9); /* Làm nền mờ để thấy cành mai phía dưới */
-    color: #d32f2f; 
-    padding: 10px 2px; 
-    border-radius: 8px; 
-    font-size: 11px; 
+    background-color: #f9f9f9; 
+    color: #5d4037; 
+    padding: 10px; 
+    border-radius: 12px; 
+    font-size: 12px; 
     text-decoration: none; 
-    font-weight: bold; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    border: 1.5px solid #ffca28;
+    font-weight: bold;
+    border: 1px solid #eee;
 }
 
-.nav-item.active { background-color: #d32f2f; color: white; border-color: #d32f2f; }
-.nav-item i { font-style: normal !important; font-size: 18px; margin-bottom: 4px; }
+.nav-item.active { 
+    background-color: #d32f2f; 
+    color: white; 
+    border-color: #d32f2f; 
+}
