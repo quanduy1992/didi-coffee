@@ -14,12 +14,12 @@ window.addEventListener('DOMContentLoaded', () => {
         card.prepend(canvas);
         const ctx = canvas.getContext('2d');
         let flowers = [];
-        let staticFlowers = [];
         let obstacles = [];
 
         function updateObstacles() {
             obstacles = [];
-            const elements = card.querySelectorAll('h2, label, input, button, .success-box, p, .nav-menu, span');
+            // Quét tiêu đề, nhãn, ô nhập, nút, hình ảnh trang trí và menu
+            const elements = card.querySelectorAll('h2, label, input, button, .success-box, p, .nav-menu, span, img');
             elements.forEach(el => {
                 const rect = el.getBoundingClientRect();
                 const cardRect = card.getBoundingClientRect();
@@ -39,16 +39,14 @@ window.addEventListener('DOMContentLoaded', () => {
             canvas.width = card.offsetWidth;
             canvas.height = card.offsetHeight;
             updateObstacles();
-            createStaticFlowers();
         }
         window.addEventListener('resize', resize);
 
-        function drawFlower(x, y, size, rotation, alpha = 1) {
+        function drawFlower(x, y, size, rotation) {
             ctx.save();
-            ctx.globalAlpha = alpha;
             ctx.translate(x, y);
             ctx.rotate(rotation * Math.PI / 180);
-            ctx.fillStyle = "#FFD700"; 
+            ctx.fillStyle = "#FFD700"; // Màu vàng mai
             for (let i = 0; i < 5; i++) {
                 ctx.beginPath();
                 ctx.ellipse(0, -size/2, size/1.5, size, 0, 0, Math.PI * 2);
@@ -57,17 +55,9 @@ window.addEventListener('DOMContentLoaded', () => {
             }
             ctx.beginPath(); 
             ctx.arc(0, 0, size/2.5, 0, Math.PI * 2);
-            ctx.fillStyle = "#FF8C00"; 
+            ctx.fillStyle = "#FF8C00"; // Nhụy cam
             ctx.fill();
             ctx.restore();
-        }
-
-        function createStaticFlowers() {
-            staticFlowers = [
-                { x: 20, y: 20, size: 8, rot: 45, alpha: 0.5 },
-                { x: canvas.width - 35, y: 80, size: 6, rot: 110, alpha: 0.4 },
-                { x: 30, y: canvas.height - 70, size: 7, rot: 15, alpha: 0.4 }
-            ];
         }
 
         class FallingFlower {
@@ -78,12 +68,12 @@ window.addEventListener('DOMContentLoaded', () => {
             reset(isFirstTime = false) {
                 this.x = Math.random() * canvas.width;
                 this.y = isFirstTime ? -Math.random() * canvas.height * 1.5 - 50 : -30;
-                this.size = Math.random() * 4 + 4;
+                this.size = Math.random() * 3 + 4;
                 this.speedY = Math.random() * 0.4 + 0.3;
                 this.speedX = Math.random() * 0.4 - 0.2;
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 1 - 0.5;
-                this.isRolling = false; // Trạng thái đang lăn trên bề mặt
+                this.isRolling = false;
                 this.hasBouncedOn = null;
             }
 
@@ -95,19 +85,17 @@ window.addEventListener('DOMContentLoaded', () => {
                 let hitAny = false;
 
                 obstacles.forEach(ob => {
-                    // Kiểm tra chạm cạnh trên của vật cản
+                    // Kiểm tra chạm cánh hoa vào vật cản
                     if (nextX > ob.left && nextX < ob.right && 
                         (nextY + this.size) >= ob.top && (nextY + this.size) <= ob.top + 5) {
                         
                         hitAny = true;
-                        // Nảy cực nhẹ
                         if (!this.isRolling) {
-                            this.speedY = -0.5; 
-                            // Lực đẩy ngang để tạo hiệu ứng lăn (ngẫu nhiên trái hoặc phải)
-                            this.speedX = this.speedX > 0 ? 0.8 : -0.8;
+                            this.speedY = -0.4; // Nảy nhẹ
+                            // Lăn về hướng mép gần nhất
+                            this.speedX = (this.x < (ob.left + ob.right)/2) ? -0.7 : 0.7;
                             this.isRolling = true;
                         } else {
-                            // Nếu đang lăn, giữ y bám sát bề mặt
                             this.y = ob.top - this.size;
                             this.speedY = 0; 
                         }
@@ -116,7 +104,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 if (!hitAny) {
                     this.isRolling = false;
-                    // Trọng lực kéo xuống khi không chạm gì
                     if (this.speedY < 0.7) this.speedY += 0.05; 
                 }
 
@@ -124,8 +111,10 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.x += this.speedX;
                 this.rotation += this.spin;
 
+                // Giới hạn biên trái phải của card
                 if (this.x < 5) { this.x = 5; this.speedX *= -1; }
                 if (this.x > canvas.width - 5) { this.x = canvas.width - 5; this.speedX *= -1; }
+                
                 if (this.y > canvas.height) this.reset();
             }
 
@@ -136,17 +125,17 @@ window.addEventListener('DOMContentLoaded', () => {
         }
 
         resize();
+        // Số lượng hoa rơi (7 bông cho thoáng trang)
         for(let i=0; i<15; i++) { 
             flowers.push(new FallingFlower(Math.random() * 500)); 
         }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            staticFlowers.forEach(sf => drawFlower(sf.x, sf.y, sf.size, sf.rot, sf.alpha));
             flowers.forEach(f => { f.update(); f.draw(); });
             requestAnimationFrame(animate);
         }
         animate();
-        setInterval(updateObstacles, 2500); 
+        setInterval(updateObstacles, 3000); 
     }
 });
