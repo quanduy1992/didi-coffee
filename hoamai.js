@@ -31,7 +31,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height - canvas.height;
                 this.size = Math.random() * 6 + 4;
-                this.speed = Math.random() * 0.5 + 0.5;
+                this.speed = Math.random() * 0.3 + 0.2;
                 this.velX = Math.random() * 1 - 0.5;
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 2 - 1;
@@ -73,4 +73,5 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
 });
+
 
