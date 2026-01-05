@@ -6,11 +6,12 @@
     <title>Di Di Coffee - Tích Điểm</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* Thêm hiệu ứng cho nút khi bị khóa để khách biết không thể nhấn */
+        /* Hiệu ứng trực quan để khách biết nút đang bị khóa */
         button:disabled {
             background-color: #cccccc !important;
+            color: #666666 !important;
             cursor: not-allowed;
-            opacity: 0.8;
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -56,8 +57,9 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
+        // Tự động kích hoạt khi quét mã (Delay 0.5s để tránh treo trên mobile)
         if (codeFromURL && savedName && savedPhone) {
-            handleVerify(); // Gọi hàm xử lý
+            setTimeout(handleVerify, 500);
         }
     };
 
@@ -76,20 +78,29 @@
             return;
         }
 
+        // --- TRẠNG THÁI KHÓA NÚT ---
+        btnSubmit.disabled = true; 
+        btnSubmit.innerHTML = "⌛ Đang xử lý dữ liệu..."; 
+        resultDiv.innerHTML = ""; 
+        if (pointBox) pointBox.style.display = "none";
+
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
 
-        // --- BẮT ĐẦU TRẠNG THÁI KHÓA NÚT ---
-        btnSubmit.disabled = true; // Không cho phép nhấn
-        btnSubmit.innerHTML = "⌛ Đang xử lý dữ liệu..."; // Đổi chữ trên nút
-        
-        resultDiv.innerHTML = ""; // Xóa thông báo cũ
-        if (pointBox) pointBox.style.display = "none";
-
         const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
 
+        // Cơ chế Timeout phòng ngừa lỗi treo trên điện thoại (10 giây)
+        const safetyTimeout = setTimeout(function() {
+            if (btnSubmit.disabled) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+                resultDiv.innerHTML = "❌ Kết nối chậm, vui lòng thử lại!";
+                resultDiv.className = "error";
+            }
+        }, 10000);
+
         window.googleCallback = function(resData) {
-            // --- MỞ KHÓA NÚT KHI CÓ KẾT QUẢ ---
+            clearTimeout(safetyTimeout); // Hủy bộ đếm thời gian khi có kết quả
             btnSubmit.disabled = false;
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
@@ -119,7 +130,7 @@
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
         
         scriptTag.onerror = function() {
-            // --- MỞ KHÓA NÚT NẾU LỖI MẠNG ---
+            clearTimeout(safetyTimeout);
             resultDiv.innerHTML = "❌ Lỗi kết nối máy chủ!";
             resultDiv.className = "error";
             btnSubmit.disabled = false;
