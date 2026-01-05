@@ -34,7 +34,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * -canvas.height; // Xuất hiện từ trên cao hơn
                 this.size = Math.random() * 5 + 3; // Hoa nhỏ hơn cho thanh thoát
-                this.speed = Math.random() * 0.3 + 0.2; // SIÊU CHẬM
+                this.speed = Math.random() * 0.5 + 0.2; // SIÊU CHẬM
                 this.velX = Math.random() * 0.5 - 0.25; // Bay ngang nhẹ hơn
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 1 - 0.5; // Xoay chậm hơn
@@ -76,5 +76,6 @@ window.addEventListener('DOMContentLoaded', () => {
         setTimeout(resize, 300);
     }
 });
+
 
 
