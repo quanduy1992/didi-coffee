@@ -61,7 +61,7 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        for(let i=0; i<25; i++) { flowers.push(new Flower()); }
+        for(let i=0; i<10; i++) { flowers.push(new Flower()); }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -71,4 +71,5 @@ window.addEventListener('DOMContentLoaded', () => {
         animate();
         setTimeout(resize, 300);
     }
+
 });
