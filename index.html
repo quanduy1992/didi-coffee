@@ -100,30 +100,47 @@
         }, 10000);
 
         window.googleCallback = function(resData) {
-            clearTimeout(safetyTimeout); // Hủy bộ đếm thời gian khi có kết quả
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+    btnSubmit.disabled = false;
+    btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
-            if (resData.status === "SUCCESS") {
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                resultDiv.innerHTML = "✅ Tích điểm thành công!";
-                resultDiv.className = "success";
-                if (currentPoints) currentPoints.innerText = resData.points; 
-                if (pointBox) pointBox.style.display = "block";
-                document.getElementById('inputCode').value = ""; 
-            } else if (resData.status === "USED") {
-                resultDiv.innerHTML = "⚠️ Mã này đã được sử dụng.";
-                resultDiv.className = "error";
-                if (currentPoints) currentPoints.innerText = resData.points;
-                if (pointBox) pointBox.style.display = "block";
-            } else {
-                resultDiv.innerHTML = "❌ Lỗi: " + (resData.message || "Mã không hợp lệ!");
-                resultDiv.className = "error";
-            }
+    if (resData.status === "SUCCESS") {
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
 
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-        };
+        // Lấy thời gian hiện tại
+        const now = new Date();
+        const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+
+        // 1. Hiển thị thông báo thành công trước (Giao diện giống ảnh mẫu)
+        resultDiv.innerHTML = `
+            <div class="success-box">
+                ✅ TÍCH ĐIỂM THÀNH CÔNG!
+                <span class="time">Thời gian: ${timeStr}</span>
+            </div>
+        `;
+        resultDiv.className = ""; // Xóa class success cũ nếu có
+
+        // 2. Sau đó mới hiển thị tổng điểm tích lũy
+        if (currentPoints) currentPoints.innerText = resData.points; 
+        if (pointBox) {
+            pointBox.style.display = "block";
+            pointBox.style.textAlign = "center";
+            pointBox.style.marginTop = "10px";
+        }
+        
+        document.getElementById('inputCode').value = ""; 
+    } 
+    // ... các phần xử lý lỗi USED hoặc ERROR giữ nguyên ...
+    else if (resData.status === "USED") {
+        resultDiv.innerHTML = "<div class='error'>⚠️ Mã này đã được sử dụng.</div>";
+        if (currentPoints) currentPoints.innerText = resData.points;
+        if (pointBox) pointBox.style.display = "block";
+    } else {
+        resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
+    }
+
+    const oldScript = document.getElementById('api-call');
+    if (oldScript) oldScript.remove();
+};
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
