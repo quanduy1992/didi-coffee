@@ -27,7 +27,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     right: rect.right - cardRect.left,
                     top: rect.top - cardRect.top,
                     bottom: rect.bottom - cardRect.top,
-                    id: Math.random() // Định danh để mỗi hoa chỉ nảy 1 lần trên 1 vật cản
+                    id: Math.random()
                 });
             });
         }
@@ -41,48 +41,60 @@ window.addEventListener('DOMContentLoaded', () => {
         resize();
 
         class Flower {
-            constructor() { this.reset(); }
-            reset() {
+            constructor(initialWait) { 
+                this.initialWait = initialWait; // Thời gian chờ trước khi xuất hiện lần đầu
+                this.reset(true); 
+            }
+            
+            reset(isFirstTime = false) {
                 this.x = Math.random() * canvas.width;
-                this.y = -20;
+                // Nếu là lần đầu, đẩy hoa lên thật cao ngoài màn hình để rơi xuống từ từ
+                // Hoặc dùng vị trí âm để tạo độ trễ xuất hiện
+                this.y = isFirstTime ? -Math.random() * canvas.height * 1.5 - 50 : -20;
+                
                 this.size = Math.random() * 5 + 3;
-                this.speedY = Math.random() * 0.4 + 0.3; // Rơi chậm
-                this.speedX = Math.random() * 0.2 - 0.1; // Lắc ngang rất nhẹ
+                this.speedY = Math.random() * 0.4 + 0.3;
+                this.speedX = Math.random() * 0.2 - 0.1;
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 1 - 0.5;
-                this.hasBouncedOn = null; // Lưu vật cản vừa nảy để không nảy lại ngay lập tức
+                this.hasBouncedOn = null;
             }
+
             update() {
+                // Hoa chỉ rơi xuống nếu đã hết thời gian chờ (initialWait)
+                if (this.initialWait > 0) {
+                    this.initialWait--;
+                    return;
+                }
+
                 let nextY = this.y + this.speedY;
                 let nextX = this.x + this.speedX;
 
-                // Kiểm tra va chạm
                 obstacles.forEach(ob => {
-                    // Nếu chạm vào vùng vật cản và chưa từng nảy trên vật cản này
                     if (nextX > ob.left && nextX < ob.right && 
                         nextY > ob.top && nextY < ob.bottom && 
                         this.y <= ob.top && this.hasBouncedOn !== ob.id) {
                         
-                        this.speedY = -1.5; // Nảy ngược lên một chút
-                        this.speedX = (Math.random() - 0.5) * 0.5; // Văng ngang rất ít
-                        this.hasBouncedOn = ob.id; // Đánh dấu đã nảy xong
+                        this.speedY = -1.2; 
+                        this.speedX = (Math.random() - 0.5) * 0.4;
+                        this.hasBouncedOn = ob.id;
                     }
                 });
 
-                // Trọng lực kéo xuống lại sau khi nảy
-                if (this.speedY < 0.6) this.speedY += 0.05; 
+                if (this.speedY < 0.6) this.speedY += 0.04; 
 
                 this.y += this.speedY;
                 this.x += this.speedX;
                 this.rotation += this.spin;
 
-                // Giữ hoa trong phạm vi màn hình ngang
                 if (this.x < 0) this.x = 0;
                 if (this.x > canvas.width) this.x = canvas.width;
-
                 if (this.y > canvas.height) this.reset();
             }
+
             draw() {
+                if (this.initialWait > 0 || this.y < -this.size) return;
+                
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation * Math.PI / 180);
@@ -99,8 +111,11 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // Tạo 8 bông hoa cho thanh thoát
-        for(let i=0; i<25; i++) { flowers.push(new Flower()); }
+        // Tạo 8 bông hoa với thời gian chờ (delay) ngẫu nhiên
+        for(let i=0; i<25; i++) { 
+            // Mỗi bông hoa sẽ chờ từ 0 đến 300 khung hình mới bắt đầu rơi
+            flowers.push(new Flower(Math.random() * 400)); 
+        }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
