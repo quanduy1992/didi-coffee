@@ -69,13 +69,13 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.y = isFirstTime ? -Math.random() * canvas.height * 1.5 - 50 : -30;
                 this.size = Math.random() * 3 + 4;
                 this.speedY = Math.random() * 0.4 + 0.3;
-                this.speedX = Math.random() * 0.4 - 0.2;
+                this.speedX = Math.random() * 0.2 - 0.1; // Khởi đầu rơi thẳng hơn
                 this.rotation = Math.random() * 360;
                 this.spin = Math.random() * 1 - 0.5;
                 
                 this.isRolling = false;
-                this.rollDistance = 0; // Quãng đường đã lăn
-                this.maxRoll = Math.random() * 20 + 15; // Chỉ cho phép lăn từ 15-35px là rớt
+                this.rollDistance = 0;
+                this.maxRoll = Math.random() * 20 + 15; 
                 this.hasBouncedOn = null;
             }
 
@@ -86,7 +86,6 @@ window.addEventListener('DOMContentLoaded', () => {
                 let nextX = this.x + this.speedX;
                 let hitAny = false;
 
-                // Nếu chưa lăn đủ quãng đường thì mới kiểm tra va chạm để lăn tiếp
                 if (this.rollDistance < this.maxRoll) {
                     obstacles.forEach(ob => {
                         if (nextX > ob.left && nextX < ob.right && 
@@ -95,30 +94,40 @@ window.addEventListener('DOMContentLoaded', () => {
                             
                             hitAny = true;
                             if (!this.isRolling) {
-                                this.speedY = -0.4; // Nảy nhẹ 1 cái
-                                this.speedX = (this.x < (ob.left + ob.right)/2) ? -0.7 : 0.7;
+                                this.speedY = -0.3; // Nảy nhẹ
+                                // QUYẾT ĐỊNH HƯỚNG LĂN NGẪU NHIÊN 50/50 (TRÁI HOẶC PHẢI)
+                                this.speedX = Math.random() > 0.5 ? 0.6 : -0.6; 
                                 this.isRolling = true;
                                 this.hasBouncedOn = ob.id;
                             } else {
                                 this.y = ob.top - this.size;
                                 this.speedY = 0; 
-                                this.rollDistance += Math.abs(this.speedX); // Cộng dồn quãng đường lăn
+                                this.rollDistance += Math.abs(this.speedX);
                             }
                         }
                     });
                 }
 
-                // Nếu không chạm gì HOẶC đã lăn đủ quãng đường tối đa -> Cho rơi xuống
                 if (!hitAny || this.rollDistance >= this.maxRoll) {
+                    if (this.isRolling) {
+                        // Khi vừa dứt lăn, trả lại một chút tốc độ rơi thẳng để hoa không bị dạt biên
+                        this.speedX *= 0.5; 
+                    }
                     this.isRolling = false;
                     if (this.speedY < 0.7) this.speedY += 0.05; 
+                    this.rollDistance = 0; // Reset quãng đường lăn cho vật cản tiếp theo
                 }
 
                 this.y += this.speedY;
                 this.x += this.speedX;
                 this.rotation += this.spin;
 
-                if (this.x < 5 || this.x > canvas.width - 5) this.speedX *= -1;
+                // Va chạm biên thì bật lại để hoa luôn ở trong Card
+                if (this.x < 5 || this.x > canvas.width - 5) {
+                    this.speedX *= -1;
+                    this.isRolling = false; // Ngừng lăn nếu chạm biên
+                }
+
                 if (this.y > canvas.height) this.reset();
             }
 
