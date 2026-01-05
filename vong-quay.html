@@ -9,6 +9,10 @@
     <script src="config.js"></script> 
     <script src="hoamai.js"></script>
     <style>
+        .wheel-container, #wheel {
+            position: relative;
+            z-index: 99 !important; /* Đảm bảo vòng quay luôn nằm trên cùng */
+        }
         #wheel-container {
             position: relative;
             width: 300px;
@@ -70,13 +74,13 @@
 
     <script src="config.js"></script>
     <script>
-        const GIFTS = ["Tặng 1 ly", "Tặng 2 ly", "Tặng 7 ly", "Tặng 15 ly", "Tặng 20 Ly", "Tặng 30 ly", "Tặng giỏ quà", "Bao lì xì"];
+        const GIFTS = ["Tặng 1 ly", "Giảm 2k", "Tặng 2 ly", "Chúc May Mắn", "Tặng 4 Ly", "Tặng 3 ly", "Giảm 1k", "Chúc May Mắn"];
         const COLORS = ["#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f"];
         const GIFT_DATA = [
-            { name: "Tặng 1 ly", weight: 55 }, { name: "Tặng 2 ly", weight: 25 }, 
-            { name: "Tặng 7 ly", weight: 15 }, { name: "Tặng 15 ly", weight: 3.3 },
-            { name: "Tặng 20 Ly", weight: 1 }, { name: "Tặng 30 ly", weight: 0.5 }, 
-            { name: "Tặng giỏ quà", weight: 0.1 }, { name: "Bao lì xì", weight: 0.1 }
+            { name: "Tặng 1 ly", weight: 15 }, { name: "Giảm 2k", weight: 15 }, 
+            { name: "Tặng 2 ly", weight: 1 }, { name: "Chúc May Mắn", weight: 20 },
+            { name: "Tặng 4 Ly", weight: 0 }, { name: "Tặng 3 ly", weight: 0 }, 
+            { name: "Giảm 1k", weight: 27 }, { name: "Chúc May Mắn", weight: 20 }
         ];
 
         let currentRotation = 0;
@@ -214,7 +218,5 @@
     </script>
 </body>
 </html>
-
-
 
 
