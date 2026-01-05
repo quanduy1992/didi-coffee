@@ -1,128 +1,132 @@
-/* --- DI DI COFFEE - TẾT CHUẨN 2026 --- */
+/* --- DI DI COFFEE - PHỤC HỒI GIAO DIỆN CHUẨN --- */
 
 body { 
-    background-color: #fdf5e6; 
-    /* 1. NỀN BAO LÌ XÌ RƠI CHÌM */
-    background-image: 
-        radial-gradient(circle at 10% 10%, rgba(211, 47, 47, 0.1) 2px, transparent 0),
-        radial-gradient(circle at 30% 50%, rgba(211, 47, 47, 0.1) 3px, transparent 0),
-        radial-gradient(circle at 70% 20%, rgba(211, 47, 47, 0.1) 2px, transparent 0),
-        radial-gradient(circle at 90% 80%, rgba(211, 47, 47, 0.1) 3px, transparent 0);
-    background-size: 150px 150px;
+    background-color: #fff5f5; 
     display: flex; 
     justify-content: center; 
     align-items: center; 
     min-height: 100vh; 
     margin: 0; 
-    font-family: 'Segoe UI', sans-serif;
-    position: relative;
-}
-
-/* Thêm biểu tượng bao lì xì bay lơ lửng ngoài nền */
-body::before {
-    content: '🧧 🧧 🧧';
-    position: fixed;
-    top: 5%; left: 5%;
-    font-size: 30px;
-    opacity: 0.2;
+    font-family: 'Arial', sans-serif;
 }
 
 .card { 
-    background: white; 
-    padding: 25px; 
+    background: #ffffff; 
+    padding: 30px; 
     border-radius: 25px; 
-    box-shadow: 0 10px 30px rgba(211, 47, 47, 0.2); 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1); 
     text-align: center; 
-    width: 350px; 
+    width: 380px; 
     border: 2px solid #d32f2f; 
     position: relative;
     box-sizing: border-box;
-    overflow: hidden; /* Giữ cành mai không tràn ra ngoài */
 }
 
-/* 2. CÀNH MAI VÀ BÁNH CHƯNG Ở GÓC DƯỚI */
-.card::after {
-    content: '🌸🌿 🍱';
+/* 2 PHỤ KIỆN GÓC TRÊN SÁT MÉP */
+.card::before {
+    content: '🏮'; 
     position: absolute;
-    bottom: -10px;
-    right: 5px;
-    font-size: 50px; /* Làm to biểu tượng cành mai & bánh chưng */
-    opacity: 0.9;
-    pointer-events: none;
-    line-height: 1;
+    top: 5px;
+    left: 8px;
+    font-size: 26px;
 }
 
+.card::after {
+    content: '🧧';
+    position: absolute;
+    top: 5px;
+    right: 8px;
+    font-size: 26px;
+}
+
+/* TIÊU ĐỀ DI DI COFFEE CÙNG HOA ĐÀO */
 h2 { 
-    color: #5d4037; 
-    margin: 10px 0 20px 0; 
-    font-size: 24px;
+    color: #d32f2f; 
+    margin: 15px 0 20px 0; 
+    font-size: 24px; 
+    font-weight: bold;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: bold;
 }
-h2::before, h2::after { content: '🧨'; margin: 0 10px; font-size: 20px; }
+h2::before, h2::after { content: '🌸'; margin: 0 8px; font-size: 18px; }
 
+/* CÁC Ô NHẬP LIỆU GỌN GÀNG */
 label { 
     display: block; 
     text-align: left; 
     margin-bottom: 5px; 
     font-weight: bold; 
     color: #5d4037; 
-    font-size: 15px; 
 }
 
 input { 
     width: 100%; 
     padding: 12px; 
-    border: 1.5px solid #eee; 
-    border-radius: 12px; 
+    border: 1px solid #ddd; 
+    border-radius: 10px; 
     margin-bottom: 15px; 
     box-sizing: border-box; 
     font-size: 16px; 
-    outline: none;
 }
 
-input:focus { border-color: #d32f2f; }
-
+/* NÚT TÍCH ĐIỂM CHÍNH */
 button { 
     width: 100%; 
     background-color: #d32f2f; 
     color: white; 
     border: none; 
     padding: 15px; 
-    border-radius: 12px; 
+    border-radius: 10px; 
     font-weight: bold; 
     cursor: pointer; 
     font-size: 18px; 
-    margin-top: 10px;
 }
 
-/* PHẦN ĐIỀU HƯỚNG */
+/* DÒNG HIỂN THỊ ĐIỂM DƯỚI NÚT */
+.point-box {
+    margin: 10px 0 20px 0;
+    font-size: 14px;
+    color: #5d4037;
+}
+
+/* MENU DƯỚI: CHỮ THẲNG ĐỨNG, KHÔNG IN NGHIÊNG */
 .nav-menu { 
-    display: grid; 
-    grid-template-columns: 1fr 1fr 1fr; 
-    gap: 10px; 
-    margin-top: 30px; 
-    border-top: 1px dashed #ccc; 
+    display: flex; 
+    justify-content: space-between;
+    margin-top: 15px; 
+    border-top: 1px dashed #d32f2f; 
     padding-top: 20px;
-    position: relative;
-    z-index: 2; /* Để menu nằm trên cành mai */
 }
 
 .nav-item { 
-    background-color: #f9f9f9; 
-    color: #5d4037; 
-    padding: 10px; 
-    border-radius: 12px; 
+    background-color: #fff; 
+    color: #d32f2f; 
+    padding: 10px 5px; 
+    border-radius: 10px; 
     font-size: 12px; 
     text-decoration: none; 
-    font-weight: bold;
-    border: 1px solid #eee;
+    font-weight: bold; 
+    font-style: normal !important; /* KHÔNG IN NGHIÊNG */
+    border: 1px solid #ffca28;
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Ép icon và chữ bên trong thẳng đứng */
+.nav-item i, .nav-item span {
+    font-style: normal !important;
 }
 
 .nav-item.active { 
     background-color: #d32f2f; 
     color: white; 
-    border-color: #d32f2f; 
+    border-color: #d32f2f;
+}
+
+/* XÓA BỎ HOÀN TOÀN TẤT CẢ CÁC HÌNH TRANG TRÍ DƯỚI ĐÁY */
+.card-footer-decor, .mai-decor, .banh-chung, .flower-bg {
+    display: none !important;
 }
