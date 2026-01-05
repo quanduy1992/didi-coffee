@@ -9,7 +9,8 @@
 </head>
 <body>
 
-<div class="card"> <h2 id="shopTitle">☕ DI DI COFFEE</h2>
+<div class="card"> 
+    <h2 id="shopTitle">☕ DI DI COFFEE</h2>
     <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
     
     <div id="pointDisplay"></div> 
@@ -31,7 +32,7 @@
 <script>
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
-    let currentPoints = 0; 
+    let isProcessing = false; // Biến cờ chặn khách nhấn nút khi đang tự động chạy
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
@@ -61,41 +62,44 @@
     async function autoProcess(phone) {
         const display = document.getElementById('pointDisplay');
         const btn = document.getElementById('btnRedeem');
-        display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang nhận diện...</div>";
+        display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang nhận diện khách hàng...</div>";
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
+        isProcessing = true; // Khóa không cho khách tương tác
         
         try {
             const res = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
             const points = await res.text();
-            currentPoints = parseFloat(points) || 0;
+            let currentPoints = parseFloat(points) || 0;
             display.innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào bạn! Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
 
             if (currentPoints >= minPoints) {
-                btn.disabled = false;
-                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
-                setTimeout(() => handleRedeem(), 800);
+                // TỰ ĐỘNG ĐỔI QUÀ LUÔN
+                handleRedeem();
             } else {
-                btn.innerText = "CHƯA ĐỦ ĐIỂM";
+                btn.innerText = "CHƯA ĐỦ ĐIỂM ĐỔI";
+                isProcessing = false;
             }
         } catch (err) {
             display.innerHTML = "<div style='color:red; text-align:center;'>❌ Lỗi kết nối</div>";
             btn.disabled = false;
             btn.innerText = "THỬ LẠI";
+            isProcessing = false;
         }
     }
 
     function checkPointRealtime() {
+        if (isProcessing) return; // Nếu đang xử lý tự động thì không cho nhập liệu/check đè
         const phone = document.getElementById('phone').value.trim();
         const btn = document.getElementById('btnRedeem');
         if (phone.length >= 10) {
             fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
                 .then(res => res.text())
                 .then(points => {
-                    currentPoints = parseFloat(points) || 0;
-                    document.getElementById('pointDisplay').innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
-                    btn.disabled = currentPoints < minPoints;
-                    btn.innerText = currentPoints < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
+                    let cp = parseFloat(points) || 0;
+                    document.getElementById('pointDisplay').innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Hiện có: <strong>${cp}</strong> điểm</div>`;
+                    btn.disabled = cp < minPoints;
+                    btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
                 });
         }
     }
@@ -106,8 +110,9 @@
         const btn = document.getElementById('btnRedeem');
         const display = document.getElementById('pointDisplay');
 
+        isProcessing = true;
         btn.disabled = true;
-        btn.innerText = "⏳ ĐANG XỬ LÝ...";
+        btn.innerText = "⏳ ĐANG ĐỔI QUÀ...";
 
         fetch(`${CONFIG.SCRIPT_URL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent("Tặng 1 Ly")}&points=${CONFIG.REDEEM_POINTS}`)
         .then(res => res.text())
@@ -122,11 +127,10 @@
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN');
                 
-                // Ẩn phần hiển thị điểm cũ và nút bấm
                 display.style.display = "none";
                 btn.style.display = "none";
+                document.getElementById('form-input').style.display = "none"; // Ẩn luôn ô nhập SĐT
 
-                // Hiển thị giao diện mới giống phần Tích điểm
                 statusDiv.innerHTML = `
                     <div class="success-box">
                         <div>✅ ĐỔI THÀNH CÔNG!</div>
@@ -142,6 +146,7 @@
                 statusDiv.innerHTML = `<div style='color:red; text-align:center; margin-top:10px;'>❌ THẤT BẠI: ${result}</div>`;
                 btn.disabled = false;
                 btn.innerText = "THỬ LẠI";
+                isProcessing = false;
             }
         });
     }
