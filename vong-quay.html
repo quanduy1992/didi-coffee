@@ -142,13 +142,14 @@
             resDiv.innerHTML = "";
 
             try {
+                // BƯỚC 1: Kiểm tra điểm xong mới cho quay
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
                 const currentPoints = parseFloat(await response.text()) || 0;
 
                 if (currentPoints >= CONFIG.SPIN_POINTS) {
                     localStorage.setItem('didi_customer_phone', phone);
                     
-                    // 1. Tính toán kết quả ngay lập tức
+                    // BƯỚC 2: Tính toán kết quả
                     const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                     let random = Math.random() * totalWeight;
                     let selectedIndex = 0;
@@ -158,7 +159,7 @@
                     }
                     const giftName = GIFT_DATA[selectedIndex].name;
 
-                    // 2. Bắt đầu quay (4 giây)
+                    // BƯỚC 3: Bắt đầu hiệu ứng quay
                     spinAudio.currentTime = 0;
                     spinAudio.play();
                     const arc = 360 / GIFTS.length;
@@ -167,15 +168,15 @@
                     document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
                     btn.innerText = "🎡 ĐANG QUAY...";
 
-                    // 3. Chạy lệnh trừ điểm TRONG KHI ĐANG QUAY (Không đợi nó xong)
-                    const apiCall = fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
+                    // BƯỚC 4: Gửi lệnh trừ điểm lên server NGAY LẬP TỨC (Chạy ngầm khi đang quay)
+                    const updatePromise = fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
 
-                    // 4. Đợi đúng 4s vòng quay dừng thì hiện kết quả luôn
+                    // BƯỚC 5: Đợi đúng 4 giây (thời gian transition CSS) rồi hiện kết quả
                     setTimeout(async () => {
                         spinAudio.pause();
                         
-                        // Lấy lại điểm sau khi quay (đã chạy ngầm ở bước 3)
-                        await apiCall; 
+                        // Đảm bảo lệnh trừ điểm đã xong và lấy điểm mới
+                        await updatePromise;
                         const r2 = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
                         const newP = await r2.text();
 
