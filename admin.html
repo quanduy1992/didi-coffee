@@ -14,74 +14,77 @@
         <input type="password" id="adminPass" placeholder="Nhập mã bảo mật">
         <button onclick="checkLogin()">VÀO HỆ THỐNG</button>
     </div>
-<div id="admin-content" style="display:none;">
-    <h2>QUẢN TRỊ DIDI</h2>
 
-    <div class="admin-tabs">
-        <button class="tab-btn active" onclick="openTab(event, 'search')">KHÁCH HÀNG</button>
-        <button class="tab-btn" onclick="openTab(event, 'gift')">QUÀ TẶNG</button>
-        <button class="tab-btn" onclick="openTab(event, 'list')">DANH SÁCH</button>
-    </div>
+    <div id="admin-content" style="display:none;">
+        <h2>QUẢN TRỊ DIDI</h2>
 
-    <div id="search" class="section active">
-        <label>Số điện thoại khách:</label>
-        <input type="tel" id="searchPhone" placeholder="Ví dụ: 090xxx">
-        <button id="btnSearch" onclick="fetchCust()">TÌM KIẾM</button>
+        <div class="admin-tabs">
+            <button class="tab-btn active" onclick="openTab(event, 'search')">KHÁCH HÀNG</button>
+            <button class="tab-btn" onclick="openTab(event, 'gift')">QUÀ TẶNG</button>
+            <button class="tab-btn" onclick="openTab(event, 'list')">DANH SÁCH</button>
+        </div>
 
-        <div id="custInfo" style="display:none;" class="info-box">
-            <p>Khách: <span id="resName">...</span></p>
-            <p>Điểm: <span id="resPoints" style="color:#d32f2f; font-size: 20px;">0</span></p>
-            <hr style="border: 0.5px dashed #2e7d32; margin: 10px 0;">
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <input type="number" id="addPoints" value="1" style="width: 80px; margin-bottom: 0;">
-                <button onclick="updatePoints('add')" style="padding: 10px; font-size: 14px;">➕ CỘNG ĐIỂM</button>
+        <div id="search" class="section active">
+            <label>Số điện thoại khách:</label>
+            <input type="tel" id="searchPhone" placeholder="Ví dụ: 090xxx">
+            <button id="btnSearch" onclick="fetchCust()">TÌM KIẾM</button>
+
+            <div id="custInfo" style="display:none;" class="info-box">
+                <p>Khách: <span id="resName">...</span></p>
+                <p>Điểm: <span id="resPoints" style="color:#d32f2f; font-size: 20px;">0</span></p>
+                <hr style="border: 0.5px dashed #2e7d32; margin: 10px 0;">
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" id="addPoints" value="1" style="width: 80px; margin-bottom: 0;">
+                    <button onclick="updatePoints('add')" style="padding: 10px; font-size: 14px;">➕ CỘNG ĐIỂM</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="gift" class="section">
+            <label>SĐT Khách đổi quà:</label>
+            <input type="tel" id="giftPhone" placeholder="Nhập số điện thoại">
+            <label>Tên món quà:</label>
+            <input type="text" id="giftName" placeholder="VD: Ly Cafe Muối / Voucher">
+            <label>Số điểm trừ:</label>
+            <input type="number" id="subPoints" placeholder="Nhập số điểm cần trừ">
+            <button class="btn-sub" onclick="updatePoints('sub')">XÁC NHẬN ĐỔI QUÀ</button>
+        </div>
+
+        <div id="list" class="section">
+            <button onclick="fetchAllCustomers()" style="margin-bottom: 10px; background: #2e7d32; font-size: 14px;">🔄 TẢI DANH SÁCH KHÁCH</button>
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #d32f2f; border-radius: 8px;">
+                <table class="cust-list-table">
+                    <thead>
+                        <tr>
+                            <th>Tên - SĐT</th>
+                            <th>Điểm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-cust-body">
+                        <tr><td colspan="2" style="text-align:center; padding: 20px;">Nhấn nút để tải dữ liệu...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
-    <div id="gift" class="section">
-        <label>SĐT Khách đổi quà:</label>
-        <input type="tel" id="giftPhone" placeholder="Nhập số điện thoại">
-        <label>Tên món quà:</label>
-        <input type="text" id="giftName" placeholder="VD: Ly Cafe Muối / Voucher">
-        <label>Số điểm trừ:</label>
-        <input type="number" id="subPoints" placeholder="Nhập số điểm cần trừ">
-        <button class="btn-sub" onclick="updatePoints('sub')">XÁC NHẬN ĐỔI QUÀ</button>
-    </div>
-
-    <div id="list" class="section">
-        <button onclick="fetchAllCustomers()" style="margin-bottom: 10px; background: #2e7d32; font-size: 14px;">🔄 TẢI DANH SÁCH KHÁCH</button>
-        <div style="max-height: 300px; overflow-y: auto; border: 1px solid #d32f2f; border-radius: 8px;">
-            <table class="cust-list-table">
-                <thead>
-                    <tr>
-                        <th>Tên - SĐT</th>
-                        <th>Điểm</th>
-                    </tr>
-                </thead>
-                <tbody id="all-cust-body">
-                    <tr><td colspan="2" style="text-align:center; padding: 20px;">Nhấn nút để tải dữ liệu...</td></tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
     <div id="statusMsg" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
 </div>
 
 <script src="config.js"></script>
 <script>
-    // 1. Kiểm tra đăng nhập
+    // 1. Kiểm tra đăng nhập - ĐÃ SỬA ĐỂ HIỆN NỘI DUNG
     function checkLogin() {
         const pass = document.getElementById('adminPass').value;
-        if(pass === "1234") { // Bạn có thể đổi mã này
-            document.getElementById('login-overlay').style.display = 'none';
+        if(pass === "1234") { 
+            document.getElementById('login-overlay').style.display = 'none'; // Ẩn khóa
+            document.getElementById('admin-content').style.display = 'block'; // Hiện nội dung quản trị
         } else {
             alert("Mã bảo mật không đúng!");
         }
     }
 
-    // 2. Chuyển Tab
+    // 2. Chuyển Tab - GIỮ NGUYÊN
     function openTab(evt, tabName) {
         let sections = document.getElementsByClassName("section");
         for (let s of sections) s.classList.remove("active");
@@ -93,7 +96,7 @@
         document.getElementById('statusMsg').innerText = "";
     }
 
-    // 3. Tìm 1 khách hàng
+    // 3. Tìm 1 khách hàng - GIỮ NGUYÊN
     function fetchCust() {
         const phone = document.getElementById('searchPhone').value.trim();
         if(!phone) return;
@@ -113,7 +116,7 @@
         }
     }
 
-    // 4. Cộng hoặc Trừ điểm
+    // 4. Cộng hoặc Trừ điểm - GIỮ NGUYÊN
     function updatePoints(mode) {
         const phone = (mode === 'add') ? document.getElementById('searchPhone').value : document.getElementById('giftPhone').value;
         const amount = (mode === 'add') ? document.getElementById('addPoints').value : document.getElementById('subPoints').value;
@@ -136,7 +139,7 @@
         }
     }
 
-    // 5. Tải toàn bộ danh sách khách hàng
+    // 5. Tải toàn bộ danh sách khách hàng - GIỮ NGUYÊN
     function fetchAllCustomers() {
         document.getElementById('statusMsg').innerText = "⌛ Đang quét dữ liệu (có thể mất vài giây)...";
         fetch(`${CONFIG.SCRIPT_URL}?action=admin_get_all_customers&callback=renderAllCust`)
@@ -148,7 +151,7 @@
         tbody.innerHTML = ""; 
         if(res.status === "SUCCESS") {
             document.getElementById('statusMsg').innerText = "✅ Đã tải xong danh sách.";
-            res.data.sort((a, b) => b.points - a.points); // Ưu tiên khách nhiều điểm lên đầu
+            res.data.sort((a, b) => b.points - a.points); 
             res.data.forEach(cust => {
                 tbody.innerHTML += `<tr>
                     <td><strong>${cust.name}</strong><br><small>${cust.phone}</small></td>
@@ -160,5 +163,3 @@
 </script>
 </body>
 </html>
-
-
