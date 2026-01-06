@@ -14,10 +14,10 @@
         <input type="password" id="adminPass" placeholder="Nhập mã bảo mật">
         <button onclick="checkLogin()">VÀO HỆ THỐNG</button>
     </div>
-
+<div id="admin-content" style="display:none;">
     <h2>QUẢN TRỊ DIDI</h2>
 
-    <div class="admin-tabs" style="display:none;">
+    <div class="admin-tabs">
         <button class="tab-btn active" onclick="openTab(event, 'search')">KHÁCH HÀNG</button>
         <button class="tab-btn" onclick="openTab(event, 'gift')">QUÀ TẶNG</button>
         <button class="tab-btn" onclick="openTab(event, 'list')">DANH SÁCH</button>
@@ -65,7 +65,7 @@
             </table>
         </div>
     </div>
-
+</div>
     <div id="statusMsg" style="margin-top: 15px; font-weight: bold; font-size: 13px; text-align: center;"></div>
 </div>
 
@@ -160,4 +160,5 @@
 </script>
 </body>
 </html>
+
 
