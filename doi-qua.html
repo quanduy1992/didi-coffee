@@ -46,15 +46,17 @@
         const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
-        // KIỂM TRA NGUỒN TRUY CẬP (CHỈ CHO PHÉP TỪ QR)
+        // KIỂM TRA NGUỒN TRUY CẬP (ĐÓNG KHUNG THÔNG BÁO GIỐNG BOX THÀNH CÔNG)
         if (!phoneFromUrl) {
-            document.getElementById('form-input').style.display = "none"; // Ẩn ô nhập SĐT để khách không tự nhập
-            document.getElementById('pointDisplay').innerHTML = `
-                <div style="text-align:center; padding: 20px; color: #8d6e63;">
-                    <p>Vui lòng quét mã QR tại quầy để đổi quà</p>
+            document.getElementById('form-input').style.display = "none"; // Ẩn ô nhập SĐT
+            document.getElementById('status').innerHTML = `
+                <div class="success-box" style="background: #fff3e0; border-color: #ffb74d;">
+                    <div style="color: #e65100;">⚠️ THÔNG BÁO</div>
+                    <span class="points-info" style="color: #8d6e63;">Vui lòng quét mã QR đặt tại quầy để thực hiện đổi quà trực tiếp.</span>
                 </div>
+                <button class="btn-confirm" onclick="window.location.href='index.html'" style="background: #8d6e63;">QUAY LẠI TRANG CHỦ</button>
             `;
-            return; // Dừng xử lý các bước tự động
+            return; 
         }
 
         const finalPhone = phoneFromUrl || savedPhone;
@@ -102,8 +104,6 @@
 
     function checkPointRealtime() {
         if (isProcessing) return; 
-        
-        // Không cho phép kiểm tra điểm nếu không có tham số QR
         const urlParams = new URLSearchParams(window.location.search);
         if (!urlParams.get('phone')) return;
 
@@ -122,7 +122,6 @@
     }
 
     function handleRedeem() {
-        // Kiểm tra an toàn cuối cùng
         const urlParams = new URLSearchParams(window.location.search);
         if (!urlParams.get('phone')) return;
 
