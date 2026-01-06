@@ -41,10 +41,23 @@
             document.querySelector('h2').innerText = "☕ " + CONFIG.SHOP_NAME;
         }
         validateSession(); 
+        
         const urlParams = new URLSearchParams(window.location.search);
         const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
+        // KIỂM TRA NẾU TRUY CẬP TỪ WEB (KHÔNG CÓ QR)
+        if (!phoneFromUrl) {
+            document.getElementById('pointDisplay').innerHTML = `
+                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; color: #e65100; text-align: center; border: 1px dashed #ffb74d; margin-bottom: 15px;">
+                    ⚠️ <strong>LƯU Ý:</strong> Vui lòng quét mã QR tại quầy để thực hiện đổi quà.
+                </div>
+            `;
+            document.getElementById('btnRedeem').disabled = true;
+            document.getElementById('btnRedeem').innerText = "VUI LÒNG QUÉT MÃ QR";
+            return; // Dừng các xử lý tự động bên dưới
+        }
+
         const finalPhone = phoneFromUrl || savedPhone;
         if (finalPhone) {
             document.getElementById('phone').value = finalPhone;
@@ -91,6 +104,14 @@
 
     function checkPointRealtime() {
         if (isProcessing) return; // Nếu đang xử lý tự động thì không cho nhập liệu/check đè
+        
+        // Kiểm tra nếu không có tham số QR thì không cho check điểm/đổi quà
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.get('phone')) {
+            alert("Vui lòng quét mã QR tại quầy để thực hiện thao tác này!");
+            return;
+        }
+
         const phone = document.getElementById('phone').value.trim();
         const btn = document.getElementById('btnRedeem');
         if (phone.length >= 10) {
@@ -106,6 +127,13 @@
     }
 
     function handleRedeem() {
+        // Chặn lần nữa nếu khách cố tình nhấn nút mà không từ QR
+        const urlParams = new URLSearchParams(window.location.search);
+        if (!urlParams.get('phone')) {
+            alert("Bạn cần quét mã QR tại cửa hàng để đổi quà!");
+            return;
+        }
+
         const phone = document.getElementById('phone').value.trim();
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
@@ -164,4 +192,3 @@
 </script>
 </body>
 </html>
-
