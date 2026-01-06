@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Di Di Coffee</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-box { background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 15px; margin-bottom: 20px; color: #4e342e; }
+        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
+        button { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .btn-search { background: #6d4c41; color: white; }
+        .btn-add { background: #4caf50; color: white; }
+        .btn-sub { background: #f44336; color: white; }
+        .info-display { background: #efebe9; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 5px solid #6d4c41; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h2 id="shopTitle">⚙️ QUẢN TRỊ DI DI</h2>
+        
+        <div id="admin-login">
+            <input type="password" id="adminPass" placeholder="Nhập mã bảo mật Admin">
+            <button class="btn-search" onclick="login()">VÀO QUẢN TRỊ</button>
+        </div>
+
+        <div id="admin-panel" style="display:none;">
+            <div class="admin-box">
+                <label>Tra cứu Số điện thoại:</label>
+                <input type="tel" id="searchPhone" placeholder="090...">
+                <button class="btn-search" onclick="fetchCustomer()">TÌM KHÁCH HÀNG</button>
+                
+                <div id="customerDetails" style="display:none;" class="info-display">
+                    <p>Khách: <strong id="detName">...</strong></p>
+                    <p>Điểm: <strong id="detPoints" style="font-size: 24px; color: #d84315;">0</strong></p>
+                    <p>Lượt quay: <strong id="detSpins">0</strong></p>
+                </div>
+            </div>
+
+            <div class="admin-box">
+                <h4>Thao tác điểm & Quà</h4>
+                <input type="number" id="pointAmount" placeholder="Số điểm (ví dụ: 1 hoặc 20)">
+                <div class="btn-group">
+                    <button class="btn-add" onclick="updateData('add')">➕ CỘNG ĐIỂM</button>
+                    <button class="btn-sub" onclick="updateData('sub')">🎁 ĐỔI QUÀ (-)</button>
+                </div>
+            </div>
+            
+            <div class="admin-box">
+                <h4>Vòng quay</h4>
+                <button class="btn-search" style="width:100%" onclick="updateData('add_spin')">➕ TẶNG 1 LƯỢT QUAY</button>
+            </div>
+        </div>
+
+        <div id="adminResult" style="margin-top:15px"></div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        // Mật khẩu vào admin đơn giản (Bạn có thể đổi ở đây)
+        function login() {
+            const pass = document.getElementById('adminPass').value;
+            if(pass === "1234") { // Thay 1234 bằng pass bạn muốn
+                document.getElementById('admin-login').style.display = 'none';
+                document.getElementById('admin-panel').style.display = 'block';
+            } else {
+                alert("Sai mã bảo mật!");
+            }
+        }
+
+        function fetchCustomer() {
+            const phone = document.getElementById('searchPhone').value.trim();
+            if(!phone) return alert("Chưa nhập SĐT");
+
+            const resDiv = document.getElementById('adminResult');
+            resDiv.innerHTML = "⌛ Đang tìm...";
+
+            fetch(`${CONFIG.SCRIPT_URL}?action=get_customer&phone=${phone}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === "SUCCESS") {
+                        document.getElementById('customerDetails').style.display = 'block';
+                        document.getElementById('detName').innerText = data.name;
+                        document.getElementById('detPoints').innerText = data.points;
+                        document.getElementById('detSpins').innerText = data.spins || 0;
+                        resDiv.innerHTML = "";
+                    } else {
+                        resDiv.innerHTML = "❌ Không tìm thấy khách này.";
+                    }
+                });
+        }
+
+        function updateData(mode) {
+            const phone = document.getElementById('searchPhone').value.trim();
+            const amount = document.getElementById('pointAmount').value || 1;
+            const resDiv = document.getElementById('adminResult');
+
+            resDiv.innerHTML = "⌛ Đang xử lý...";
+
+            fetch(`${CONFIG.SCRIPT_URL}?action=admin_update&mode=${mode}&phone=${phone}&amount=${amount}`)
+                .then(res => res.json())
+                .then(data => {
+                    if(data.status === "SUCCESS") {
+                        resDiv.innerHTML = "✅ Thành công!";
+                        fetchCustomer(); // Reload lại thông tin mới
+                    } else {
+                        resDiv.innerHTML = "❌ Lỗi: " + data.message;
+                    }
+                });
+        }
+    </script>
+</body>
+</html>
