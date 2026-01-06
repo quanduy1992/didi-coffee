@@ -1,185 +1,331 @@
 <!DOCTYPE html>
+
 <html lang="vi">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Di Di Coffee - Đổi Thưởng</title>
+
     <link rel="stylesheet" href="style.css">
+
     <script src="config.js"></script> 
+
     <script src="hoamai.js"></script>
+
 </head>
+
 <body>
 
+
+
 <div class="card"> 
+
     <h2 id="shopTitle">☕ DI DI COFFEE</h2>
+
     <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
+
     
+
     <div id="pointDisplay"></div> 
+
     <div id="form-input">
+
         <label>Số điện thoại:</label>
+
         <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
+
         <button id="btnRedeem" onclick="handleRedeem()" disabled style="width: 100%; margin-top: 10px;">XÁC NHẬN ĐỔI QUÀ</button>
+
     </div>
+
+
 
     <div id="status"></div>
 
+
+
     <div class="nav-menu">
+
         <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
+
         <a href="doi-qua.html" class="nav-item active"><i>🎁</i> Đổi quà</a>
+
         <a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
+
     </div>
+
 </div>
 
+
+
 <script>
+
     const scriptURL = CONFIG.SCRIPT_URL;
+
     const minPoints = CONFIG.REDEEM_POINTS;
+
     let isProcessing = false; // Biến cờ chặn khách nhấn nút khi đang tự động chạy
+
     document.getElementById('reqPoints').innerText = minPoints;
 
+
+
     window.onload = function() {
+
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
+
             document.querySelector('h2').innerText = "☕ " + CONFIG.SHOP_NAME;
+
         }
+
         validateSession(); 
-        
+
         const urlParams = new URLSearchParams(window.location.search);
+
         const phoneFromUrl = urlParams.get('phone');
+
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
+
         
-        // KIỂM TRA NGUỒN TRUY CẬP (ĐÓNG KHUNG THÔNG BÁO GIỐNG BOX THÀNH CÔNG)
-        if (!phoneFromUrl) {
-            document.getElementById('form-input').style.display = "none"; // Ẩn ô nhập SĐT
-            document.getElementById('status').innerHTML = `
-                <div class="success-box" style="background: #fff3e0; border-color: #ffb74d;">
-                    <div style="color: #e65100;">⚠️ THÔNG BÁO</div>
-                    <span class="points-info" style="color: #8d6e63;">Vui lòng quét mã QR đặt tại quầy để thực hiện đổi quà trực tiếp.</span>
-                </div>
-                <button class="btn-confirm" onclick="window.location.href='index.html'" style="background: #8d6e63;">QUAY LẠI TRANG CHỦ</button>
-            `;
-            return; 
-        }
 
         const finalPhone = phoneFromUrl || savedPhone;
+
         if (finalPhone) {
+
             document.getElementById('phone').value = finalPhone;
+
             autoProcess(finalPhone);
+
         }
+
     };
 
+
+
     function validateSession() {
+
         const lastRedeem = localStorage.getItem('last_redeem_timestamp');
+
         if (lastRedeem) {
+
             const diff = (new Date().getTime() - parseInt(lastRedeem)) / (1000 * 60);
+
             if (diff > 5) resetUI(); 
+
         }
+
     }
+
+
 
     async function autoProcess(phone) {
+
         const display = document.getElementById('pointDisplay');
+
         const btn = document.getElementById('btnRedeem');
+
         display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang nhận diện khách hàng...</div>";
+
         btn.disabled = true;
+
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
-        isProcessing = true; 
+
+        isProcessing = true; // Khóa không cho khách tương tác
+
         
+
         try {
+
             const res = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+
             const points = await res.text();
+
             let currentPoints = parseFloat(points) || 0;
+
             display.innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào bạn! Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
 
+
+
             if (currentPoints >= minPoints) {
+
+                // TỰ ĐỘNG ĐỔI QUÀ LUÔN
+
                 handleRedeem();
+
             } else {
+
                 btn.innerText = "CHƯA ĐỦ ĐIỂM ĐỔI";
+
                 isProcessing = false;
+
             }
+
         } catch (err) {
+
             display.innerHTML = "<div style='color:red; text-align:center;'>❌ Lỗi kết nối</div>";
+
             btn.disabled = false;
+
             btn.innerText = "THỬ LẠI";
+
             isProcessing = false;
+
         }
+
     }
+
+
 
     function checkPointRealtime() {
-        if (isProcessing) return; 
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.get('phone')) return;
+
+        if (isProcessing) return; // Nếu đang xử lý tự động thì không cho nhập liệu/check đè
 
         const phone = document.getElementById('phone').value.trim();
+
         const btn = document.getElementById('btnRedeem');
+
         if (phone.length >= 10) {
+
             fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`)
+
                 .then(res => res.text())
+
                 .then(points => {
+
                     let cp = parseFloat(points) || 0;
+
                     document.getElementById('pointDisplay').innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Hiện có: <strong>${cp}</strong> điểm</div>`;
+
                     btn.disabled = cp < minPoints;
+
                     btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
+
                 });
+
         }
+
     }
+
+
 
     function handleRedeem() {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.get('phone')) return;
 
         const phone = document.getElementById('phone').value.trim();
+
         const statusDiv = document.getElementById('status');
+
         const btn = document.getElementById('btnRedeem');
+
         const display = document.getElementById('pointDisplay');
 
+
+
         isProcessing = true;
+
         btn.disabled = true;
+
         btn.innerText = "⏳ ĐANG ĐỔI QUÀ...";
 
+
+
         fetch(`${CONFIG.SCRIPT_URL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent("Tặng 1 Ly")}&points=${CONFIG.REDEEM_POINTS}`)
+
         .then(res => res.text())
+
         .then(async result => {
+
             if (result === "SUCCESS") {
+
                 let newPointsDisplay = "---";
+
                 try {
+
                     const resPoint = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+
                     newPointsDisplay = await resPoint.text();
+
                 } catch (e) {}
 
+
+
                 const now = new Date();
+
                 const timeStr = now.toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN');
+
                 
+
                 display.style.display = "none";
+
                 btn.style.display = "none";
-                document.getElementById('form-input').style.display = "none"; 
+
+                document.getElementById('form-input').style.display = "none"; // Ẩn luôn ô nhập SĐT
+
+
 
                 statusDiv.innerHTML = `
+
                     <div class="success-box">
+
                         <div>✅ ĐỔI THÀNH CÔNG!</div>
+
                         <span class="time">Thời gian: ${timeStr}</span>
+
                         <span class="points-info">Số điểm còn lại: <span>${newPointsDisplay}</span></span>
+
                     </div>
+
                     <button class="btn-confirm" onclick="confirmAndClose()">CHỜ NHÂN VIÊN GIAO QUÀ</button>
+
                 `;
+
                 
+
                 localStorage.setItem('last_redeem_timestamp', now.getTime());
+
                 localStorage.setItem('didi_customer_phone', phone);
+
             } else {
+
                 statusDiv.innerHTML = `<div style='color:red; text-align:center; margin-top:10px;'>❌ THẤT BẠI: ${result}</div>`;
+
                 btn.disabled = false;
+
                 btn.innerText = "THỬ LẠI";
+
                 isProcessing = false;
+
             }
+
         });
+
     }
+
+
 
     function confirmAndClose() {
+
         localStorage.removeItem('last_redeem_timestamp');
+
         window.location.href = "index.html";
+
     }
 
+
+
     function resetUI() {
+
         localStorage.removeItem('last_redeem_timestamp');
+
         location.reload();
+
     }
+
 </script>
+
 </body>
+
 </html>
