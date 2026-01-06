@@ -1,114 +1,179 @@
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Di Di Coffee</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        .admin-box { background: rgba(255, 255, 255, 0.9); padding: 20px; border-radius: 15px; margin-bottom: 20px; color: #4e342e; }
-        input { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
-        .btn-group { display: flex; gap: 10px; flex-wrap: wrap; }
-        button { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
-        .btn-search { background: #6d4c41; color: white; }
-        .btn-add { background: #4caf50; color: white; }
-        .btn-sub { background: #f44336; color: white; }
-        .info-display { background: #efebe9; padding: 15px; border-radius: 10px; margin-top: 15px; border-left: 5px solid #6d4c41; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <h2 id="shopTitle">⚙️ QUẢN TRỊ DI DI</h2>
-        
-        <div id="admin-login">
-            <input type="password" id="adminPass" placeholder="Nhập mã bảo mật Admin">
-            <button class="btn-search" onclick="login()">VÀO QUẢN TRỊ</button>
-        </div>
+function doGet(e) {
+  // --- 1. THIẾT LẬP KHÓA (CHỐNG BUG QUAY NHIỀU MÁY) - GIỮ NGUYÊN ---
+  var lock = LockService.getScriptLock();
+  try {
+    lock.waitLock(20000); 
 
-        <div id="admin-panel" style="display:none;">
-            <div class="admin-box">
-                <label>Tra cứu Số điện thoại:</label>
-                <input type="tel" id="searchPhone" placeholder="090...">
-                <button class="btn-search" onclick="fetchCustomer()">TÌM KHÁCH HÀNG</button>
-                
-                <div id="customerDetails" style="display:none;" class="info-display">
-                    <p>Khách: <strong id="detName">...</strong></p>
-                    <p>Điểm: <strong id="detPoints" style="font-size: 24px; color: #d84315;">0</strong></p>
-                    <p>Lượt quay: <strong id="detSpins">0</strong></p>
-                </div>
-            </div>
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    var action = e.parameter.action;
+    
+    // Làm sạch số điện thoại truyền từ URL - GIỮ NGUYÊN
+    var phone = e.parameter.phone ? e.parameter.phone.toString().replace(/[^0-9]/g, "") : "";
 
-            <div class="admin-box">
-                <h4>Thao tác điểm & Quà</h4>
-                <input type="number" id="pointAmount" placeholder="Số điểm (ví dụ: 1 hoặc 20)">
-                <div class="btn-group">
-                    <button class="btn-add" onclick="updateData('add')">➕ CỘNG ĐIỂM</button>
-                    <button class="btn-sub" onclick="updateData('sub')">🎁 ĐỔI QUÀ (-)</button>
-                </div>
-            </div>
-            
-            <div class="admin-box">
-                <h4>Vòng quay</h4>
-                <button class="btn-search" style="width:100%" onclick="updateData('add_spin')">➕ TẶNG 1 LƯỢT QUAY</button>
-            </div>
-        </div>
+    // Chống dữ liệu rỗng - GIỮ NGUYÊN (Cập nhật thêm các action mới)
+    if (!action || (action !== "get_points" && action !== "admin_get_info" && action !== "admin_get_all_customers" && !phone)) {
+      return ContentService.createTextOutput("IGNORE_EMPTY_REQUEST");
+    }
 
-        <div id="adminResult" style="margin-top:15px"></div>
-    </div>
+    // --- 2. XỬ LÝ XEM ĐIỂM - GIỮ NGUYÊN ---
+    if (action === "get_points") {
+      var total = calculateTotalPoints(phone, sheet);
+      return ContentService.createTextOutput(total.toString());
+    }
 
-    <script src="config.js"></script>
-    <script>
-        // Mật khẩu vào admin đơn giản (Bạn có thể đổi ở đây)
-        function login() {
-            const pass = document.getElementById('adminPass').value;
-            if(pass === "1234") { // Thay 1234 bằng pass bạn muốn
-                document.getElementById('admin-login').style.display = 'none';
-                document.getElementById('admin-panel').style.display = 'block';
-            } else {
-                alert("Sai mã bảo mật!");
-            }
+    // --- 3. ADMIN: LẤY TOÀN BỘ DANH SÁCH KHÁCH (MỚI) ---
+    if (action === "admin_get_all_customers") {
+      var data = sheet.getDataRange().getValues();
+      var customers = {}; 
+      for (var i = 1; i < data.length; i++) {
+        var name = data[i][2] || "Khách ẩn danh";
+        var rawPhone = data[i][3] ? data[i][3].toString().replace(/[^0-9]/g, "") : "";
+        var type = data[i][1] ? data[i][1].toString().toUpperCase() : "";
+        var pts = Number(data[i][5]) || 0;
+        if (rawPhone) {
+          if (!customers[rawPhone]) { customers[rawPhone] = { name: name, points: 0 }; }
+          if (name !== "Khách ẩn danh") customers[rawPhone].name = name;
+          if (type === "ĐÃ DÙNG") {
+            customers[rawPhone].points += (pts === 0 ? 1 : pts);
+          } else if (type === "ĐỔI THƯỞNG") {
+            customers[rawPhone].points -= pts;
+          }
         }
+      }
+      var list = [];
+      for (var p in customers) {
+        list.push({ phone: p, name: customers[p].name, points: Math.round(customers[p].points * 100) / 100 });
+      }
+      var res = JSON.stringify({ "status": "SUCCESS", "data": list });
+      return ContentService.createTextOutput(e.parameter.callback + "(" + res + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
 
-        function fetchCustomer() {
-            const phone = document.getElementById('searchPhone').value.trim();
-            if(!phone) return alert("Chưa nhập SĐT");
-
-            const resDiv = document.getElementById('adminResult');
-            resDiv.innerHTML = "⌛ Đang tìm...";
-
-            fetch(`${CONFIG.SCRIPT_URL}?action=get_customer&phone=${phone}`)
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === "SUCCESS") {
-                        document.getElementById('customerDetails').style.display = 'block';
-                        document.getElementById('detName').innerText = data.name;
-                        document.getElementById('detPoints').innerText = data.points;
-                        document.getElementById('detSpins').innerText = data.spins || 0;
-                        resDiv.innerHTML = "";
-                    } else {
-                        resDiv.innerHTML = "❌ Không tìm thấy khách này.";
-                    }
-                });
+    // --- 4. ADMIN: TRA CỨU 1 KHÁCH (MỚI) ---
+    if (action === "admin_get_info") {
+      var total = calculateTotalPoints(phone, sheet);
+      var data = sheet.getDataRange().getValues();
+      var customerName = "Khách mới";
+      for (var i = data.length - 1; i >= 1; i--) {
+        var phoneInSheet = data[i][3] ? data[i][3].toString().replace(/[^0-9]/g, "") : "";
+        if (phoneInSheet === phone && data[i][2]) {
+          customerName = data[i][2];
+          break;
         }
+      }
+      var res = JSON.stringify({ "status": "SUCCESS", "name": customerName, "points": total });
+      return ContentService.createTextOutput(e.parameter.callback + "(" + res + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
 
-        function updateData(mode) {
-            const phone = document.getElementById('searchPhone').value.trim();
-            const amount = document.getElementById('pointAmount').value || 1;
-            const resDiv = document.getElementById('adminResult');
+    // --- 5. ADMIN: CỘNG/TRỪ ĐIỂM (MỚI) ---
+    if (action === "admin_update_points") {
+      var mode = e.parameter.mode; 
+      var amount = Number(e.parameter.amount) || 0;
+      var adminName = e.parameter.name || "Admin";
+      var note = e.parameter.note || (mode === "add" ? "Cộng điểm thủ công" : "Đổi quà tại quầy");
+      var statusFlag = (mode === "add") ? "ĐÃ DÙNG" : "ĐỔI THƯỞNG";
+      sheet.appendRow(["ADMIN_MANUAL", statusFlag, adminName, "'" + phone, new Date(), amount]);
+      var newTotal = calculateTotalPoints(phone, sheet);
+      sendTelegramSpin(adminName + " - " + phone, note + " (" + (mode === "add" ? "+" : "-") + amount + "đ)");
+      var res = JSON.stringify({ "status": "SUCCESS", "points": newTotal });
+      return ContentService.createTextOutput(e.parameter.callback + "(" + res + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
 
-            resDiv.innerHTML = "⌛ Đang xử lý...";
+    // --- 6. XỬ LÝ ĐỔI THƯỞNG / VÒNG QUAY - GIỮ NGUYÊN ---
+    if (action === "doi_thuong" || action === "vong_quay") {
+      var gift = e.parameter.gift || "Quà tặng";
+      var pointsToSubtract = Number(e.parameter.points) || 0; 
+      var currentPoints = calculateTotalPoints(phone, sheet);
+      if (currentPoints < pointsToSubtract) { return ContentService.createTextOutput("ERROR_NOT_ENOUGH_POINTS"); }
+      
+      var data = sheet.getDataRange().getValues();
+      var tempName = "Khách";
+      for (var i = data.length - 1; i >= 1; i--) {
+        if (data[i][3].toString().replace(/[^0-9]/g, "") === phone) { tempName = data[i][2]; break; }
+      }
+      sheet.appendRow([action.toUpperCase(), "ĐỔI THƯỞNG", gift, "'" + phone, new Date(), pointsToSubtract]);
+      sendTelegramSpin(tempName + " - " + phone, gift + " (Trừ " + pointsToSubtract + "đ)");
+      return ContentService.createTextOutput("SUCCESS");
+    }
 
-            fetch(`${CONFIG.SCRIPT_URL}?action=admin_update&mode=${mode}&phone=${phone}&amount=${amount}`)
-                .then(res => res.json())
-                .then(data => {
-                    if(data.status === "SUCCESS") {
-                        resDiv.innerHTML = "✅ Thành công!";
-                        fetchCustomer(); // Reload lại thông tin mới
-                    } else {
-                        resDiv.innerHTML = "❌ Lỗi: " + data.message;
-                    }
-                });
+    // --- 7. XỬ LÝ TÍCH ĐIỂM QR - GIỮ NGUYÊN ---
+    var code = e.parameter.code ? e.parameter.code.toUpperCase().trim() : "";
+    if (!code || code === "") { return ContentService.createTextOutput("EMPTY_CODE_IGNORE"); }
+    var name = e.parameter.name || "Khách ẩn danh";
+    var phoneInput = e.parameter.phone || "";
+    var pointsToAdd = Number(e.parameter.add_points) || 1;
+    var data = sheet.getDataRange().getValues();
+    var status = "NOT_FOUND";
+    var totalPoints = 0;
+    for (var i = 1; i < data.length; i++) {
+      if (data[i][0].toString().toUpperCase().trim() == code) {
+        if (data[i][1] == "ĐÃ DÙNG") { status = "USED"; } 
+        else {
+          sheet.getRange(i + 1, 2).setValue("ĐÃ DÙNG");
+          sheet.getRange(i + 1, 3).setValue(name);
+          sheet.getRange(i + 1, 4).setValue("'" + phoneInput.toString().replace(/[^0-9]/g, ""));
+          sheet.getRange(i + 1, 5).setValue(new Date());
+          sheet.getRange(i + 1, 6).setValue(pointsToAdd);
+          status = "SUCCESS";
         }
-    </script>
-</body>
-</html>
+        break;
+      }
+    }
+    if (status === "SUCCESS" || status === "USED") {
+      totalPoints = calculateTotalPoints(phoneInput, sheet);
+      if (status === "SUCCESS") {
+        var today = new Date().toLocaleDateString();
+        var dailyCount = 0;
+        var updatedData = sheet.getDataRange().getValues();
+        for (var j = 1; j < updatedData.length; j++) {
+          if (updatedData[j][4] instanceof Date && updatedData[j][4].toLocaleDateString() == today) { dailyCount++; }
+        }
+        sendTelegramScan(name, phoneInput, code, totalPoints, dailyCount);
+      }
+    }
+    var result = JSON.stringify({ "status": status, "points": totalPoints });
+    return ContentService.createTextOutput(e.parameter.callback + "(" + result + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+
+  } catch (err) {
+    var errResult = JSON.stringify({"status":"ERROR", "message": err.toString()});
+    return ContentService.createTextOutput(e.parameter.callback + "(" + errResult + ")").setMimeType(ContentService.MimeType.JAVASCRIPT);
+  } finally {
+    lock.releaseLock(); // GIỮ NGUYÊN NHẢ KHÓA
+  }
+}
+
+// --- HÀM TÍNH TỔNG ĐIỂM - GIỮ NGUYÊN ---
+function calculateTotalPoints(phone, sheet) {
+  if (!phone) return 0;
+  var phoneClean = phone.toString().replace(/[^0-9]/g, "");
+  var data = sheet.getDataRange().getValues();
+  var total = 0;
+  for (var i = 1; i < data.length; i++) {
+    var phoneInSheet = data[i][3] ? data[i][3].toString().replace(/[^0-9]/g, "") : "";
+    if (phoneInSheet === phoneClean) {
+      var type = data[i][1] ? data[i][1].toString().toUpperCase() : "";
+      if (type === "ĐÃ DÙNG") {
+        var pts = Number(data[i][5]);
+        total += (isNaN(pts) || pts === 0) ? 1 : pts;
+      } else if (type === "ĐỔI THƯỞNG") {
+        var pts = Number(data[i][5]);
+        total -= (isNaN(pts) ? 0 : pts);
+      }
+    }
+  }
+  return Math.round(total * 100) / 100;
+}
+
+// --- TELEGRAM (ĐÃ SỬA ĐỊNH DẠNG TÊN - SĐT) ---
+function sendTelegramScan(name, phone, code, points, dailyCount) {
+  var token = "8537370635:AAFoEKrQDGdbF9Lu07_m8TuVPZlVKETrnBw"; 
+  var chatId = "2102561624";
+  var message = "☕ *DI DI COFFEE - CÓ KHÁCH MỚI!*\n👤: *" + name + " - " + phone + "*\n🎫: `" + code + "`\n⭐ Điểm tích lũy: *" + points + "*\n📊 Tổng khách hôm nay: *" + dailyCount + "*";
+  UrlFetchApp.fetch("https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(message) + "&parse_mode=Markdown");
+}
+
+function sendTelegramSpin(customerInfo, gift) {
+  var token = "8537370635:AAFoEKrQDGdbF9Lu07_m8TuVPZlVKETrnBw"; 
+  var chatId = "2102561624";
+  var msg = "🎁 *DI DI COFFEE - ĐỔI QUÀ/VÒNG QUAY*\n👤 Khách: *" + customerInfo + "*\n🎉 Nội dung: *" + gift + "*\n⏰ Lúc: " + new Date().toLocaleString();
+  UrlFetchApp.fetch("https://api.telegram.org/bot" + token + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(msg) + "&parse_mode=Markdown");
+}
