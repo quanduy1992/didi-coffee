@@ -46,16 +46,15 @@
         const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
-        // KIỂM TRA NẾU TRUY CẬP TỪ WEB (KHÔNG CÓ QR)
+        // KIỂM TRA NGUỒN TRUY CẬP (CHỈ CHO PHÉP TỪ QR)
         if (!phoneFromUrl) {
+            document.getElementById('form-input').style.display = "none"; // Ẩn ô nhập SĐT để khách không tự nhập
             document.getElementById('pointDisplay').innerHTML = `
-                <div style="background: #fff3e0; padding: 15px; border-radius: 8px; color: #e65100; text-align: center; border: 1px dashed #ffb74d; margin-bottom: 15px;">
-                    ⚠️ <strong>LƯU Ý:</strong> Vui lòng quét mã QR tại quầy để thực hiện đổi quà.
+                <div style="text-align:center; padding: 20px; color: #8d6e63;">
+                    <p>Vui lòng quét mã QR tại quầy để đổi quà</p>
                 </div>
             `;
-            document.getElementById('btnRedeem').disabled = true;
-            document.getElementById('btnRedeem').innerText = "VUI LÒNG QUÉT MÃ QR";
-            return; // Dừng các xử lý tự động bên dưới
+            return; // Dừng xử lý các bước tự động
         }
 
         const finalPhone = phoneFromUrl || savedPhone;
@@ -79,7 +78,7 @@
         display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang nhận diện khách hàng...</div>";
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
-        isProcessing = true; // Khóa không cho khách tương tác
+        isProcessing = true; 
         
         try {
             const res = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
@@ -88,7 +87,6 @@
             display.innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào bạn! Hiện có: <strong>${currentPoints}</strong> điểm</div>`;
 
             if (currentPoints >= minPoints) {
-                // TỰ ĐỘNG ĐỔI QUÀ LUÔN
                 handleRedeem();
             } else {
                 btn.innerText = "CHƯA ĐỦ ĐIỂM ĐỔI";
@@ -103,14 +101,11 @@
     }
 
     function checkPointRealtime() {
-        if (isProcessing) return; // Nếu đang xử lý tự động thì không cho nhập liệu/check đè
+        if (isProcessing) return; 
         
-        // Kiểm tra nếu không có tham số QR thì không cho check điểm/đổi quà
+        // Không cho phép kiểm tra điểm nếu không có tham số QR
         const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.get('phone')) {
-            alert("Vui lòng quét mã QR tại quầy để thực hiện thao tác này!");
-            return;
-        }
+        if (!urlParams.get('phone')) return;
 
         const phone = document.getElementById('phone').value.trim();
         const btn = document.getElementById('btnRedeem');
@@ -127,12 +122,9 @@
     }
 
     function handleRedeem() {
-        // Chặn lần nữa nếu khách cố tình nhấn nút mà không từ QR
+        // Kiểm tra an toàn cuối cùng
         const urlParams = new URLSearchParams(window.location.search);
-        if (!urlParams.get('phone')) {
-            alert("Bạn cần quét mã QR tại cửa hàng để đổi quà!");
-            return;
-        }
+        if (!urlParams.get('phone')) return;
 
         const phone = document.getElementById('phone').value.trim();
         const statusDiv = document.getElementById('status');
@@ -158,7 +150,7 @@
                 
                 display.style.display = "none";
                 btn.style.display = "none";
-                document.getElementById('form-input').style.display = "none"; // Ẩn luôn ô nhập SĐT
+                document.getElementById('form-input').style.display = "none"; 
 
                 statusDiv.innerHTML = `
                     <div class="success-box">
