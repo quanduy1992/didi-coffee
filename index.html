@@ -93,9 +93,9 @@
             btnSubmit.disabled = false;
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
+            // --- PHẦN CHỈNH SỬA: PHÂN LOẠI THÔNG BÁO LỖI ---
             if (resData.status === "SUCCESS") {
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
 
@@ -106,7 +106,6 @@
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;
-                
                 document.getElementById('inputCode').value = ""; 
             } 
             else if (resData.status === "USED") {
@@ -116,9 +115,16 @@
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;
-            } else {
+            } 
+            else if (resData.status === "INVALID" || resData.message === "Mã không tồn tại") {
+                // Ưu tiên hiển thị lỗi mã không tồn tại thay vì lỗi hệ thống chung chung
+                resultDiv.innerHTML = "<div class='error'>❌ Mã quà tặng không tồn tại trên hệ thống!</div>";
+            } 
+            else {
+                // Các lỗi khác mới báo lỗi hệ thống
                 resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
             }
+            // --- KẾT THÚC PHẦN CHỈNH SỬA ---
 
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
@@ -142,6 +148,3 @@
 </script>
 </body>
 </html>
-
-
-
