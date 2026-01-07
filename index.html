@@ -116,7 +116,13 @@
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;
-            } else {
+            } 
+            /* --- PHẦN FIX LỖI Ở ĐÂY --- */
+            else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
+                resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
+            }
+            /* ------------------------- */
+            else {
                 resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
             }
 
