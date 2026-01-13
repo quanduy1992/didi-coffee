@@ -7,29 +7,25 @@
     <link rel="stylesheet" href="style.css">
     <script src="hoamai.js"></script>
     <style>
-        /* CSS ĐỂ CĂN CHỈNH DÒNG CHỮ CHÚC MỪNG NĂM MỚI */
-        .tet-banner {
+        /* CSS ĐỂ ĐƯA CHỮ LÊN CAO NGANG HÀNG ICON GÓC */
+        .header-tet {
+            position: relative;
+            width: 100%;
+            height: 60px; /* Tạo khoảng trống phía trên */
             display: flex;
-            justify-content: space-between; /* Đẩy lồng đèn và lì xì ra 2 bên */
+            justify-content: center;
             align-items: center;
-            padding: 10px 15px;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
 
-        .tet-text {
-            flex-grow: 1;
-            text-align: center;
-            font-weight: bold;
+        .tet-title {
             color: #d32f2f;
-            font-size: 16px; /* Điều chỉnh kích thước vừa phải */
+            font-weight: bold;
+            font-size: 18px;
+            text-align: center;
             line-height: 1.2;
-        }
-
-        .tet-icon-small {
-            font-size: 24px; /* Kích thước icon lồng đèn/bao lì xì */
-            display: flex;
-            flex-direction: column;
-            gap: 5px;
+            z-index: 10;
+            padding-top: 15px; /* Căn chỉnh để ngang hàng với các icon ở góc */
         }
     </style>
 </head>
@@ -37,12 +33,10 @@
     <div class="card">
         <canvas id="flower-canvas"></canvas>
 
-        <div class="tet-banner">
-            <div class="tet-icon-small">🏮</div> 
-            <div class="tet-text">
-                CHÚC MỪNG NĂM MỚI<br>2026
+        <div class="header-tet">
+            <div class="tet-title">
+                Tết 2026
             </div>
-            <div class="tet-icon-small">🧧</div>
         </div>
 
         <h2 id="shopTitle">☕ DI DI COFFEE</h2>
