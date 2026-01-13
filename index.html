@@ -20,9 +20,7 @@
             <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
             <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
         </div>
-        <div id="pointBox" style="display:none;">
-            <span id="currentPoints">0</span>
-        </div>
+        <div id="pointBox" style="display:none;"><span id="currentPoints">0</span></div>
         <div id="result"></div>
         <div class="nav-menu">
             <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
@@ -32,9 +30,6 @@
     </div>
 <script src="config.js"></script> 
 <script>
-    /* =========================================
-       PHẦN 2: GIỮ NGUYÊN LOGIC GỐC CỦA BẠN
-       ========================================= */
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
             document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
@@ -46,9 +41,7 @@
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
-        if (codeFromURL && savedName && savedPhone) {
-            setTimeout(handleVerify, 500);
-        }
+        if (codeFromURL && savedName && savedPhone) { setTimeout(handleVerify, 500); }
     };
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
@@ -81,25 +74,13 @@
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-                resultDiv.innerHTML = `
-                    <div class="success-box">
-                        <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
-                        <span class="time">Thời gian: ${timeStr}</span>
-                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
-                    </div>`;
+                resultDiv.innerHTML = `<div class="success-box"><div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div><span class="time">Thời gian: ${timeStr}</span><span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span></div>`;
                 document.getElementById('inputCode').value = ""; 
-            } 
-            else if (resData.status === "USED") {
-                resultDiv.innerHTML = `
-                    <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
-                        <div>⚠️ Mã này đã được sử dụng.</div>
-                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
-                    </div>`;
-            } 
-            else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
+            } else if (resData.status === "USED") {
+                resultDiv.innerHTML = `<div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;"><div>⚠️ Mã này đã được sử dụng.</div><span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span></div>`;
+            } else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
                 resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
-            }
-            else {
+            } else {
                 resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
             }
             const oldScript = document.getElementById('api-call');
