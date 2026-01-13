@@ -7,29 +7,42 @@
     <link rel="stylesheet" href="style.css">
     <script src="hoamai.js"></script>
     <style>
-        /* Đoạn CSS bổ sung để căn hàng chữ và icon */
-        .tet-header {
+        /* CSS ĐỂ CĂN CHỈNH DÒNG CHỮ CHÚC MỪNG NĂM MỚI */
+        .tet-banner {
             display: flex;
-            justify-content: center;
+            justify-content: space-between; /* Đẩy lồng đèn và lì xì ra 2 bên */
             align-items: center;
-            gap: 15px; /* Khoảng cách giữa chữ và icon */
-            margin-top: 10px;
-            font-weight: bold;
-            color: #d32f2f; /* Màu đỏ Tết */
-            font-size: 1.2rem;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            padding: 10px 15px;
+            margin-bottom: 5px;
         }
-        .tet-icon { font-size: 1.5rem; }
+
+        .tet-text {
+            flex-grow: 1;
+            text-align: center;
+            font-weight: bold;
+            color: #d32f2f;
+            font-size: 16px; /* Điều chỉnh kích thước vừa phải */
+            line-height: 1.2;
+        }
+
+        .tet-icon-small {
+            font-size: 24px; /* Kích thước icon lồng đèn/bao lì xì */
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
     </style>
 </head>
 <body>
     <div class="card">
         <canvas id="flower-canvas"></canvas>
 
-        <div class="tet-header">
-            <span class="tet-icon">🏮</span> 
-            <span>CHÚC MỪNG NĂM MỚI 2026</span>
-            <span class="tet-icon">🧧</span>
+        <div class="tet-banner">
+            <div class="tet-icon-small">🏮</div> 
+            <div class="tet-text">
+                CHÚC MỪNG NĂM MỚI<br>2026
+            </div>
+            <div class="tet-icon-small">🧧</div>
         </div>
 
         <h2 id="shopTitle">☕ DI DI COFFEE</h2>
@@ -59,7 +72,7 @@
 <script src="config.js"></script> 
 <script>
     /* =========================================
-       PHẦN 2: GIỮ NGUYÊN LOGIC GỐC CỦA BẠN
+       GIỮ NGUYÊN TOÀN BỘ LOGIC CŨ CỦA BẠN
        ========================================= */
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
@@ -138,11 +151,9 @@
                     </div>
                 `;
             } 
-            /* --- PHẦN FIX LỖI Ở ĐÂY --- */
             else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
                 resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
             }
-            /* ------------------------- */
             else {
                 resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
             }
