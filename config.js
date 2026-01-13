@@ -7,8 +7,9 @@ const CONFIG = {
     REDEEM_POINTS: 15,
     SPIN_POINTS: 200,
     POINTS_PER_CODE: 1,
-    SHOP_NAME: 'TẾT CÙNG Di Di Coffee'
+    SHOP_NAME: 'Di Di Coffee'
 };
+
 
 
 
