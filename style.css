@@ -1,4 +1,5 @@
 /* --- DI DI COFFEE - GIAO DIỆN TẾT CHUẨN (HOA ĐÀO & MENU VUÔNG) --- */
+
 body { 
     background-color: #fff5f5; 
     display: flex; 
@@ -8,6 +9,7 @@ body {
     margin: 0; 
     font-family: 'Arial', sans-serif;
 }
+
 .card { 
     background: #ffffff; 
     padding: 30px; 
@@ -19,18 +21,30 @@ body {
     position: relative;
     box-sizing: border-box;
     overflow: hidden;
+
+    /* NỀN HOA ĐÀO RẢI RÁC */
     background-image: 
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ctext y='50' font-size='50' opacity='0.55'%3E🌸%3C/text%3E%3C/svg%3E"),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ctext y='40' font-size='30' opacity='0.75'%3E🌸%3C/text%3E%3C/svg%3E"),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ctext y='40' font-size='25' opacity='0.85'%3E🌸%3C/text%3E%3C/svg%3E"),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ctext y='40' font-size='18' opacity='0.75'%3E🌸%3C/text%3E%3C/svg%3E"),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ctext y='40' font-size='22' opacity='0.95'%3E🌸%3C/text%3E%3C/svg%3E");
+    
     background-position: 50% 20%, 99% 12%, 55% 45%, 15% 60%, 90% 50%; 
     background-repeat: no-repeat;
     background-size: 80px 80px;
 }
-.card::before { content: '🏮'; position: absolute; top: 5px; left: 8px; font-size: 26px; }
-.card::after { content: '🧧'; position: absolute; top: 5px; right: 8px; font-size: 26px; }
+
+/* PHỤ KIỆN TRANG TRÍ GÓC */
+.card::before {
+    content: '🏮'; 
+    position: absolute; top: 5px; left: 8px; font-size: 26px;
+}
+.card::after {
+    content: '🧧';
+    position: absolute; top: 5px; right: 8px; font-size: 26px;
+}
+
 h2 { 
     color: #d32f2f; 
     margin: 15px 0 20px 0; 
@@ -40,6 +54,8 @@ h2 {
     position: relative; z-index: 2;
 }
 h2::before, h2::after { content: '🌸'; margin: 0 8px; font-size: 18px; }
+
+/* INPUT VÀ NHÃN */
 label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: #5d4037; position: relative; z-index: 2; }
 input { 
     width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; 
@@ -47,57 +63,157 @@ input {
     background: rgba(255, 255, 255, 0.7);
     position: relative; z-index: 2;
 }
+
+/* NÚT BẤM */
 button { 
     width: 100%; background-color: #d32f2f; color: white; border: none; 
     padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; 
     font-size: 18px; position: relative; z-index: 2;
-    transition: 0.2s all;
+    transition: 0.3s opacity;
 }
-button:active { transform: scale(0.98); opacity: 0.9; }
-button:disabled { background-color: #cccccc !important; color: #666666 !important; cursor: not-allowed; opacity: 0.7; }
+
+button:disabled {
+    background-color: #cccccc !important;
+    color: #666666 !important;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
 .btn-confirm {
-    background-color: #c62828; color: white; padding: 12px; border-radius: 8px;
-    text-transform: uppercase; font-weight: bold; width: 100%; border: none;
-    cursor: pointer; margin-top: 10px; position: relative; z-index: 2;
+    background-color: #c62828;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    font-weight: bold;
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+    position: relative;
+    z-index: 2;
 }
+
+/* KHUNG THÔNG BÁO THÀNH CÔNG (XANH) */
 .success-box {
-    background-color: #e8f5e9; border: 1px solid #2e7d32; color: #2e7d32;
-    padding: 15px; border-radius: 10px; margin: 15px 0; text-align: center;
-    font-weight: bold; position: relative; z-index: 2;
+    background-color: #e8f5e9;
+    border: 1px solid #2e7d32;
+    color: #2e7d32;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 15px 0;
+    text-align: center;
+    font-weight: bold;
+    position: relative;
+    z-index: 2;
 }
+
 .success-box .time {
-    display: block; font-size: 0.85em; color: #4caf50; margin-top: 5px;
-    font-weight: normal; border-top: 1px solid #c8e6c9; padding-top: 5px;
+    display: block;
+    font-size: 0.85em;
+    color: #4caf50;
+    margin-top: 5px;
+    font-weight: normal;
+    border-top: 1px solid #c8e6c9;
+    padding-top: 5px;
 }
-.success-box .points-info { display: block; margin-top: 10px; font-size: 1.05em; color: #2e7d32; }
-.success-box .points-info span { color: #d32f2f; font-size: 1.15em; }
+
+.success-box .points-info {
+    display: block;
+    margin-top: 10px; /* Khoảng cách đẹp giữa thời gian và điểm */
+    font-size: 1.05em;
+    color: #2e7d32;
+}
+
+.success-box .points-info span {
+    color: #d32f2f; /* Màu đỏ cho con số điểm để nổi bật */
+    font-size: 1.15em;
+}
+
+/* LỖI */
 .error {
-    color: #d32f2f; text-align: center; margin-top: 10px; font-weight: bold;
-    background: #ffebee; padding: 10px; border-radius: 8px;
+    color: #d32f2f;
+    text-align: center;
+    margin-top: 10px;
+    font-weight: bold;
+    background: #ffebee;
+    padding: 10px;
+    border-radius: 8px;
 }
+
+/* MENU DƯỚI: VUÔNG VẮN VÀ TÁCH NHAU */
 .nav-menu { 
-    display: flex; justify-content: space-between; margin-top: 15px; 
-    border-top: 1px dashed #d32f2f; padding-top: 20px;
-    position: relative; z-index: 3; background: transparent; gap: 10px; 
+    display: flex; 
+    justify-content: space-between; 
+    margin-top: 15px; 
+    border-top: 1px dashed #d32f2f; 
+    padding-top: 20px;
+    position: relative; 
+    z-index: 3; 
+    background: transparent; 
+    gap: 10px; 
 }
+
 .nav-item { 
-    background-color: #fff; color: #d32f2f; padding: 15px 2px; 
-    border-radius: 10px; font-size: 12px; text-decoration: none; 
-    font-weight: bold; font-style: normal !important; 
-    border: 1px solid #ffca28; flex: 1; 
-    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    background-color: #fff; 
+    color: #d32f2f; 
+    padding: 15px 2px; 
+    border-radius: 10px; 
+    font-size: 12px; 
+    text-decoration: none; 
+    font-weight: bold; 
+    font-style: normal !important; 
+    border: 1px solid #ffca28; 
+    flex: 1; 
+    display: flex; 
+    flex-direction: column; 
+    align-items: center;
+    justify-content: center;
 }
-.nav-item.active { background-color: #d32f2f; color: white; border-color: #d32f2f; }
-.nav-item i { font-style: normal !important; font-size: 18px; margin-bottom: 3px; }
+
+.nav-item.active { 
+    background-color: #d32f2f; 
+    color: white; 
+    border-color: #d32f2f; 
+}
+
+.nav-item i {
+    font-style: normal !important;
+    font-size: 18px;
+    margin-bottom: 3px;
+}
+
+/* XÓA PHỤ KIỆN THỪA */
 .card-footer-decor, .mai-decor, .banh-chung { display: none !important; }
-.admin-tabs {
-    display: flex !important; flex-direction: row !important;
-    justify-content: space-between !important; gap: 5px !important; margin: 15px 0 !important;
+
+/* --- PHẦN BỔ SUNG CHO ADMIN (Dán vào cuối file) --- */
+.admin-tabs { display: flex; gap: 8px; margin-bottom: 20px; position: relative; z-index: 3; }
+.tab-btn { 
+    padding: 12px 2px; font-size: 11px; flex: 1; background: #fff; color: #d32f2f; 
+    border: 1px solid #ffca28; border-radius: 10px; cursor: pointer; font-weight: bold;
+    display: flex; align-items: center; justify-content: center;
 }
-.tab-btn {
-    flex: 1 !important; padding: 10px 2px !important; font-size: 12px !important;
-    cursor: pointer; border-radius: 8px; border: 1px solid #d32f2f;
-    background: #fff; color: #d32f2f; font-weight: bold;
+.tab-btn.active { background: #d32f2f !important; color: #fff !important; border-color: #d32f2f !important; }
+
+.section { display: none; position: relative; z-index: 2; text-align: left; }
+.section.active { display: block; }
+
+.info-box { 
+    background: #e8f5e9; border: 1px solid #2e7d32; color: #2e7d32; 
+    padding: 15px; border-radius: 10px; margin-top: 15px; font-weight: bold;
 }
-.tab-btn.active { background: #d32f2f !important; color: #fff !important; }
-#admin-content { width: 100%; }
+.btn-sub { background-color: #ff9800 !important; margin-top: 10px; }
+
+#login-overlay { 
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+    background: white; z-index: 100; display: flex; flex-direction: column; 
+    justify-content: center; align-items: center; padding: 20px; box-sizing: border-box;
+}
+
+.cust-list-table {
+    width: 100%; border-collapse: collapse; margin-top: 15px; z-index: 2;
+    position: relative; background: rgba(255, 255, 255, 0.9); font-size: 13px;
+}
+.cust-list-table th, .cust-list-table td { border: 1px solid #d32f2f; padding: 8px; text-align: left; }
+.cust-list-table th { background-color: #d32f2f; color: white; }
+.points-red { color: #d32f2f; font-weight: bold; }
