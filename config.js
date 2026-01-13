@@ -9,9 +9,3 @@ const CONFIG = {
     POINTS_PER_CODE: 1,
     SHOP_NAME: 'TẾT CÙNG Di Di Coffee'
 };
-
-
-
-
-
-
