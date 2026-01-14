@@ -37,7 +37,7 @@ body {
 
 /* PHỤ KIỆN TRANG TRÍ GÓC */
 .card::before {
-    content: '🏮'; 
+    content: '🧧'; 
     position: absolute; top: 5px; left: 8px; font-size: 26px;
 }
 .card::after {
@@ -217,3 +217,4 @@ button:disabled {
 .cust-list-table th, .cust-list-table td { border: 1px solid #d32f2f; padding: 8px; text-align: left; }
 .cust-list-table th { background-color: #d32f2f; color: white; }
 .points-red { color: #d32f2f; font-weight: bold; }
+
