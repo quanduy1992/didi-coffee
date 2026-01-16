@@ -19,12 +19,12 @@
             <label>Mã quà tặng:</label>
             <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
             <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
-            </br></br><span style="color:#5d4037;font-weight:bold;">Liên hệ: 0968.97.37.87</span>
+            <br><br><span style="color:#5d4037;font-weight:bold;">Liên hệ: 0968.97.37.87</span>
         </div>
         <div id="pointBox" style="display:none;">
             <span id="currentPoints">0</span>
         </div>   
-        <div id="result"></div>       
+        <div id="result"></div>        
         <div class="nav-menu">
             <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
             <a href="doi-qua.html?from=web" class="nav-item"><i>🎁</i> Đổi quà</a>
@@ -51,22 +51,36 @@
             setTimeout(handleVerify, 500);
         }
     };
+
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
         const code = document.getElementById('inputCode').value.trim().toUpperCase();
         const resultDiv = document.getElementById('result');
         const btnSubmit = document.getElementById('btnSubmit');
+
         if (!name || !phone || !code) {
             resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đầy đủ thông tin!</div>";
             return;
         }
+
+        /* --- PHẦN MỚI: CHẶN SỐ ĐIỆN THOẠI CỬA HÀNG --- */
+        const shopPhone = "0968973787";
+        // Loại bỏ mọi ký tự không phải số để so sánh chính xác nhất
+        const cleanPhone = phone.replace(/\D/g, ""); 
+        if (cleanPhone === shopPhone) {
+            resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập lại SĐT của bạn, Đây là số cửa hàng không thể tích điểm!</div>";
+            return;
+        }
+        /* ------------------------------------------- */
+
         btnSubmit.disabled = true; 
         btnSubmit.innerHTML = "⌛ Đang xử lý dữ liệu..."; 
         resultDiv.innerHTML = ""; 
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
         const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
+
         const safetyTimeout = setTimeout(function() {
             if (btnSubmit.disabled) {
                 btnSubmit.disabled = false;
@@ -74,6 +88,7 @@
                 resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, vui lòng thử lại!</div>";
             }
         }, 10000);
+
         window.googleCallback = function(resData) {
             clearTimeout(safetyTimeout);
             btnSubmit.disabled = false;
@@ -110,6 +125,7 @@
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
+
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;        
@@ -125,5 +141,4 @@
     }
 </script>
 </body>
-
 </html>
