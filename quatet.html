@@ -1,67 +1,123 @@
-<div class="container" style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-    <h2 style="text-align: center;">Kiểm Tra Điểm Tích Lũy</h2>
-    
-    <div style="margin-bottom: 15px;">
-        <label for="phoneInput">Nhập số điện thoại:</label>
-        <input type="text" id="phoneInput" placeholder="Ví dụ: 0366268289" style="width: 100%; padding: 10px; margin-top: 5px;">
-    </div>
-    
-    <button id="checkBtn" onclick="handleCheckPoint()" style="width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">
-        Kiểm tra điểm
-    </button>
-
-    <div id="resultArea" style="margin-top: 20px; text-align: center; font-weight: bold; font-size: 1.2em; color: #333;">
-        </div>
-</div>
-
-<script>
-    // Dữ liệu mẫu dựa trên ảnh bạn cung cấp
-    // Trong thực tế, bạn sẽ fetch dữ liệu này từ Google Sheets API hoặc file data của bạn
-    const customerData = [
-        { ma: "DI0002WCJONOCIBL", trangThai: "ĐÃ DÙNG", ten: "Duy", sdt: "0366268289", thoiGian: "03/01/2026", diem: 1.0 },
-        { ma: "DI0003EDUCGJEHLJ", trangThai: "", ten: "", sdt: "", thoiGian: "", diem: 0 }
-    ];
-
-    window.onload = function() {
-        // 1. Tự động lấy SĐT từ URL nếu có (Dùng cho QR Code chứa tham số ?sdt=...)
-        const urlParams = new URLSearchParams(window.location.search);
-        const sdtFromUrl = urlParams.get('sdt');
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Di Di Coffee - Kiểm Tra Điểm</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="hoamai.js"></script>
+</head>
+<body>
+    <div class="card">
+        <canvas id="flower-canvas"></canvas>
+        <h2 id="shopTitle">☕ DI DI COFFEE</h2>
         
-        // 2. Tự động lấy SĐT đã lưu trước đó trong trình duyệt (localStorage)
-        const savedSdt = localStorage.getItem('lastCheckedSdt');
+        <div id="form-input">
+            <h3 style="color: #5d4037; margin-bottom: 15px;">TRA CỨU ĐIỂM TÍCH LŨY</h3>
+            
+            <label>Số điện thoại khách hàng:</label>
+            <input type="tel" id="cusPhone" placeholder="Nhập số điện thoại để xem điểm">
+            
+            <button id="btnCheck" onclick="handleCheckPoint()">KIỂM TRA NGAY</button>
+            
+            <br><br>
+            <span style="color:#5d4037;font-weight:bold;">Hotline: 0968.97.37.87</span>
+        </div>
 
-        if (sdtFromUrl) {
-            document.getElementById('phoneInput').value = sdtFromUrl;
-            handleCheckPoint(); // Tự động kiểm tra luôn khi quét QR
-        } else if (savedSdt) {
-            document.getElementById('phoneInput').value = savedSdt;
+        <div id="result"></div>        
+        
+        <div class="nav-menu">
+            <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
+            <a href="doi-qua.html?from=web" class="nav-item"><i>🎁</i> Đổi quà</a>
+            <a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
+            <a href="quatet.html" class="nav-item active"><i>📊</i> Xem điểm</a>
+        </div>
+    </div>
+
+<script src="config.js"></script> 
+<script>
+    /* ============================================================
+       LOGIC: TỰ ĐỘNG ĐIỀN SĐT VÀ KIỂM TRA ĐIỂM (ĐỒNG BỘ STYLE)
+       ============================================================ */
+    window.onload = function() {
+        // 1. Cập nhật tên Shop từ config
+        if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
+            document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
+        }
+
+        // 2. Lấy SĐT từ URL (dành cho QR Code: quatet.html?sdt=0366...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const sdtFromURL = urlParams.get('sdt');
+        
+        // 3. Lấy SĐT từ localStorage (đã lưu ở trang index.html)
+        const savedPhone = localStorage.getItem('didi_customer_phone');
+
+        const phoneInput = document.getElementById('cusPhone');
+
+        if (sdtFromURL) {
+            phoneInput.value = sdtFromURL;
+            handleCheckPoint(); // Có SĐT từ QR -> Tự động kiểm tra luôn
+        } else if (savedPhone) {
+            phoneInput.value = savedPhone;
+            // Nếu muốn tự động kiểm tra luôn khi vào trang mà có SĐT cũ:
+            // handleCheckPoint(); 
         }
     };
 
     function handleCheckPoint() {
-        const inputSdt = document.getElementById('phoneInput').value.trim();
-        const resultArea = document.getElementById('resultArea');
-        
-        if (!inputSdt) {
-            alert("Vui lòng nhập số điện thoại!");
+        const phone = document.getElementById('cusPhone').value.trim();
+        const resultDiv = document.getElementById('result');
+        const btnCheck = document.getElementById('btnCheck');
+
+        if (!phone) {
+            resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập số điện thoại!</div>";
             return;
         }
 
-        // Lưu SĐT vào localStorage cho lần sau
-        localStorage.setItem('lastCheckedSdt', inputSdt);
+        // Hiệu ứng đang xử lý đồng bộ với style index.html
+        btnCheck.disabled = true;
+        btnCheck.innerHTML = "⌛ Đang tra cứu...";
+        resultDiv.innerHTML = "";
 
-        // Logic tính tổng điểm (Cộng dồn tất cả các dòng có cùng SĐT)
-        // Lưu ý: Trong ảnh của bạn có cột 'Trạng thái', tôi giả định tất cả các dòng 'ĐÃ DÙNG' đều tính điểm
-        const totalPoint = customerData
-            .filter(item => item.sdt === inputSdt)
-            .reduce((sum, item) => sum + parseFloat(item.diem || 0), 0);
+        // Lưu SĐT lại để lần sau không phải nhập
+        localStorage.setItem('didi_customer_phone', phone);
 
-        const customerInfo = customerData.find(item => item.sdt === inputSdt);
-        const nameDisplay = customerInfo ? `Khách hàng: ${customerInfo.ten}` : "Khách hàng mới";
+        // Gọi API tra cứu (Sử dụng chung SCRIPT_URL trong config.js)
+        // Lưu ý: GAS của bạn cần có action 'check_point' hoặc tương đương
+        window.googleCallback = function(resData) {
+            btnCheck.disabled = false;
+            btnCheck.innerHTML = "KIỂM TRA NGAY";
+            
+            if (resData.status === "SUCCESS" || resData.points !== undefined) {
+                if (navigator.vibrate) navigator.vibrate(100);
+                
+                resultDiv.innerHTML = `
+                    <div class="success-box">
+                        <div style="font-size: 1.1em; margin-bottom: 5px;">Chào bạn, <b>${resData.name || 'Khách hàng'}</b></div>
+                        <span class="points-info">Số điểm tích lũy: <span style="font-size: 2em;">${resData.points}</span></span>
+                        <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.8;">Cập nhật lúc: ${new Date().toLocaleTimeString('vi-VN')}</div>
+                    </div>
+                `;
+            } else {
+                resultDiv.innerHTML = "<div class='error'>❌ Không tìm thấy thông tin điểm của số này!</div>";
+            }
+            
+            const oldScript = document.getElementById('api-call');
+            if (oldScript) oldScript.remove();
+        };
 
-        resultArea.innerHTML = `
-            <div style="color: #2e7d32;">${nameDisplay}</div>
-            <div style="font-size: 1.5em; margin-top: 10px;">Tổng điểm: ${totalPoint.toFixed(1)}</div>
-        `;
+        const scriptTag = document.createElement("script");
+        scriptTag.id = "api-call";
+        // Gửi action=check_point tới Google Script
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=check_point&phone=${encodeURIComponent(phone)}&callback=googleCallback&t=${new Date().getTime()}`;
+        
+        scriptTag.onerror = function() {
+            btnCheck.disabled = false;
+            btnCheck.innerHTML = "KIỂM TRA NGAY";
+            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
+        };
+        document.body.appendChild(scriptTag);
     }
 </script>
+</body>
+</html>
