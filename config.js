@@ -7,10 +7,11 @@ const CONFIG = {
     REDEEM_POINTS: 15,
     SPIN_POINTS: 200,
     POINTS_PER_CODE: 1,
-    CONFIG.LEVEL_1: 10, // Ví dụ: mốc 1 là 10 điểm
-    CONFIG.LEVEL_2: 20, // Ví dụ: mốc 2 là 20 điểm
+    LEVEL_1: 10,
+    LEVEL_2: 20, // Ví dụ: mốc 2 là 20 điểm
     SHOP_NAME: 'Di Di Coffee'
 };
+
 
 
 
