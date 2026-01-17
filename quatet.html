@@ -1,0 +1,67 @@
+<div class="container" style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+    <h2 style="text-align: center;">Kiểm Tra Điểm Tích Lũy</h2>
+    
+    <div style="margin-bottom: 15px;">
+        <label for="phoneInput">Nhập số điện thoại:</label>
+        <input type="text" id="phoneInput" placeholder="Ví dụ: 0366268289" style="width: 100%; padding: 10px; margin-top: 5px;">
+    </div>
+    
+    <button id="checkBtn" onclick="handleCheckPoint()" style="width: 100%; padding: 10px; background-color: #4CAF50; color: white; border: none; cursor: pointer;">
+        Kiểm tra điểm
+    </button>
+
+    <div id="resultArea" style="margin-top: 20px; text-align: center; font-weight: bold; font-size: 1.2em; color: #333;">
+        </div>
+</div>
+
+<script>
+    // Dữ liệu mẫu dựa trên ảnh bạn cung cấp
+    // Trong thực tế, bạn sẽ fetch dữ liệu này từ Google Sheets API hoặc file data của bạn
+    const customerData = [
+        { ma: "DI0002WCJONOCIBL", trangThai: "ĐÃ DÙNG", ten: "Duy", sdt: "0366268289", thoiGian: "03/01/2026", diem: 1.0 },
+        { ma: "DI0003EDUCGJEHLJ", trangThai: "", ten: "", sdt: "", thoiGian: "", diem: 0 }
+    ];
+
+    window.onload = function() {
+        // 1. Tự động lấy SĐT từ URL nếu có (Dùng cho QR Code chứa tham số ?sdt=...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const sdtFromUrl = urlParams.get('sdt');
+        
+        // 2. Tự động lấy SĐT đã lưu trước đó trong trình duyệt (localStorage)
+        const savedSdt = localStorage.getItem('lastCheckedSdt');
+
+        if (sdtFromUrl) {
+            document.getElementById('phoneInput').value = sdtFromUrl;
+            handleCheckPoint(); // Tự động kiểm tra luôn khi quét QR
+        } else if (savedSdt) {
+            document.getElementById('phoneInput').value = savedSdt;
+        }
+    };
+
+    function handleCheckPoint() {
+        const inputSdt = document.getElementById('phoneInput').value.trim();
+        const resultArea = document.getElementById('resultArea');
+        
+        if (!inputSdt) {
+            alert("Vui lòng nhập số điện thoại!");
+            return;
+        }
+
+        // Lưu SĐT vào localStorage cho lần sau
+        localStorage.setItem('lastCheckedSdt', inputSdt);
+
+        // Logic tính tổng điểm (Cộng dồn tất cả các dòng có cùng SĐT)
+        // Lưu ý: Trong ảnh của bạn có cột 'Trạng thái', tôi giả định tất cả các dòng 'ĐÃ DÙNG' đều tính điểm
+        const totalPoint = customerData
+            .filter(item => item.sdt === inputSdt)
+            .reduce((sum, item) => sum + parseFloat(item.diem || 0), 0);
+
+        const customerInfo = customerData.find(item => item.sdt === inputSdt);
+        const nameDisplay = customerInfo ? `Khách hàng: ${customerInfo.ten}` : "Khách hàng mới";
+
+        resultArea.innerHTML = `
+            <div style="color: #2e7d32;">${nameDisplay}</div>
+            <div style="font-size: 1.5em; margin-top: 10px;">Tổng điểm: ${totalPoint.toFixed(1)}</div>
+        `;
+    }
+</script>
