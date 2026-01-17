@@ -57,75 +57,78 @@
 
         // Tạo hàm callback toàn cục để nhận dữ liệu từ Google
         window.googleCallback = function(resData) {
-    const btnCheck = document.getElementById('btnCheck');
-    const resultDiv = document.getElementById('result');
-    const formInput = document.getElementById('form-input'); // Vùng chứa SĐT và nút bấm
-    
-    btnCheck.disabled = false;
-    btnCheck.innerHTML = "KIỂM TRA NGAY";
-    
-    // ẨN PHẦN NHẬP LIỆU TRONG CẢ 2 TRƯỜNG HỢP ĐỂ GIAO DIỆN GỌN GÀNG
-    if (formInput) formInput.style.display = "none";
-    
-    if (resData.status === "SUCCESS") {
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        
-        const now = new Date();
-        const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-        const points = parseFloat(resData.points) || 0;
-        
-        const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 15;
-        const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 50;
+            const btnCheck = document.getElementById('btnCheck');
+            const resultDiv = document.getElementById('result');
+            const formInput = document.getElementById('form-input');
+            
+            btnCheck.disabled = false;
+            btnCheck.innerHTML = "KIỂM TRA NGAY";
+            if (formInput) formInput.style.display = "none";
 
-        let giftMessage = "";
-        let giftIcon = "🎁";
-        
-        if (points < level1) {
-            giftMessage = "Chúc mừng Bạn nhận đồng giá 10k!";
-            giftIcon = "☕";
-        } else if (points >= level1 && points < level2) {
-            giftMessage = "Chúc mừng Bạn nhận được 1 món quà nhỏ!";
-            giftIcon = "🎁";
-        } else {
-            giftMessage = "Chúc mừng Bạn nhận được món quà LỚN!";
-            giftIcon = "🎉";
+            // TRƯỜNG HỢP 1: ĐÃ NHẬN QUÀ RỒI
+            if (resData.status === "ALREADY_RECEIVED") {
+                resultDiv.innerHTML = `
+                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">🧧</div>
+                        <b style="font-size: 1.1em;">Thông báo:</b><br>
+                        SĐT <b>${document.getElementById('phone').value}</b> này đã được nhận quà Tết rồi.<br>
+                        <small>Cảm ơn bạn đã luôn ủng hộ Di Di!</small>
+                        <button onclick="location.reload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Tra cứu số khác</button>
+                    </div>`;
+            } 
+            // TRƯỜNG HỢP 2: ĐƯỢC NHẬN QUÀ (CHƯA NHẬN LẦN NÀO)
+            else if (resData.status === "SUCCESS") {
+                const points = parseFloat(resData.points) || 0;
+                const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 15;
+                const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 50;
+
+                let giftMessage = "";
+                if (points < level1) giftMessage = "đồng giá 10k";
+                else if (points < level2) giftMessage = "1 món quà nhỏ";
+                else giftMessage = "món quà LỚN";
+
+                resultDiv.innerHTML = `
+                    <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
+                        <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
+                        <div style="font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
+                            ✅ Cảm ơn bạn đã đồng hành cùng Di Di, TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
+                        </div>
+                        <div style="font-size: 1.1em;">Tích lũy: <span style="font-weight: bold; color: #d32f2f;">${points}đ</span></div>
+                        
+                        <div style="margin: 15px 0; padding: 12px; background: #fff; border-radius: 8px; border: 2px dashed #d32f2f; text-align:center;">
+                            <div style="font-weight: bold; color: #d32f2f;">🎁 ƯU ĐÃI: ${giftMessage.toUpperCase()}</div>
+                            <p style="font-size:0.8em; color:#666; margin:5px 0;">(Vui lòng đưa màn hình này cho nhân viên)</p>
+                            <button id="btnConfirm" onclick="confirmReward('${resData.name}')" style="background:#d32f2f; color:#fff; border:none; padding:10px 20px; border-radius:20px; font-weight:bold; cursor:pointer; margin-top:5px;">XÁC NHẬN NHẬN QUÀ</button>
+                        </div>
+                        <button onclick="location.reload()" style="width:100%; background:none; border:1px solid #4caf50; color:#2e7d32; padding:8px; border-radius:5px; font-size:0.8em; cursor:pointer;">Tra cứu số khác</button>
+                    </div>`;
+            } 
+            // TRƯỜNG HỢP 3: CHƯA TÍCH ĐIỂM
+            else {
+                resultDiv.innerHTML = `
+                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                        ⚠️ Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
+                        <button onclick="location.reload()" style="width:100%; margin-top:20px; background:#e65100; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Thử lại số khác</button>
+                    </div>`;
+            }
+        };
+
+        // Hàm gửi lệnh lưu đã nhận quà lên Google Sheet
+        function confirmReward(name) {
+            const btn = document.getElementById('btnConfirm');
+            const phone = document.getElementById('phone').value;
+            btn.disabled = true;
+            btn.innerHTML = "ĐANG LƯU...";
+
+            const script = document.createElement('script');
+            script.src = `${CONFIG.SCRIPT_URL}?action=luu_nhan_qua&phone=${phone}&name=${encodeURIComponent(name)}&callback=afterSave`;
+            document.body.appendChild(script);
         }
 
-        resultDiv.innerHTML = `
-            <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
-                <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
-                <div style="font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
-                    ✅ Cảm ơn bạn đã đồng hành cùng Di Di trong suốt thời gian vừa qua, TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
-                </div>
-                <div style="font-size: 1.1em;">Tích lũy của bạn là: <span style="font-size: 1.4em; font-weight: bold; color: #d32f2f;">${points}</span></div>
-                
-                <div style="margin-top: 15px; padding: 12px; background: #fff; border-radius: 8px; border-left: 5px solid #d32f2f; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
-                    <div style="font-size: 1.1em; font-weight: bold; color: #d32f2f;">${giftIcon} ƯU ĐÃI CỦA BẠN:</div>
-                    <div style="color: #333; margin-top: 5px; font-weight: bold; font-size: 1em;">${giftMessage}</div>
-                </div>
-
-                <div style="font-size: 0.75em; margin-top: 15px; opacity: 0.8; text-align: center;">
-                    Cập nhật lúc: ${timeStr}
-                </div>
-            </div>
-        `;
-    } 
-    else {
-        // THÔNG BÁO GỌN KHI CHƯA TÍCH ĐIỂM VÀ ẨN PHẦN TRÊN
-        resultDiv.innerHTML = `
-            <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center; font-weight: bold; line-height: 1.6;">
-                <div style="font-size: 2em; margin-bottom: 10px;">⚠️</div>
-                Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
-            </div>
-            <div class="nav-menu">
-            <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm ngay</a>
-        </div>
-        `;
-    }
-    
-    const oldScript = document.getElementById('api-call');
-    if (oldScript) oldScript.remove();
-};
+        window.afterSave = function(res) {
+            alert("Xác nhận thành công! Chúc bạn năm mới an khang thịnh vượng.");
+            location.reload();
+        };
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
