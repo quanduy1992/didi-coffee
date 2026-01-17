@@ -65,15 +65,17 @@
     btnCheck.innerHTML = "KIỂM TRA NGAY";
     if (formInput) formInput.style.display = "none";
 
+    // 1. ĐÃ NHẬN QUÀ RỒI
     if (resData.status === "ALREADY_RECEIVED") {
         resultDiv.innerHTML = `
             <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
                 <div style="font-size: 2em; margin-bottom: 10px;">🧧</div>
                 <b>SĐT này đã nhận quà Tết rồi!</b><br>
-                <small>Hẹn gặp lại bạn vào lần sau.</small>
+                <small>Hệ thống ghi nhận bạn đã nhận ưu đãi trước đó.</small>
                 <button onclick="location.reload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Tra cứu số khác</button>
             </div>`;
     } 
+    // 2. THÀNH CÔNG (VÀ ĐÃ TỰ ĐỘNG LƯU TRÊN SERVER)
     else if (resData.status === "SUCCESS") {
         const points = parseFloat(resData.points) || 0;
         const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 15;
@@ -84,7 +86,6 @@
         else if (points < level2) giftMessage = "1 MÓN QUÀ NHỎ";
         else giftMessage = "MÓN QUÀ LỚN";
 
-        // HIỂN THỊ KẾT QUẢ
         resultDiv.innerHTML = `
             <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
                 <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
@@ -99,27 +100,18 @@
                 <button onclick="location.reload()" style="width:100%; background:none; border:1px solid #4caf50; color:#2e7d32; padding:8px; border-radius:5px; font-size:0.8em; cursor:pointer;">Tra cứu số khác</button>
             </div>
         `;
-
-        // TỰ ĐỘNG GỬI LỆNH LƯU (GIỐNG TÍCH ĐIỂM)
-        autoSaveReward(resData.name);
     } 
+    // 3. CHƯA CÓ DỮ LIỆU
     else {
-        resultDiv.innerHTML = `<div class="error-box" style="background:#fff3e0; padding:20px; border-radius:10px; text-align:center;">⚠️ Bạn chưa tích điểm tại Di Di.<br><button onclick="location.reload()" style="width:100%; margin-top:10px;">Thử lại</button></div>`;
+        resultDiv.innerHTML = `
+            <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                ⚠️ Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
+                <button onclick="location.reload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Tra cứu số khác</button>
+            </div>`;
     }
     
     const oldScript = document.getElementById('api-call');
     if (oldScript) oldScript.remove();
-};
-
-function autoSaveReward(name) {
-    const phone = document.getElementById('phone').value;
-    const script = document.createElement('script');
-    script.src = CONFIG.SCRIPT_URL + "?action=luu_nhan_qua&phone=" + phone + "&name=" + encodeURIComponent(name) + "&callback=afterAutoSave";
-    document.body.appendChild(script);
-}
-
-window.afterAutoSave = function(res) {
-    console.log("Hệ thống đã tự động lưu trạng thái nhận quà.");
 };
 
         const scriptTag = document.createElement("script");
