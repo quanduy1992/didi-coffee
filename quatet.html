@@ -12,7 +12,21 @@
         .nav-item i { font-size: 1.5em; margin-bottom: 5px; }
         .nav-item.active { background-color: #d32f2f; color: white; border: none; }
         .success-box { background-color: #fff; border: 1px solid #d32f2f; padding: 15px; border-radius: 10px; margin-top: 15px; color: #d32f2f; }
-        /* Ẩn nút kiểm tra theo yêu cầu */
+        
+        /* Style mới cho hộp thông báo đang kiểm tra */
+        .loading-box {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: #6c757d;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+            text-align: center;
+            font-weight: bold;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+
+        /* Ẩn nút kiểm tra theo yêu cầu trước đó */
         #btnCheck { display: none; }
     </style>
 </head>
@@ -22,7 +36,7 @@
         <h2 id="shopTitle" style="color: #d32f2f;">☕ Di Di Coffee 🌸</h2>
         <div id="form-input">
             <label style="font-weight: bold; color: #5d4037;">Số điện thoại khách hàng:</label>
-            <input type="tel" id="cusPhone" placeholder="Nhập SĐT của bạn" style="text-align: center; font-size: 1.2em; width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-top: 10px;">
+            <input type="tel" id="cusPhone" placeholder="Nhập SĐT của bạn" style="text-align: center; font-size: 1.2em; width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ccc; margin-top: 10px; box-sizing: border-box;">
             <button id="btnCheck" onclick="handleCheckPoint()">NHẬN QUÀ</button>
             <div style="margin-top: 15px; font-weight: bold; color: #5d4037;">Hotline: 0968.97.37.87</div>
         </div>
@@ -38,26 +52,23 @@
 
         const urlParams = new URLSearchParams(window.location.search);
         const sdtFromURL = urlParams.get('sdt');
-        // Sử dụng key didi_customer_phone đồng nhất với hệ thống của bạn
         const savedPhone = localStorage.getItem('didi_customer_phone');
         const autoCheck = urlParams.has('true'); 
         const phoneInput = document.getElementById('cusPhone');
 
-        // 1. Ưu tiên SĐT từ URL, nếu không có thì lấy từ bộ nhớ máy (LocalStorage)
         if (sdtFromURL) {
             phoneInput.value = sdtFromURL;
         } else if (savedPhone) {
             phoneInput.value = savedPhone;
         }
 
-        // 2. Nếu có tham số ?true, tự động kích hoạt tra cứu ngay
         if (autoCheck && phoneInput.value.length >= 10) {
             handleCheckPoint();
         }
 
-        // 3. Tự động tra cứu khi khách nhập đủ 10 số
         phoneInput.addEventListener('input', function() {
-            if (this.value.replace(/[^0-9]/g, "").length >= 10) {
+            let val = this.value.replace(/[^0-9]/g, "");
+            if (val.length >= 10) {
                 handleCheckPoint();
             }
         });
@@ -71,48 +82,50 @@
 
         if (phone.length < 10) return;
 
-        // Lưu lại SĐT vào máy khách để lần sau tự động điền
         localStorage.setItem('didi_customer_phone', phone);
 
         btnCheck.disabled = true;
-        btnCheck.innerHTML = "⌛ Đang tra cứu...";
-        resultDiv.innerHTML = "<div style='text-align:center; padding:15px;'>⌛ Đang tự động kiểm tra quà...</div>";
+        // CẬP NHẬT: Hiển thị thông báo chờ với style loading-box chuyên nghiệp
+        resultDiv.innerHTML = `
+            <div class="loading-box">
+                <span style="display: block; font-size: 1.5em; margin-bottom: 10px;">⌛</span>
+                Hệ thống đang kiểm tra quà cho bạn...
+            </div>
+        `;
 
         window.googleCallback = function(resData) {
             btnCheck.disabled = false;
-            btnCheck.innerHTML = "NHẬN QUÀ";
-            
             if (formInput) formInput.style.display = "none";
 
             if (resData.status === "ALREADY_RECEIVED") {
                 resultDiv.innerHTML = `
-                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
-                        <div style="font-size: 2em; margin-bottom: 10px;">🧧</div>
-                        <b>SĐT này đã nhận quà Tết rồi!</b><br>
-                        <small>Hệ thống ghi nhận bạn đã nhận ưu đãi trước đó.</small>
-                        <button onclick="location.reload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Tra cứu số khác</button>
+                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 25px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                        <div style="font-size: 3em; margin-bottom: 10px;">🧧</div>
+                        <b style="font-size: 1.1em;">SĐT này đã nhận quà Tết rồi!</b><br>
+                        <p style="font-size: 0.9em; opacity: 0.8;">Hệ thống ghi nhận bạn đã nhận ưu đãi trước đó.</p>
+                        <button onclick="clearAndReload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Tra cứu số khác</button>
                     </div>`;
             } 
             else if (resData.status === "SUCCESS") {
                 const points = parseFloat(resData.points) || 0;
-                const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 15;
-                const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 50;
+                const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 10;
+                const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 20;
 
                 let giftMessage = "";
                 if (points < level1) giftMessage = "ĐỒNG GIÁ 10K";
-                else if (points < level2) giftMessage = "1 MÓN QUÀ NHỎ";
+                else if (points >= level1 && points < level2) giftMessage = "1 MÓN QUÀ NHỎ";
                 else giftMessage = "MÓN QUÀ LỚN";
 
                 resultDiv.innerHTML = `
                     <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
                         <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
                         <div style="font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
-                            ✅ Cảm ơn bạn đã đồng hành cùng Di Di, TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
+                            ✅ TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
                         </div>
-                        <div style="font-size: 1.1em;">Tích lũy của bạn: <span style="font-weight: bold; color: #d32f2f;">${points} điểm</span></div>
+                        <div style="font-size: 1.1em;">Tích lũy: <span style="font-weight: bold; color: #d32f2f;">${points}đ</span></div>
                         <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 8px; border: 2px dashed #d32f2f; text-align:center;">
                             <div style="font-weight: bold; color: #d32f2f; font-size: 1.2em;">🎁 ƯU ĐÃI: ${giftMessage}</div>
-                            <p style="font-size:0.8em; color:#4caf50; margin-top:10px;">✨ Hệ thống đã tự động ghi nhận quà cho bạn!</p>
+                            <p style="font-size:0.8em; color:#4caf50; margin-top:10px;">✨ Hệ thống đã tự động ghi nhận quà!</p>
                         </div>
                         <button onclick="clearAndReload()" style="width:100%; background:none; border:1px solid #4caf50; color:#2e7d32; padding:8px; border-radius:5px; font-size:0.8em; cursor:pointer;">Tra cứu số khác</button>
                     </div>
@@ -120,9 +133,10 @@
             } 
             else {
                 resultDiv.innerHTML = `
-                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
-                        ⚠️ Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
-                        <button onclick="clearAndReload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Thử lại số khác</button>
+                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 25px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                        <div style="font-size: 2em; margin-bottom: 10px;">⚠️</div>
+                        Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
+                        <button onclick="clearAndReload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Thử lại số khác</button>
                     </div>`;
             }
             
@@ -133,14 +147,9 @@
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=check_point&phone=${encodeURIComponent(phone)}&callback=googleCallback&t=${new Date().getTime()}`;
-        scriptTag.onerror = function() {
-            btnCheck.disabled = false;
-            resultDiv.innerHTML = "<div class='error' style='color:red; text-align:center;'>❌ Lỗi kết nối máy chủ!</div>";
-        };
         document.body.appendChild(scriptTag);
     }
 
-    // Hàm để xóa SĐT cũ khi muốn tra số khác
     function clearAndReload() {
         localStorage.removeItem('didi_customer_phone');
         window.location.href = window.location.pathname; 
