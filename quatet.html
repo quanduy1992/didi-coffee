@@ -60,15 +60,16 @@
         window.googleCallback = function(resData) {
     const btnCheck = document.getElementById('btnCheck');
     const resultDiv = document.getElementById('result');
-    const formInput = document.getElementById('form-input'); // Vùng chứa SĐT và nút bấm
+    const formInput = document.getElementById('form-input');
     
     btnCheck.disabled = false;
     btnCheck.innerHTML = "KIỂM TRA NGAY";
     
+    // Nếu tìm thấy khách hàng và có điểm (SUCCESS)
     if (resData.status === "SUCCESS") {
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         
-        // Ẩn phần nhập liệu dư thừa ở trên khi thành công
+        // Ẩn phần nhập liệu dư thừa
         if (formInput) formInput.style.display = "none";
         
         const now = new Date();
@@ -87,7 +88,7 @@
         } else if (points >= level1 && points < level2) {
             giftMessage = "Chúc mừng Bạn nhận được 1 món quà nhỏ!";
             giftIcon = "🎁";
-        } else if (points >= level2) {
+        } else {
             giftMessage = "Chúc mừng Bạn nhận được món quà LỚN!";
             giftIcon = "🎉";
         }
@@ -96,7 +97,7 @@
             <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
                 <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
                 <div style="font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
-                    ✅ Cảm ơn bạn đã đồng hành cùng Di Di trong suốt thời gian vừa qua, TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
+                    ✅ Cảm ơn bạn đã đồng hành cùng Di Di trong suốt thời gian vừa qua, TRẬN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
                 </div>
                 <div style="font-size: 1.1em;">Tích lũy của bạn là: <span style="font-size: 1.4em; font-weight: bold; color: #d32f2f;">${points}</span></div>
                 
@@ -108,17 +109,15 @@
                 <div style="font-size: 0.75em; margin-top: 15px; opacity: 0.8; text-align: center;">
                     Cập nhật lúc: ${timeStr}
                 </div>
-                
-                <button onclick="location.reload()" style="width:100%; margin-top:15px; background:none; border:1px solid #4caf50; color:#2e7d32; padding:8px; border-radius:5px; font-size:0.8em; cursor:pointer;">
-                    🔄 Tra cứu số khác
-                </button>
             </div>
         `;
-    } else {
+    } 
+    // Nếu KHÔNG tìm thấy khách hàng (NOT_FOUND)
+    else {
+        // Vẫn hiện phần nhập liệu nhưng báo lỗi gọn gàng bên dưới
         resultDiv.innerHTML = `
-            <div class="success-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 15px; border-radius: 10px; margin-top: 15px;">
-                <div style="font-weight: bold;">⚠️ Thông báo</div>
-                <span style="font-size: 0.9em;">Số điện thoại này chưa có dữ liệu tích điểm.</span>
+            <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center; font-weight: bold; line-height: 1.5;">
+                ⚠️ Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
             </div>
         `;
     }
