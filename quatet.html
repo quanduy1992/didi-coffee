@@ -57,78 +57,70 @@
 
         // Tạo hàm callback toàn cục để nhận dữ liệu từ Google
         window.googleCallback = function(resData) {
-            const btnCheck = document.getElementById('btnCheck');
-            const resultDiv = document.getElementById('result');
-            const formInput = document.getElementById('form-input');
-            
-            btnCheck.disabled = false;
-            btnCheck.innerHTML = "KIỂM TRA NGAY";
-            if (formInput) formInput.style.display = "none";
+    const btnCheck = document.getElementById('btnCheck');
+    const resultDiv = document.getElementById('result');
+    const formInput = document.getElementById('form-input');
+    
+    btnCheck.disabled = false;
+    btnCheck.innerHTML = "KIỂM TRA NGAY";
+    if (formInput) formInput.style.display = "none";
 
-            // TRƯỜNG HỢP 1: ĐÃ NHẬN QUÀ RỒI
-            if (resData.status === "ALREADY_RECEIVED") {
-                resultDiv.innerHTML = `
-                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
-                        <div style="font-size: 2em; margin-bottom: 10px;">🧧</div>
-                        <b style="font-size: 1.1em;">Thông báo:</b><br>
-                        SĐT <b>${document.getElementById('phone').value}</b> này đã được nhận quà Tết rồi.<br>
-                        <small>Cảm ơn bạn đã luôn ủng hộ Di Di!</small>
-                        <button onclick="location.reload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Tra cứu số khác</button>
-                    </div>`;
-            } 
-            // TRƯỜNG HỢP 2: ĐƯỢC NHẬN QUÀ (CHƯA NHẬN LẦN NÀO)
-            else if (resData.status === "SUCCESS") {
-                const points = parseFloat(resData.points) || 0;
-                const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 15;
-                const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 50;
+    if (resData.status === "ALREADY_RECEIVED") {
+        resultDiv.innerHTML = `
+            <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                <div style="font-size: 2em; margin-bottom: 10px;">🧧</div>
+                <b>SĐT này đã nhận quà Tết rồi!</b><br>
+                <small>Hẹn gặp lại bạn vào lần sau.</small>
+                <button onclick="location.reload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Tra cứu số khác</button>
+            </div>`;
+    } 
+    else if (resData.status === "SUCCESS") {
+        const points = parseFloat(resData.points) || 0;
+        const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 15;
+        const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 50;
 
-                let giftMessage = "";
-                if (points < level1) giftMessage = "đồng giá 10k";
-                else if (points < level2) giftMessage = "1 món quà nhỏ";
-                else giftMessage = "món quà LỚN";
+        let giftMessage = "";
+        if (points < level1) giftMessage = "ĐỒNG GIÁ 10K";
+        else if (points < level2) giftMessage = "1 MÓN QUÀ NHỎ";
+        else giftMessage = "MÓN QUÀ LỚN";
 
-                resultDiv.innerHTML = `
-                    <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
-                        <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
-                        <div style="font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
-                            ✅ Cảm ơn bạn đã đồng hành cùng Di Di, TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
-                        </div>
-                        <div style="font-size: 1.1em;">Tích lũy: <span style="font-weight: bold; color: #d32f2f;">${points}đ</span></div>
-                        
-                        <div style="margin: 15px 0; padding: 12px; background: #fff; border-radius: 8px; border: 2px dashed #d32f2f; text-align:center;">
-                            <div style="font-weight: bold; color: #d32f2f;">🎁 ƯU ĐÃI: ${giftMessage.toUpperCase()}</div>
-                            <p style="font-size:0.8em; color:#666; margin:5px 0;">(Vui lòng đưa màn hình này cho nhân viên)</p>
-                            <button id="btnConfirm" onclick="confirmReward('${resData.name}')" style="background:#d32f2f; color:#fff; border:none; padding:10px 20px; border-radius:20px; font-weight:bold; cursor:pointer; margin-top:5px;">XÁC NHẬN NHẬN QUÀ</button>
-                        </div>
-                        <button onclick="location.reload()" style="width:100%; background:none; border:1px solid #4caf50; color:#2e7d32; padding:8px; border-radius:5px; font-size:0.8em; cursor:pointer;">Tra cứu số khác</button>
-                    </div>`;
-            } 
-            // TRƯỜNG HỢP 3: CHƯA TÍCH ĐIỂM
-            else {
-                resultDiv.innerHTML = `
-                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center;">
-                        ⚠️ Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
-                        <button onclick="location.reload()" style="width:100%; margin-top:20px; background:#e65100; border:none; color:#fff; padding:10px; border-radius:5px; font-weight:bold; cursor:pointer;">Thử lại số khác</button>
-                    </div>`;
-            }
-        };
+        // HIỂN THỊ KẾT QUẢ
+        resultDiv.innerHTML = `
+            <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
+                <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
+                <div style="font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
+                    ✅ Cảm ơn bạn đã đồng hành cùng Di Di, TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
+                </div>
+                <div style="font-size: 1.1em;">Tích lũy: <span style="font-weight: bold; color: #d32f2f;">${points}đ</span></div>
+                <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 8px; border: 2px dashed #d32f2f; text-align:center;">
+                    <div style="font-weight: bold; color: #d32f2f; font-size: 1.2em;">🎁 ƯU ĐÃI: ${giftMessage}</div>
+                    <p style="font-size:0.8em; color:#4caf50; margin-top:10px;">✨ Hệ thống đã tự động ghi nhận phần quà này cho bạn!</p>
+                </div>
+                <button onclick="location.reload()" style="width:100%; background:none; border:1px solid #4caf50; color:#2e7d32; padding:8px; border-radius:5px; font-size:0.8em; cursor:pointer;">Tra cứu số khác</button>
+            </div>
+        `;
 
-        // Hàm gửi lệnh lưu đã nhận quà lên Google Sheet
-        function confirmReward(name) {
-            const btn = document.getElementById('btnConfirm');
-            const phone = document.getElementById('phone').value;
-            btn.disabled = true;
-            btn.innerHTML = "ĐANG LƯU...";
+        // TỰ ĐỘNG GỬI LỆNH LƯU (GIỐNG TÍCH ĐIỂM)
+        autoSaveReward(resData.name);
+    } 
+    else {
+        resultDiv.innerHTML = `<div class="error-box" style="background:#fff3e0; padding:20px; border-radius:10px; text-align:center;">⚠️ Bạn chưa tích điểm tại Di Di.<br><button onclick="location.reload()" style="width:100%; margin-top:10px;">Thử lại</button></div>`;
+    }
+    
+    const oldScript = document.getElementById('api-call');
+    if (oldScript) oldScript.remove();
+};
 
-            const script = document.createElement('script');
-            script.src = `${CONFIG.SCRIPT_URL}?action=luu_nhan_qua&phone=${phone}&name=${encodeURIComponent(name)}&callback=afterSave`;
-            document.body.appendChild(script);
-        }
+function autoSaveReward(name) {
+    const phone = document.getElementById('phone').value;
+    const script = document.createElement('script');
+    script.src = CONFIG.SCRIPT_URL + "?action=luu_nhan_qua&phone=" + phone + "&name=" + encodeURIComponent(name) + "&callback=afterAutoSave";
+    document.body.appendChild(script);
+}
 
-        window.afterSave = function(res) {
-            alert("Xác nhận thành công! Chúc bạn năm mới an khang thịnh vượng.");
-            location.reload();
-        };
+window.afterAutoSave = function(res) {
+    console.log("Hệ thống đã tự động lưu trạng thái nhận quà.");
+};
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
