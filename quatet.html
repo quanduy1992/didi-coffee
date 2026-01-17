@@ -72,16 +72,40 @@
                 
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+                const points = parseFloat(resData.points);
                 
+                // Lấy mốc điểm từ config (nếu không có sẽ lấy mặc định là 10 và 20)
+                const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 15;
+                const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 50;
+
+                // Hàm so sánh và lấy lời chúc
+                let giftMessage = "";
+                let giftIcon = "🎁";
+                
+                if (points < level1) {
+                    giftMessage = "Chúc mừng quý khách nhận đồng giá 10k!";
+                    giftIcon = "☕";
+                } else if (points >= level1 && points < level2) {
+                    giftMessage = "Chúc mừng quý khách nhận được 1 món quà nhỏ!";
+                    giftIcon = "🎁";
+                } else if (points >= level2) {
+                    giftMessage = "Chúc mừng quý khách nhận được món quà LỚN!";
+                    giftIcon = "🎉";
+                }
+
                 // Hiển thị khung màu xanh đồng bộ với index.html
                 resultDiv.innerHTML = `
-                    <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 15px;">
-                        <div style="margin: 5px 0;">Xin chào: <b>${resData.name}</b></div>
-                        <div style="font-weight: bold; font-size: 0.8em;">✅ Cảm ơn bạn đã đồng hành cùng Di Di trong suôt thời gian qua!</div>
-                        <span class="points-info" style="display: block; margin-top: 10px; font-size: 1.1em;">
-                            Số điểm của bạn là: <span style="font-size: 1.5em; font-weight: bold; color: #d32f2f;">${resData.points}</span>
-                        </span>
-                        <div style="font-size: 0.8em; margin-top: 10px; border-top: 1px dashed #4caf50; padding-top: 5px; opacity: 0.8;">
+                    <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left;">
+                        <div style="margin-bottom: 5px;">Khách hàng: <b>${resData.name}</b></div>
+                        <div style="font-weight: bold; font-size: 0.7em; border-bottom: 1px solid #4caf50; padding-bottom: 5px; margin-bottom: 10px;">✅ Cảm ơn bạn đã đồng hành cùng Di Di trong suốt thời gian vừa qua!</div>
+                        <div style="font-size: 1.1em;">Tích lũy của bạn là: <span style="font-size: 1em; font-weight: bold; color: #d32f2f;">${points}</span></div>
+                        
+                        <div style="margin-top: 15px; padding: 10px; background: #fff; border-radius: 8px; border-left: 5px solid #d32f2f;">
+                            <div style="font-size: 1.2em; font-weight: bold; color: #d32f2f;">${giftIcon} ƯU ĐÃI CỦA BẠN:</div>
+                            <div style="color: #333; margin-top: 5px; font-weight: bold;">${giftMessage}</div>
+                        </div>
+
+                        <div style="font-size: 0.75em; margin-top: 15px; opacity: 0.8; text-align: center;">
                             Cập nhật lúc: ${timeStr}
                         </div>
                     </div>
