@@ -13,20 +13,35 @@
         .nav-item.active { background-color: #d32f2f; color: white; border: none; }
         .success-box { background-color: #fff; border: 1px solid #d32f2f; padding: 15px; border-radius: 10px; margin-top: 15px; color: #d32f2f; }
         
-        /* Style mới cho hộp thông báo đang kiểm tra */
+        /* HIỆU ỨNG XOAY TRÒN CHO SPINNER */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #d32f2f;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Style hộp thông báo đang kiểm tra */
         .loading-box {
-            background-color: #f8f9fa;
-            border: 1px solid #dee2e6;
-            color: #6c757d;
-            padding: 20px;
-            border-radius: 10px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            color: #5d4037;
+            padding: 25px;
+            border-radius: 15px;
             margin-top: 15px;
             text-align: center;
             font-weight: bold;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
         }
 
-        /* Ẩn nút kiểm tra theo yêu cầu trước đó */
+        /* Ẩn nút kiểm tra theo yêu cầu */
         #btnCheck { display: none; }
     </style>
 </head>
@@ -56,16 +71,19 @@
         const autoCheck = urlParams.has('true'); 
         const phoneInput = document.getElementById('cusPhone');
 
+        // Điền lại SĐT cũ hoặc từ URL
         if (sdtFromURL) {
             phoneInput.value = sdtFromURL;
         } else if (savedPhone) {
             phoneInput.value = savedPhone;
         }
 
+        // Tự kích hoạt nếu có tham số ?true
         if (autoCheck && phoneInput.value.length >= 10) {
             handleCheckPoint();
         }
 
+        // Tự động kiểm tra khi nhập đủ 10 số
         phoneInput.addEventListener('input', function() {
             let val = this.value.replace(/[^0-9]/g, "");
             if (val.length >= 10) {
@@ -75,7 +93,8 @@
     };
 
     function handleCheckPoint() {
-        const phone = document.getElementById('cusPhone').value.trim().replace(/[^0-9]/g, "");
+        const phoneInput = document.getElementById('cusPhone');
+        const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
         const resultDiv = document.getElementById('result');
         const btnCheck = document.getElementById('btnCheck');
         const formInput = document.getElementById('form-input');
@@ -85,11 +104,11 @@
         localStorage.setItem('didi_customer_phone', phone);
 
         btnCheck.disabled = true;
-        // CẬP NHẬT: Hiển thị thông báo chờ với style loading-box chuyên nghiệp
+        // Hiển thị vòng xoay đang kiểm tra
         resultDiv.innerHTML = `
             <div class="loading-box">
-                <span style="display: block; font-size: 1.5em; margin-bottom: 10px;">⌛</span>
-                Hệ thống đang kiểm tra quà cho bạn...
+                <div class="spinner"></div>
+                Đang tự động kiểm tra quà...
             </div>
         `;
 
@@ -97,43 +116,46 @@
             btnCheck.disabled = false;
             if (formInput) formInput.style.display = "none";
 
+            // 1. TRƯỜNG HỢP ĐÃ NHẬN QUÀ
             if (resData.status === "ALREADY_RECEIVED") {
                 resultDiv.innerHTML = `
-                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 25px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 25px; border-radius: 15px; margin-top: 15px; text-align: center;">
                         <div style="font-size: 3em; margin-bottom: 10px;">🧧</div>
                         <b style="font-size: 1.1em;">SĐT này đã nhận quà Tết rồi!</b><br>
-                        <p style="font-size: 0.9em; opacity: 0.8;">Chúc bạn năm mới mạnh khỏe và thành công.</p>
+                        <p style="font-size: 0.9em; opacity: 0.8; margin-top:10px;">Chúc bạn năm mới mạnh khỏe và thành công.</p>
+                        <button onclick="clearAndReload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Tra cứu số khác</button>
                     </div>`;
             } 
+            // 2. TRƯỜNG HỢP THÀNH CÔNG
             else if (resData.status === "SUCCESS") {
                 const points = parseFloat(resData.points) || 0;
                 const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 10;
                 const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 20;
 
-                let giftMessage = "";
-                if (points < level1) giftMessage = "ĐỒNG GIÁ 10K";
-                else if (points >= level1 && points < level2) giftMessage = "1 MÓN QUÀ NHỎ";
-                else giftMessage = "MÓN QUÀ LỚN";
+                let giftMessage = (points < level1) ? "ĐỒNG GIÁ 10K" : (points < level2) ? "1 MÓN QUÀ NHỎ" : "MÓN QUÀ LỚN";
 
                 resultDiv.innerHTML = `
-                    <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
+                    <div class="success-box" style="background-color: #f1f8e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 15px; margin-top: 10px; text-align: left;">
                         <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
-                        <div style="font-weight: bold; font-size: 0.7em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
+                        <div style="font-weight: bold; font-size: 0.75em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
                             ✅ Cảm ơn bạn đã đồng hành cùng Di Di trong suốt thời gian vừa qua. TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
                         </div>
                         <div style="font-size: 1.1em;">Tích lũy của Bạn: <span style="font-weight: bold; color: #d32f2f;">${points} điểm</span></div>
-                        <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 8px; border: 2px dashed #d32f2f; text-align:center;">
+                        <div style="margin: 15px 0; padding: 15px; background: #fff; border-radius: 12px; border: 2px dashed #d32f2f; text-align:center;">
                             <div style="font-weight: bold; color: #d32f2f; font-size: 1.2em;">🎁 ƯU ĐÃI: ${giftMessage}</div>
-                            <p style="font-size:0.8em; color:#4caf50; margin-top:10px;">✨ Chúc bạn năm mới mạnh khỏe và thành công.!</p>
+                            <p style="font-size:0.8em; color:#4caf50; margin-top:10px;">✨ Chúc bạn năm mới mạnh khỏe và thành công!</p>
                         </div>
+                        <button onclick="clearAndReload()" style="width:100%; background:none; border:1px solid #4caf50; color:#2e7d32; padding:8px; border-radius:5px; font-size:0.9em; cursor:pointer; font-weight:bold;">🔄 Tra cứu số khác</button>
                     </div>
                 `;
             } 
+            // 3. TRƯỜNG HỢP CHƯA CÓ ĐIỂM
             else {
                 resultDiv.innerHTML = `
-                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 25px; border-radius: 10px; margin-top: 15px; text-align: center;">
+                    <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 25px; border-radius: 15px; margin-top: 15px; text-align: center;">
                         <div style="font-size: 2em; margin-bottom: 10px;">⚠️</div>
-                        Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
+                        <b>Bạn chưa tích điểm tại Di Di,</b><br>
+                        vui lòng tích điểm trước khi nhận quà.
                         <button onclick="clearAndReload()" style="width:100%; margin-top:20px; background:#ff9800; border:none; color:#fff; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;">Thử lại số khác</button>
                     </div>`;
             }
