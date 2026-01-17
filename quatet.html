@@ -60,16 +60,16 @@
         window.googleCallback = function(resData) {
     const btnCheck = document.getElementById('btnCheck');
     const resultDiv = document.getElementById('result');
-    const formInput = document.getElementById('form-input');
+    const formInput = document.getElementById('form-input'); // Vùng chứa SĐT và nút bấm
     
     btnCheck.disabled = false;
     btnCheck.innerHTML = "KIỂM TRA NGAY";
     
+    // ẨN PHẦN NHẬP LIỆU TRONG CẢ 2 TRƯỜNG HỢP ĐỂ GIAO DIỆN GỌN GÀNG
+    if (formInput) formInput.style.display = "none";
+    
     if (resData.status === "SUCCESS") {
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-        
-        // Ẩn phần nhập liệu dư thừa khi thành công
-        if (formInput) formInput.style.display = "none";
         
         const now = new Date();
         const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
@@ -112,10 +112,11 @@
         `;
     } 
     else {
-        // Thông báo gọn khi khách chưa tích điểm
+        // THÔNG BÁO GỌN KHI CHƯA TÍCH ĐIỂM VÀ ẨN PHẦN TRÊN
         resultDiv.innerHTML = `
-            <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: center; font-weight: bold; line-height: 1.5;">
-                ⚠️ Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
+            <div class="error-box" style="background-color: #fff3e0; border: 1px solid #ff9800; color: #e65100; padding: 20px; border-radius: 10px; margin-top: 15px; text-align: center; font-weight: bold; line-height: 1.6;">
+                <div style="font-size: 2em; margin-bottom: 10px;">⚠️</div>
+                Bạn chưa tích điểm tại Di Di,<br>vui lòng tích điểm trước khi nhận quà.
             </div>
         `;
     }
