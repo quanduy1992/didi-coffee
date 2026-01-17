@@ -6,24 +6,25 @@
     <title>Di Di Coffee - Kiểm Tra Điểm</title>
     <link rel="stylesheet" href="style.css">
     <script src="hoamai.js"></script>
+    <style>
+        .nav-menu { display: flex; justify-content: space-around; margin-top: 20px; border-top: 1px dashed #d32f2f; padding-top: 15px; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; text-decoration: none; font-size: 0.8em; color: #d32f2f; width: 22%; padding: 10px 5px; border-radius: 10px; border: 1px solid #ffd54f; }
+        .nav-item i { font-size: 1.5em; margin-bottom: 5px; }
+        .nav-item.active { background-color: #d32f2f; color: white; border: none; }
+        .success-box { background-color: #fff; border: 1px solid #d32f2f; padding: 15px; border-radius: 10px; margin-top: 15px; color: #d32f2f; }
+    </style>
 </head>
 <body>
     <div class="card">
         <canvas id="flower-canvas"></canvas>
-        <h2 id="shopTitle">☕ DI DI COFFEE</h2>
-        
+        <h2 id="shopTitle" style="color: #d32f2f;">☕ Di Di Coffee 🌸</h2>
         <div id="form-input">
-            <label>Số điện thoại khách hàng:</label>
-            <input type="tel" id="cusPhone" placeholder="Nhập số điện thoại để xem điểm">
-            
-            <button id="btnCheck" onclick="handleCheckPoint()">KIỂM TRA NGAY</button>
-            
-            <br><br>
-            <span style="color:#5d4037;font-weight:bold;">Hotline: 0968.97.37.87</span>
+            <label style="font-weight: bold; color: #5d4037;">Số điện thoại khách hàng:</label>
+            <input type="tel" id="cusPhone" placeholder="Nhập SĐT của bạn" style="text-align: center; font-size: 1.2em;">
+            <button id="btnCheck" onclick="handleCheckPoint()" style="background-color: #d32f2f; color: white; font-weight: bold; margin-top: 15px;">KIỂM TRA NGAY</button>
+            <div style="margin-top: 15px; font-weight: bold; color: #5d4037;">Hotline: 0968.97.37.87</div>
         </div>
-
         <div id="result"></div>        
-        
         <div class="nav-menu">
             <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
             <a href="doi-qua.html?from=web" class="nav-item"><i>🎁</i> Đổi quà</a>
@@ -34,31 +35,18 @@
 
 <script src="config.js"></script> 
 <script>
-    /* ============================================================
-       LOGIC: TỰ ĐỘNG ĐIỀN SĐT VÀ KIỂM TRA ĐIỂM (ĐỒNG BỘ STYLE)
-       ============================================================ */
     window.onload = function() {
-        // 1. Cập nhật tên Shop từ config
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-            document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
+            document.getElementById('shopTitle').innerHTML = `☕ ${CONFIG.SHOP_NAME} 🌸`;
         }
-
-        // 2. Lấy SĐT từ URL (dành cho QR Code: quatet.html?sdt=0366...)
         const urlParams = new URLSearchParams(window.location.search);
         const sdtFromURL = urlParams.get('sdt');
-        
-        // 3. Lấy SĐT từ localStorage (đã lưu ở trang index.html)
         const savedPhone = localStorage.getItem('didi_customer_phone');
-
-        const phoneInput = document.getElementById('cusPhone');
-
         if (sdtFromURL) {
-            phoneInput.value = sdtFromURL;
-            handleCheckPoint(); // Có SĐT từ QR -> Tự động kiểm tra luôn
+            document.getElementById('cusPhone').value = sdtFromURL;
+            handleCheckPoint();
         } else if (savedPhone) {
-            phoneInput.value = savedPhone;
-            // Nếu muốn tự động kiểm tra luôn khi vào trang mà có SĐT cũ:
-            // handleCheckPoint(); 
+            document.getElementById('cusPhone').value = savedPhone;
         }
     };
 
@@ -66,53 +54,38 @@
         const phone = document.getElementById('cusPhone').value.trim();
         const resultDiv = document.getElementById('result');
         const btnCheck = document.getElementById('btnCheck');
-
         if (!phone) {
-            resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập số điện thoại!</div>";
+            resultDiv.innerHTML = "<div class='error' style='background:#ffebee; padding:10px; border-radius:8px; color:red; margin-top:10px;'>❌ Vui lòng nhập số điện thoại!</div>";
             return;
         }
-
-        // Hiệu ứng đang xử lý đồng bộ với style index.html
         btnCheck.disabled = true;
         btnCheck.innerHTML = "⌛ Đang tra cứu...";
         resultDiv.innerHTML = "";
 
-        // Lưu SĐT lại để lần sau không phải nhập
-        localStorage.setItem('didi_customer_phone', phone);
-
-        // Gọi API tra cứu (Sử dụng chung SCRIPT_URL trong config.js)
-        // Lưu ý: GAS của bạn cần có action 'check_point' hoặc tương đương
+        // Tạo hàm callback toàn cục để nhận dữ liệu từ Google
         window.googleCallback = function(resData) {
             btnCheck.disabled = false;
             btnCheck.innerHTML = "KIỂM TRA NGAY";
-            
-            if (resData.status === "SUCCESS" || resData.points !== undefined) {
-                if (navigator.vibrate) navigator.vibrate(100);
-                
-                resultDiv.innerHTML = `
-                    <div class="success-box">
-                        <div style="font-size: 1.1em; margin-bottom: 5px;">Chào bạn, <b>${resData.name || 'Khách hàng'}</b></div>
-                        <span class="points-info">Số điểm tích lũy: <span style="font-size: 2em;">${resData.points}</span></span>
-                        <div style="margin-top: 10px; font-size: 0.8em; opacity: 0.8;">Cập nhật lúc: ${new Date().toLocaleTimeString('vi-VN')}</div>
-                    </div>
-                `;
+            if (resData.status === "SUCCESS") {
+                resultDiv.innerHTML = `<div class="success-box">
+                    <div style="font-size: 1.1em;">Chào <b>${resData.name}</b></div>
+                    <div style="font-size: 1.4em; margin-top: 5px;">Số điểm: <span style="font-size: 1.8em; font-weight:bold;">${resData.points}</span></div>
+                </div>`;
             } else {
-                resultDiv.innerHTML = "<div class='error'>❌ Không tìm thấy thông tin điểm của số này!</div>";
+                resultDiv.innerHTML = "<div class='error' style='background:#ffebee; padding:10px; border-radius:8px; color:red; margin-top:10px;'>❌ Không tìm thấy dữ liệu cho số này!</div>";
             }
-            
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        // Gửi action=check_point tới Google Script
+        // Gửi tham số action=check_point
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=check_point&phone=${encodeURIComponent(phone)}&callback=googleCallback&t=${new Date().getTime()}`;
-        
         scriptTag.onerror = function() {
             btnCheck.disabled = false;
             btnCheck.innerHTML = "KIỂM TRA NGAY";
-            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
+            resultDiv.innerHTML = "<div class='error' style='background:#ffebee; padding:10px; border-radius:8px; color:red; margin-top:10px;'>❌ Lỗi kết nối máy chủ! (Kiểm tra lại URL Script)</div>";
         };
         document.body.appendChild(scriptTag);
     }
