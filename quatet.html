@@ -66,6 +66,7 @@
         window.googleCallback = function(resData) {
     const btnCheck = document.getElementById('btnCheck');
     const resultDiv = document.getElementById('result');
+    const formInput = document.getElementById('form-input'); // Vùng chứa SĐT và nút bấm
     
     btnCheck.disabled = false;
     btnCheck.innerHTML = "KIỂM TRA NGAY";
@@ -73,15 +74,16 @@
     if (resData.status === "SUCCESS") {
         if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
         
+        // Ẩn phần nhập liệu dư thừa ở trên khi thành công
+        if (formInput) formInput.style.display = "none";
+        
         const now = new Date();
         const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
         const points = parseFloat(resData.points) || 0;
         
-        // Lấy mốc điểm từ config (mặc định 15 và 50 theo ý bạn)
         const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 15;
         const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 50;
 
-        // Hàm so sánh và lấy lời chúc
         let giftMessage = "";
         let giftIcon = "🎁";
         
@@ -96,12 +98,11 @@
             giftIcon = "🎉";
         }
 
-        // Hiển thị khung màu xanh đồng bộ với cấu trúc chữ bạn đã sửa
         resultDiv.innerHTML = `
-            <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 15px; text-align: left;">
-                <div style="margin-bottom: 5px;">Khách hàng: <b>${resData.name}</b></div>
+            <div class="success-box" style="background-color: #e8f5e9; border: 1px solid #4caf50; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 10px; text-align: left;">
+                <div style="margin-bottom: 5px;">Xin chào: <b>${resData.name}</b></div>
                 <div style="font-weight: bold; font-size: 0.85em; border-bottom: 1px solid #4caf50; padding-bottom: 8px; margin-bottom: 10px; line-height: 1.4;">
-                    ✅ Cảm ơn bạn đã đồng hành cùng Di Di trong suốt thời gian vừa qua, TRẬN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
+                    ✅ Cảm ơn bạn đã đồng hành cùng Di Di trong suốt thời gian vừa qua, TRÂN TRỌNG VÀ BIẾT ƠN BẠN RẤT NHIỀU!
                 </div>
                 <div style="font-size: 1.1em;">Tích lũy của bạn là: <span style="font-size: 1.4em; font-weight: bold; color: #d32f2f;">${points}</span></div>
                 
@@ -113,6 +114,10 @@
                 <div style="font-size: 0.75em; margin-top: 15px; opacity: 0.8; text-align: center;">
                     Cập nhật lúc: ${timeStr}
                 </div>
+                
+                <button onclick="location.reload()" style="width:100%; margin-top:15px; background:none; border:1px solid #4caf50; color:#2e7d32; padding:8px; border-radius:5px; font-size:0.8em; cursor:pointer;">
+                    🔄 Tra cứu số khác
+                </button>
             </div>
         `;
     } else {
