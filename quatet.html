@@ -127,7 +127,7 @@
             } 
             // 2. TRƯỜNG HỢP THÀNH CÔNG
             else if (resData.status === "SUCCESS") {
-                const points = parseFloat(resData.points) || 0;
+                const points = parseFloat(resData.all_time) || 0;
                 const level1 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_1) ? CONFIG.LEVEL_1 : 10;
                 const level2 = (typeof CONFIG !== 'undefined' && CONFIG.LEVEL_2) ? CONFIG.LEVEL_2 : 20;
 
