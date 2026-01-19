@@ -3,61 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bảng Vàng Tích Điểm - Di Di Coffee</title>
+    <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
+    <script src="hoamai.js"></script>
     <style>
-        /* Khung chứa bảng danh sách */
         .leaderboard-wrapper {
             background: #fff;
             border-radius: 15px;
-            margin: 15px 10px;
-            padding: 5px;
+            margin: 10px;
             border: 2px solid #d32f2f;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            overflow: hidden;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
         }
-
-        /* Tiêu đề bảng cố định */
         .table-header {
             display: flex;
             background: #d32f2f;
             color: white;
             font-weight: bold;
             padding: 12px 0;
-            border-radius: 10px 10px 0 0;
             font-size: 0.85em;
         }
-
-        .col-stt { width: 12%; text-align: center; }
-        .col-name { width: 43%; text-align: left; padding-left: 5px; }
-        .col-phone { width: 25%; text-align: center; }
-        .col-pts { width: 20%; text-align: right; padding-right: 15px; }
-
-        /* Vùng chứa nội dung cuộn */
         .scroll-container {
-            height: 350px; /* Độ cao khung nhìn */
+            height: 380px;
             overflow: hidden;
             position: relative;
-            background: #fff;
         }
-
-        /* Hiệu ứng cuộn liên tục từ dưới lên */
         .scroll-content {
             position: absolute;
             width: 100%;
-            animation: moveUp 25s linear infinite; /* 25 giây cho 1 vòng cuộn */
+            animation: moveUp 25s linear infinite;
         }
-
-        /* Dừng cuộn khi chạm tay/chuột vào để khách dễ xem */
-        .scroll-container:hover .scroll-content {
-            animation-play-state: paused;
-        }
-
+        .scroll-container:hover .scroll-content { animation-play-state: paused; }
         @keyframes moveUp {
-            0% { transform: translateY(350px); }
+            0% { transform: translateY(380px); }
             100% { transform: translateY(-100%); }
         }
-
-        /* Từng dòng trong danh sách */
         .row-item {
             display: flex;
             padding: 12px 0;
@@ -65,27 +45,18 @@
             font-size: 0.9em;
             align-items: center;
         }
-
-        .row-item:nth-child(even) { background: #fffafa; }
-
-        /* Trang trí cho Top 1, 2, 3 */
-        .top-1 { color: #d32f2f; font-weight: bold; background: #fff3f3 !important; }
-        .top-1 .col-stt { font-size: 1.2em; }
-        
-        .badge {
-            font-size: 0.7em;
-            padding: 2px 5px;
-            border-radius: 4px;
-            margin-left: 5px;
-            background: #ffd700;
-            color: #000;
-        }
+        .col-stt { width: 12%; text-align: center; }
+        .col-name { width: 43%; text-align: left; padding-left: 5px; }
+        .col-phone { width: 25%; text-align: center; color: #666; }
+        .col-pts { width: 20%; text-align: right; padding-right: 15px; color: #d32f2f; font-weight: bold; }
+        .top-1 { background: #fff3f3; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 id="shopTitle" style="margin-bottom: 5px;">☕ DI DI COFFEE</h2>
-        <h3 style="color: #d32f2f; margin-top: 0;">🏆 BẢNG VÀNG TÍCH ĐIỂM</h3>
+        <canvas id="flower-canvas"></canvas>
+        <h2 id="shopTitle">🌸 ☕ Di Di Coffee 🌸</h2>
+        <h3 style="color: #d32f2f; margin: 5px 0;">🏆 BẢNG VÀNG TÍCH ĐIỂM</h3>
 
         <div class="leaderboard-wrapper">
             <div class="table-header">
@@ -94,15 +65,13 @@
                 <div class="col-phone">SĐT</div>
                 <div class="col-pts">ĐIỂM</div>
             </div>
-
             <div class="scroll-container">
                 <div id="leaderboardData" class="scroll-content">
-                    <div style="text-align:center; padding-top: 50px; color: #888;">Đang cập nhật danh sách...</div>
+                    <div style="text-align:center; padding-top: 50px; color: #888;">Đang tải dữ liệu...</div>
                 </div>
             </div>
         </div>
-
-        <p style="font-size: 0.8em; color: #666; font-style: italic;">* Chạm vào bảng để dừng xem chi tiết</p>
+        <p style="font-size: 0.75em; color: #888; font-style: italic;">* Chạm vào bảng để dừng xem chi tiết</p>
 
         <div class="nav-menu">
             <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
@@ -115,44 +84,35 @@
     <script>
         function loadData() {
             const scriptTag = document.createElement("script");
-            const callbackName = "leaderboardCB";
-
-            window[callbackName] = function(res) {
+            window.leaderboardCB = function(res) {
                 if (res.status === "SUCCESS") {
                     let html = "";
-                    res.data.forEach((item, index) => {
-                        let topClass = (index === 0) ? "top-1" : "";
-                        let badge = (index === 0) ? '<span class="badge">TOP 1</span>' : "";
-                        
-                        html += `
-                            <div class="row-item ${topClass}">
-                                <div class="col-stt">${index + 1}</div>
-                                <div class="col-name">${item.name} ${badge}</div>
-                                <div class="col-phone">${item.phone}</div>
-                                <div class="col-pts">${item.points}</div>
-                            </div>
-                        `;
-                    });
-                    
-                    // Nếu danh sách ngắn quá thì lặp lại để hiệu ứng cuộn mượt hơn
-                    if(res.data.length > 0 && res.data.length < 10) {
-                        document.getElementById('leaderboardData').innerHTML = html + html;
+                    if (res.data.length === 0) {
+                        html = "<div style='text-align:center; padding-top:20px;'>Chưa có dữ liệu</div>";
                     } else {
-                        document.getElementById('leaderboardData').innerHTML = html;
+                        res.data.forEach((item, index) => {
+                            let isTop = (index === 0) ? "top-1" : "";
+                            html += `<div class="row-item ${isTop}">
+                                <div class="col-stt">${index + 1}</div>
+                                <div class="col-name">${item.name}</div>
+                                <div class="col-phone">${item.phone}</div>
+                                <div class="col-pts">${item.points}đ</div>
+                            </div>`;
+                        });
                     }
+                    document.getElementById('leaderboardData').innerHTML = html;
                 }
                 const old = document.getElementById('api-list');
                 if (old) old.remove();
             };
-
             scriptTag.id = "api-list";
-            scriptTag.src = `${CONFIG.SCRIPT_URL}?action=get_leaderboard&callback=${callbackName}&t=${new Date().getTime()}`;
+            scriptTag.src = `${CONFIG.SCRIPT_URL}?action=get_leaderboard&callback=leaderboardCB&t=${new Date().getTime()}`;
             document.body.appendChild(scriptTag);
         }
 
         window.onload = function() {
             if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-                document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
+                document.getElementById('shopTitle').innerHTML = "🌸 ☕ " + CONFIG.SHOP_NAME + " 🌸";
             }
             loadData();
         };
