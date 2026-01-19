@@ -31,10 +31,11 @@
             <a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
         </div>
     </div>
+
 <script src="config.js"></script> 
 <script>
     /* =========================================
-       PHẦN 2: GIỮ NGUYÊN LOGIC GỐC CỦA BẠN
+       PHẦN 1: KHỞI TẠO VÀ LOAD DỮ LIỆU CŨ
        ========================================= */
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
@@ -44,14 +45,19 @@
         const codeFromURL = urlParams.get('code');
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
+        
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
+        
         if (codeFromURL && savedName && savedPhone) {
             setTimeout(handleVerify, 500);
         }
     };
 
+    /* =========================================
+       PHẦN 2: XỬ LÝ TÍCH ĐIỂM
+       ========================================= */
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -64,23 +70,24 @@
             return;
         }
 
-        /* --- PHẦN MỚI: CHẶN SỐ ĐIỆN THOẠI CỬA HÀNG --- */
+        // Chặn số điện thoại cửa hàng
         const shopPhone = "0968973787";
-        // Loại bỏ mọi ký tự không phải số để so sánh chính xác nhất
         const cleanPhone = phone.replace(/\D/g, ""); 
         if (cleanPhone === shopPhone) {
             resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập lại SĐT của bạn, Đây là số cửa hàng không thể tích điểm!</div>";
             return;
         }
-        /* ------------------------------------------- */
 
         btnSubmit.disabled = true; 
         btnSubmit.innerHTML = "⌛ Đang xử lý dữ liệu..."; 
         resultDiv.innerHTML = ""; 
+        
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
+        
         const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
 
+        // Timeout an toàn 10s
         const safetyTimeout = setTimeout(function() {
             if (btnSubmit.disabled) {
                 btnSubmit.disabled = false;
@@ -89,14 +96,17 @@
             }
         }, 10000);
 
+        // Callback nhận dữ liệu từ Google Script
         window.googleCallback = function(resData) {
             clearTimeout(safetyTimeout);
             btnSubmit.disabled = false;
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+
             if (resData.status === "SUCCESS") {
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+                
                 resultDiv.innerHTML = `
                     <div class="success-box">
                         <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
@@ -105,6 +115,14 @@
                     </div>
                 `;            
                 document.getElementById('inputCode').value = ""; 
+
+                // --- KIỂM TRA TOP ĐIỂM VÀ HIỂN THỊ ALERT ---
+                if (resData.isTop1 === true) {
+                    setTimeout(function() {
+                        alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm. Hãy duy trì để nhận phần quà lớn từ Di Di nhé!");
+                    }, 600);
+                }
+
             } 
             else if (resData.status === "USED") {
                 resultDiv.innerHTML = `
@@ -114,21 +132,22 @@
                     </div>
                 `;
             } 
-            /* --- PHẦN FIX LỖI Ở ĐÂY --- */
             else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
                 resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
             }
-            /* ------------------------- */
             else {
                 resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
             }
+            
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
 
+        // Gọi API bằng kỹ thuật JSONP
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;        
+        
         scriptTag.onerror = function() {
             clearTimeout(safetyTimeout);
             resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
