@@ -7,17 +7,20 @@
     <link rel="stylesheet" href="style.css">
     <script src="hoamai.js"></script>
     <style>
-        /* FIX LỖI TIÊU ĐỀ BẢNG & GIẢM CỠ CHỮ */
+        /* FIX TIÊU ĐỀ & CỠ CHỮ */
         .table-header {
             display: flex;
             background: #d32f2f;
             color: white;
             font-weight: bold;
             padding: 10px 0;
-            font-size: 0.75em; /* Giảm cỡ chữ tiêu đề */
+            font-size: 0.75em;
             text-transform: uppercase;
             border-radius: 12px 12px 0 0;
             width: 100%;
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
         .col-stt { width: 12%; text-align: center; }
@@ -32,33 +35,28 @@
             border: 2px solid #d32f2f;
             overflow: hidden;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
         }
 
+        /* VÙNG CUỘN THỦ CÔNG - FIX CHO ĐIỆN THOẠI */
         .scroll-container {
-            height: 350px; /* Độ cao khung nhìn */
-            overflow: hidden;
-            position: relative;
+            height: 400px; 
+            overflow-y: auto; /* Cho phép khách tự kéo lên xuống */
+            -webkit-overflow-scrolling: touch; /* Giúp vuốt mượt trên iPhone */
+            background: #fff;
         }
 
-        /* Hiệu ứng cuộn không ngắt quãng */
-        .scroll-content {
-            position: absolute;
-            width: 100%;
-            animation: moveUp 30s linear infinite; /* Tăng thời gian để cuộn chậm hơn cho dễ đọc */
-        }
-
-        .scroll-container:hover .scroll-content { animation-play-state: paused; }
-
-        @keyframes moveUp {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-50%); } /* Cuộn lên 1 nửa danh sách (phần nhân đôi) */
+        /* Ẩn thanh cuộn để nhìn đẹp hơn */
+        .scroll-container::-webkit-scrollbar {
+            display: none;
         }
 
         .row-item {
             display: flex;
             padding: 10px 0;
             border-bottom: 1px solid #f2f2f2;
-            font-size: 0.75em; /* Giảm cỡ chữ nội dung xuống ~2 số */
+            font-size: 0.75em; 
             align-items: center;
         }
 
@@ -67,13 +65,13 @@
         .top-3 { background: #fffdf9 !important; border-left: 4px solid #cd7f32; }
 
         .medal { 
-            font-size: 0.9em; /* Làm nhỏ icon huy hiệu */
+            font-size: 0.9em; 
             margin-right: 3px; 
             vertical-align: middle; 
         }
-        
-        .top-1 .col-pts { animation: highlight 1.5s infinite; }
-        @keyframes highlight { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+
+        /* Layout chung của card */
+        .card { position: relative; padding-bottom: 80px; }
     </style>
 </head>
 <body>
@@ -90,14 +88,14 @@
                 <div class="col-pts">ĐIỂM</div>
             </div>
 
-            <div class="scroll-container">
-                <div id="leaderboardData" class="scroll-content">
+            <div class="scroll-container" id="scrollContainer">
+                <div id="leaderboardData">
                     <div style="text-align:center; padding-top: 50px; color: #888;">Đang tải danh sách...</div>
                 </div>
             </div>
         </div>
         
-        <p style="font-size: 0.7em; color: #888; font-style: italic;">* Chạm vào bảng để dừng xem chi tiết</p>
+        <p style="font-size: 0.7em; color: #888; font-style: italic;">* Vuốt lên/xuống để xem thêm danh sách</p>
 
         <div class="nav-menu">
             <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
@@ -116,31 +114,23 @@
                     if (res.data.length === 0) {
                         html = "<div style='text-align:center; padding-top:20px;'>Chưa có dữ liệu</div>";
                     } else {
-                        // Hàm tạo hàng dữ liệu
-                        const createRows = (data) => {
-                            let tempHtml = "";
-                            data.forEach((item, index) => {
-                                let topClass = "";
-                                let medal = "";
-                                if (index === 0) { topClass = "top-1"; medal = '<span class="medal">🥇</span>'; }
-                                else if (index === 1) { topClass = "top-2"; medal = '<span class="medal">🥈</span>'; }
-                                else if (index === 2) { topClass = "top-3"; medal = '<span class="medal">🥉</span>'; }
+                        res.data.forEach((item, index) => {
+                            let topClass = "";
+                            let medal = "";
+                            if (index === 0) { topClass = "top-1"; medal = '<span class="medal">🥇</span>'; }
+                            else if (index === 1) { topClass = "top-2"; medal = '<span class="medal">🥈</span>'; }
+                            else if (index === 2) { topClass = "top-3"; medal = '<span class="medal">🥉</span>'; }
 
-                                tempHtml += `
-                                    <div class="row-item ${topClass}">
-                                        <div class="col-stt">${index + 1}</div>
-                                        <div class="col-name">${medal}${item.name}</div>
-                                        <div class="col-phone">${item.phone}</div>
-                                        <div class="col-pts">${item.points}đ</div>
-                                    </div>
-                                `;
-                            });
-                            return tempHtml;
-                        };
-
-                        const baseHtml = createRows(res.data);
-                        // NHÂN ĐÔI DANH SÁCH ĐỂ TẠO HIỆU ỨNG NỐI ĐUÔI VÔ TẬN
-                        document.getElementById('leaderboardData').innerHTML = baseHtml + baseHtml;
+                            html += `
+                                <div class="row-item ${topClass}">
+                                    <div class="col-stt">${index + 1}</div>
+                                    <div class="col-name">${medal}${item.name}</div>
+                                    <div class="col-phone">${item.phone}</div>
+                                    <div class="col-pts">${item.points}đ</div>
+                                </div>
+                            `;
+                        });
+                        document.getElementById('leaderboardData').innerHTML = html;
                     }
                 }
                 if (document.getElementById('api-list')) document.getElementById('api-list').remove();
