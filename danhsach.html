@@ -7,26 +7,22 @@
     <link rel="stylesheet" href="style.css">
     <script src="hoamai.js"></script>
     <style>
-        /* FIX TIÊU ĐỀ & CỠ CHỮ */
+        /* GIỮ NGUYÊN STYLE CARD CỦA BẠN */
         .table-header {
             display: flex;
             background: #d32f2f;
             color: white;
             font-weight: bold;
             padding: 10px 0;
-            font-size: 0.75em;
+            font-size: 0.7em; /* Font nhỏ hơn 2 số theo ý bạn */
             text-transform: uppercase;
             border-radius: 12px 12px 0 0;
-            width: 100%;
-            position: sticky;
-            top: 0;
-            z-index: 10;
         }
 
         .col-stt { width: 12%; text-align: center; }
-        .col-name { width: 40%; text-align: left; padding-left: 8px; }
+        .col-name { width: 40%; text-align: left; padding-left: 5px; }
         .col-phone { width: 28%; text-align: center; }
-        .col-pts { width: 20%; text-align: right; padding-right: 15px; }
+        .col-pts { width: 20%; text-align: right; padding-right: 12px; }
 
         .leaderboard-wrapper {
             background: #fff;
@@ -34,50 +30,41 @@
             margin: 10px;
             border: 2px solid #d32f2f;
             overflow: hidden;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             display: flex;
             flex-direction: column;
         }
 
-        /* VÙNG CUỘN THỦ CÔNG - FIX CHO ĐIỆN THOẠI */
+        /* VÙNG CUỘN THỦ CÔNG - TỐI ƯU CHO ĐIỆN THOẠI */
         .scroll-container {
-            height: 400px; 
-            overflow-y: auto; /* Cho phép khách tự kéo lên xuống */
-            -webkit-overflow-scrolling: touch; /* Giúp vuốt mượt trên iPhone */
-            background: #fff;
-        }
-
-        /* Ẩn thanh cuộn để nhìn đẹp hơn */
-        .scroll-container::-webkit-scrollbar {
-            display: none;
+            max-height: 450px; /* Tăng chiều cao để hiện nhiều khách hơn */
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
         }
 
         .row-item {
             display: flex;
             padding: 10px 0;
-            border-bottom: 1px solid #f2f2f2;
-            font-size: 0.75em; 
+            border-bottom: 1px solid #eee;
+            font-size: 0.75em; /* Font nhỏ */
             align-items: center;
         }
 
-        .top-1 { background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%) !important; font-weight: bold; color: #d32f2f; border-left: 4px solid #ffd700; }
-        .top-2 { background: #f8f9fa !important; border-left: 4px solid #c0c0c0; }
-        .top-3 { background: #fffdf9 !important; border-left: 4px solid #cd7f32; }
+        /* HUY HIỆU NHỎ LẠI */
+        .medal { font-size: 0.85em; margin-right: 3px; }
+        
+        .top-1 { background: #fff9e6 !important; font-weight: bold; color: #d32f2f; border-left: 3px solid #ffd700; }
+        .top-2 { background: #f8f9fa !important; border-left: 3px solid #c0c0c0; }
+        .top-3 { background: #fffdf9 !important; border-left: 3px solid #cd7f32; }
 
-        .medal { 
-            font-size: 0.9em; 
-            margin-right: 3px; 
-            vertical-align: middle; 
-        }
-
-        /* Layout chung của card */
-        .card { position: relative; padding-bottom: 80px; }
+        /* Ẩn scrollbar để đẹp hơn */
+        .scroll-container::-webkit-scrollbar { width: 0; display: none; }
     </style>
 </head>
 <body>
     <div class="card">
         <canvas id="flower-canvas"></canvas>
-        <h3 style="color: #d32f2f; margin: 5px 0; font-size: 1.1em;">🏆 BẢNG VÀNG TÍCH ĐIỂM</h3>
+        <h2 id="shopTitle">🌸 ☕ Di Di Coffee 🌸</h2>
+        <h3 style="color: #d32f2f; margin: 5px 0; font-size: 1em;">🏆 BẢNG VÀNG TÍCH ĐIỂM</h3>
 
         <div class="leaderboard-wrapper">
             <div class="table-header">
@@ -86,15 +73,14 @@
                 <div class="col-phone">SĐT</div>
                 <div class="col-pts">ĐIỂM</div>
             </div>
-
-            <div class="scroll-container" id="scrollContainer">
+            <div class="scroll-container">
                 <div id="leaderboardData">
-                    <div style="text-align:center; padding-top: 50px; color: #888;">Đang tải danh sách...</div>
+                    <div style="text-align:center; padding: 40px; color: #999;">Đang tải danh sách...</div>
                 </div>
             </div>
         </div>
         
-        <p style="font-size: 0.7em; color: #888; font-style: italic;">* Vuốt lên/xuống để xem thêm danh sách</p>
+        <p style="font-size: 0.7em; color: #888; font-style: italic;">* Vuốt lên/xuống để xem toàn bộ danh sách</p>
 
         <div class="nav-menu">
             <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
@@ -110,27 +96,18 @@
             window.leaderboardCB = function(res) {
                 if (res.status === "SUCCESS") {
                     let html = "";
-                    if (res.data.length === 0) {
-                        html = "<div style='text-align:center; padding-top:20px;'>Chưa có dữ liệu</div>";
-                    } else {
-                        res.data.forEach((item, index) => {
-                            let topClass = "";
-                            let medal = "";
-                            if (index === 0) { topClass = "top-1"; medal = '<span class="medal">🥇</span>'; }
-                            else if (index === 1) { topClass = "top-2"; medal = '<span class="medal">🥈</span>'; }
-                            else if (index === 2) { topClass = "top-3"; medal = '<span class="medal">🥉</span>'; }
-
-                            html += `
-                                <div class="row-item ${topClass}">
+                    res.data.forEach((item, index) => {
+                        let topClass = (index === 0) ? "top-1" : (index === 1 ? "top-2" : (index === 2 ? "top-3" : ""));
+                        let medal = (index === 0) ? "🥇 " : (index === 1 ? "🥈 " : (index === 2 ? "🥉 " : ""));
+                        
+                        html += `<div class="row-item ${topClass}">
                                     <div class="col-stt">${index + 1}</div>
-                                    <div class="col-name">${medal}${item.name}</div>
+                                    <div class="col-name"><span class="medal">${medal}</span>${item.name}</div>
                                     <div class="col-phone">${item.phone}</div>
                                     <div class="col-pts">${item.points}đ</div>
-                                </div>
-                            `;
-                        });
-                        document.getElementById('leaderboardData').innerHTML = html;
-                    }
+                                </div>`;
+                    });
+                    document.getElementById('leaderboardData').innerHTML = html || "<div style='text-align:center; padding:20px;'>Chưa có dữ liệu</div>";
                 }
                 if (document.getElementById('api-list')) document.getElementById('api-list').remove();
             };
@@ -138,13 +115,7 @@
             scriptTag.src = `${CONFIG.SCRIPT_URL}?action=get_leaderboard&callback=leaderboardCB&t=${new Date().getTime()}`;
             document.body.appendChild(scriptTag);
         }
-
-        window.onload = function() {
-            if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-                document.getElementById('shopTitle').innerHTML = "🌸 ☕ " + CONFIG.SHOP_NAME + " 🌸";
-            }
-            loadData();
-        };
+        window.onload = loadData;
     </script>
 </body>
 </html>
