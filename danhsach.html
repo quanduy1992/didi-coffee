@@ -7,37 +7,55 @@
     <link rel="stylesheet" href="style.css">
     <script src="hoamai.js"></script>
     <style>
-        .leaderboard-wrapper {
-            background: #fff;
-            border-radius: 15px;
-            margin: 10px;
-            border: 2px solid #d32f2f;
-            overflow: hidden;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
+        /* FIX LỖI TIÊU ĐỀ BẢNG */
         .table-header {
             display: flex;
             background: #d32f2f;
             color: white;
             font-weight: bold;
             padding: 12px 0;
-            font-size: 0.85em;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            border-radius: 12px 12px 0 0;
+            width: 100%;
         }
+
+        /* Phân chia tỷ lệ cột đồng nhất cho cả tiêu đề và nội dung */
+        .col-stt { width: 12%; text-align: center; }
+        .col-name { width: 40%; text-align: left; padding-left: 8px; }
+        .col-phone { width: 28%; text-align: center; }
+        .col-pts { width: 20%; text-align: right; padding-right: 15px; }
+
+        /* Khung chứa bảng */
+        .leaderboard-wrapper {
+            background: #fff;
+            border-radius: 15px;
+            margin: 10px;
+            border: 2px solid #d32f2f;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
         .scroll-container {
             height: 380px;
             overflow: hidden;
             position: relative;
         }
+
         .scroll-content {
             position: absolute;
             width: 100%;
             animation: moveUp 25s linear infinite;
         }
+
         .scroll-container:hover .scroll-content { animation-play-state: paused; }
+
         @keyframes moveUp {
             0% { transform: translateY(380px); }
             100% { transform: translateY(-100%); }
         }
+
+        /* TRANG TRÍ TOP 1, 2, 3 */
         .row-item {
             display: flex;
             padding: 12px 0;
@@ -45,11 +63,27 @@
             font-size: 0.9em;
             align-items: center;
         }
-        .col-stt { width: 12%; text-align: center; }
-        .col-name { width: 43%; text-align: left; padding-left: 5px; }
-        .col-phone { width: 25%; text-align: center; color: #666; }
-        .col-pts { width: 20%; text-align: right; padding-right: 15px; color: #d32f2f; font-weight: bold; }
-        .top-1 { background: #fff3f3; font-weight: bold; }
+
+        .top-1 { 
+            background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%) !important; 
+            font-weight: bold;
+            color: #d32f2f;
+            border-left: 4px solid #ffd700;
+        }
+        .top-2 { background: #f8f9fa !important; border-left: 4px solid #c0c0c0; }
+        .top-3 { background: #fffdf9 !important; border-left: 4px solid #cd7f32; }
+
+        .medal { font-size: 1.2em; margin-right: 4px; vertical-align: middle; }
+        
+        /* Hiệu ứng nhấp nháy cho điểm Top 1 */
+        .top-1 .col-pts {
+            animation: highlight 1.5s infinite;
+        }
+        @keyframes highlight {
+            0% { opacity: 1; }
+            50% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
     </style>
 </head>
 <body>
@@ -65,12 +99,14 @@
                 <div class="col-phone">SĐT</div>
                 <div class="col-pts">ĐIỂM</div>
             </div>
+
             <div class="scroll-container">
                 <div id="leaderboardData" class="scroll-content">
-                    <div style="text-align:center; padding-top: 50px; color: #888;">Đang tải dữ liệu...</div>
+                    <div style="text-align:center; padding-top: 50px; color: #888;">Đang tải danh sách...</div>
                 </div>
             </div>
         </div>
+        
         <p style="font-size: 0.75em; color: #888; font-style: italic;">* Chạm vào bảng để dừng xem chi tiết</p>
 
         <div class="nav-menu">
@@ -91,19 +127,27 @@
                         html = "<div style='text-align:center; padding-top:20px;'>Chưa có dữ liệu</div>";
                     } else {
                         res.data.forEach((item, index) => {
-                            let isTop = (index === 0) ? "top-1" : "";
-                            html += `<div class="row-item ${isTop}">
-                                <div class="col-stt">${index + 1}</div>
-                                <div class="col-name">${item.name}</div>
-                                <div class="col-phone">${item.phone}</div>
-                                <div class="col-pts">${item.points}đ</div>
-                            </div>`;
+                            let topClass = "";
+                            let medal = "";
+                            
+                            // Gán huy hiệu và class cho Top 1, 2, 3
+                            if (index === 0) { topClass = "top-1"; medal = '<span class="medal">🥇</span>'; }
+                            else if (index === 1) { topClass = "top-2"; medal = '<span class="medal">🥈</span>'; }
+                            else if (index === 2) { topClass = "top-3"; medal = '<span class="medal">🥉</span>'; }
+
+                            html += `
+                                <div class="row-item ${topClass}">
+                                    <div class="col-stt">${index + 1}</div>
+                                    <div class="col-name">${medal}${item.name}</div>
+                                    <div class="col-phone">${item.phone}</div>
+                                    <div class="col-pts">${item.points}đ</div>
+                                </div>
+                            `;
                         });
                     }
                     document.getElementById('leaderboardData').innerHTML = html;
                 }
-                const old = document.getElementById('api-list');
-                if (old) old.remove();
+                if (document.getElementById('api-list')) document.getElementById('api-list').remove();
             };
             scriptTag.id = "api-list";
             scriptTag.src = `${CONFIG.SCRIPT_URL}?action=get_leaderboard&callback=leaderboardCB&t=${new Date().getTime()}`;
