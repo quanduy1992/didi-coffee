@@ -78,7 +78,7 @@
     async function autoProcess(phone) {
         const display = document.getElementById('pointDisplay');
         const btn = document.getElementById('btnRedeem');
-        display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang nhận diện khách hàng...</div>";
+        display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang kiểm tra...</div>";
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
         isProcessing = true; // Khóa không cho khách tương tác
@@ -179,3 +179,4 @@
 </script>
 </body>
 </html>
+
