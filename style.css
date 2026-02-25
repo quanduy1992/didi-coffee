@@ -21,14 +21,14 @@ body {
     position: relative;
     box-sizing: border-box;
     overflow: hidden;
-    padding: 10px; /* Khoảng cách để nội dung không chạm viền */
+    /*padding: 10px;  Khoảng cách để nội dung không chạm viền */
     z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     /* Nếu chưa có background, hãy thêm để che phần giữa của vòng xoay */
-    background: #f4f4f4; 
-    border-radius: 20px; /* Bo góc cho card */
+    /*background: #f4f4f4; */
+    /*border-radius: 20px;  Bo góc cho card */
     /* NỀN HOA ĐÀO RẢI RÁC 
     background-image: 
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ctext y='50' font-size='50' opacity='0.55'%3E🌸%3C/text%3E%3C/svg%3E"),
@@ -267,6 +267,7 @@ button:disabled {
 .cust-list-table th, .cust-list-table td { border: 1px solid #d32f2f; padding: 8px; text-align: left; }
 .cust-list-table th { background-color: #d32f2f; color: white; }
 .points-red { color: #d32f2f; font-weight: bold; }
+
 
 
 
