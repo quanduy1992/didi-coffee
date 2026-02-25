@@ -21,7 +21,14 @@ body {
     position: relative;
     box-sizing: border-box;
     overflow: hidden;
-
+    padding: 10px; /* Khoảng cách để nội dung không chạm viền */
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Nếu chưa có background, hãy thêm để che phần giữa của vòng xoay */
+    background: #f4f4f4; 
+    border-radius: 20px; /* Bo góc cho card */
     /* NỀN HOA ĐÀO RẢI RÁC 
     background-image: 
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ctext y='50' font-size='50' opacity='0.55'%3E🌸%3C/text%3E%3C/svg%3E"),
@@ -33,6 +40,49 @@ body {
     background-position: 50% 20%, 99% 12%, 55% 45%, 15% 60%, 90% 50%; 
     background-repeat: no-repeat;
     background-size: 80px 80px;*/
+}
+/* 2. Tạo lớp giả chạy phía sau để làm hiệu ứng xoay */
+.card::before {
+    content: '';
+    position: absolute;
+    z-index: -2;
+    left: -50%;
+    top: -50%;
+    width: 200%;
+    height: 200%;
+    background-color: transparent;
+    background-repeat: no-repeat;
+    background-size: 50% 50%, 50% 50%;
+    background-position: 0 0, 100% 0, 100% 100%, 0 100%;
+    /* Màu trắng chạy quanh, bạn có thể đổi #ffffff thành màu khác nếu muốn */
+    background-image: conic-gradient(transparent, transparent, transparent, #ffffff);
+    animation: rotate-border 4s linear infinite;
+}
+
+/* 3. Tạo lớp giả đè lên giữa để tạo ra cái rãnh "viền" */
+.card::after {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    left: 4px;  /* Độ dày của viền (càng lớn viền càng dày) */
+    top: 4px;
+    right: 4px;
+    bottom: 4px;
+    background: #f4f4f4; /* Phải trùng với màu nền của .card ở trên */
+    border-radius: 18px; /* Bo góc nhỏ hơn card một chút cho đẹp */
+}
+
+/* 4. Định nghĩa hiệu ứng xoay */
+@keyframes rotate-border {
+    100% {
+        transform: rotate(1turn);
+    }
+}
+
+/* 5. Đảm bảo các thành phần bên trong luôn nổi lên trên viền */
+.card > * {
+    position: relative;
+    z-index: 2;
 }
 
 /* PHỤ KIỆN TRANG TRÍ GÓC 
@@ -217,6 +267,7 @@ button:disabled {
 .cust-list-table th, .cust-list-table td { border: 1px solid #d32f2f; padding: 8px; text-align: left; }
 .cust-list-table th { background-color: #d32f2f; color: white; }
 .points-red { color: #d32f2f; font-weight: bold; }
+
 
 
 
