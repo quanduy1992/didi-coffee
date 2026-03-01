@@ -6,11 +6,12 @@ const CONFIG = {
     // Bạn có thể thêm các cấu hình khác sau này tại đây
     REDEEM_POINTS: 15,
     SPIN_POINTS: 200,
-    POINTS_PER_CODE: 2,
+    POINTS_PER_CODE: 1,
     LEVEL_1: 15,
     LEVEL_2: 50, // Ví dụ: mốc 2 là 20 điểm
     SHOP_NAME: 'Di Di Coffee'
 };
+
 
 
 
