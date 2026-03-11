@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
+    .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+    .btn-zalo { background: #0068ff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; }
+    h2 { color: #5d4037; }
+  </style>
+</head>
+<body>
+  <h2>Danh sách khách tích điểm hôm nay ☕</h2>
+  <div id="customer-list">Đang tải danh sách...</div>
+
+  <script>
+    function loadCustomers() {
+      google.script.run.withSuccessHandler(showCustomers).getTodayCustomers();
+    }
+
+    function showCustomers(customers) {
+      var container = document.getElementById('customer-list');
+      if (customers.length === 0) {
+        container.innerHTML = "Chưa có khách nào tích điểm hôm nay.";
+        return;
+      }
+      
+      var html = '';
+      customers.forEach(function(c) {
+        // Nội dung tin nhắn bạn muốn gửi
+        var message = "Di Di Coffee xin chao " + c.name + "! Cam on ban da ghe quan va tich duoc " + c.points + " diem hom nay. Hen gap lai ban nhe!";
+        var encodedMsg = encodeURIComponent(message);
+        var zaloUrl = "https://zalo.me/" + c.phone + "?text=" + encodedMsg;
+
+        html += '<div class="card">' +
+                '<div><strong>' + c.name + '</strong><br><small>' + c.phone + '</small></div>' +
+                '<a href="' + zaloUrl + '" target="_blank" class="btn-zalo">Gửi Zalo</a>' +
+                '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    loadCustomers();
+  </script>
+</body>
+</html>
