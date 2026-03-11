@@ -1,46 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
-  <base target="_top">
-  <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f4; }
-    .card { background: white; padding: 15px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
-    .btn-zalo { background: #0068ff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; text-decoration: none; font-size: 14px; }
-    h2 { color: #5d4037; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Di Di Coffee - Quản Trị Gửi Zalo</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Bổ sung một số style riêng cho trang Admin */
+        body { background-color: #fdf5e6; }
+        .customer-item {
+            background: #fff;
+            border-left: 5px solid #5d4037;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .info-text { text-align: left; }
+        .info-text b { color: #5d4037; font-size: 16px; }
+        .info-text p { margin: 5px 0 0; font-size: 13px; color: #666; }
+        
+        .btn-zalo {
+            background-color: #0068ff; /* Màu xanh Zalo */
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+            transition: 0.3s;
+        }
+        .btn-zalo:hover { background-color: #0052cc; opacity: 0.9; }
+        
+        #loading { color: #5d4037; font-weight: bold; margin-top: 20px; }
+        .empty-msg { padding: 20px; color: #999; font-style: italic; }
+    </style>
 </head>
 <body>
-  <h2>Danh sách khách tích điểm hôm nay ☕</h2>
-  <div id="customer-list">Đang tải danh sách...</div>
-
-  <script>
-    function loadCustomers() {
-      google.script.run.withSuccessHandler(showCustomers).getTodayCustomers();
-    }
-
-    function showCustomers(customers) {
-      var container = document.getElementById('customer-list');
-      if (customers.length === 0) {
-        container.innerHTML = "Chưa có khách nào tích điểm hôm nay.";
-        return;
-      }
-      
-      var html = '';
-      customers.forEach(function(c) {
-        // Nội dung tin nhắn bạn muốn gửi
-        var message = "Di Di Coffee xin chao " + c.name + "! Cam on ban da ghe quan va tich duoc " + c.points + " diem hom nay. Hen gap lai ban nhe!";
-        var encodedMsg = encodeURIComponent(message);
-        var zaloUrl = "https://zalo.me/" + c.phone + "?text=" + encodedMsg;
-
-        html += '<div class="card">' +
-                '<div><strong>' + c.name + '</strong><br><small>' + c.phone + '</small></div>' +
-                '<a href="' + zaloUrl + '" target="_blank" class="btn-zalo">Gửi Zalo</a>' +
-                '</div>';
-      });
-      container.innerHTML = html;
-    }
-
-    loadCustomers();
-  </script>
-</body>
-</html>
+    <div class="card">
+        <h2 id="shopTitle">☕ QUẢN TRỊ GỬI ZALO</h2>
+        <p style="color:#653d00; font-size:13px; font-weight:bold;">Danh sách khách tích điểm hôm nay</p>
