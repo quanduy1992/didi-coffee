@@ -59,41 +59,40 @@
     <script>
         // Hàm lấy dữ liệu từ Google Sheets thông qua Apps Script
         function loadCustomers() {
-            document.getElementById('customer-list').innerHTML = '<div id="loading">⌛ Đang tải danh sách khách...</div>';
-            google.script.run.withSuccessHandler(showCustomers).getTodayCustomers();
+          document.getElementById('customer-list').innerHTML = '<div id="loading">⌛ Đang tải danh sách khách...</div>';
+          google.script.run
+            .withSuccessHandler(showCustomers)
+            .withFailureHandler(function(err) {
+               document.getElementById('customer-list').innerHTML = "<div style='color:red'>Lỗi kết nối: " + err + "</div>";
+            })
+            .getTodayCustomers();
         }
-
+    
         function showCustomers(customers) {
-            const container = document.getElementById('customer-list');
-            
-            if (!customers || customers.length === 0) {
-                container.innerHTML = "<div class='empty-msg'>Hôm nay chưa có khách nào tích điểm.</div>";
-                return;
-            }
-            
-            let html = '';
-            customers.forEach(function(c) {
-                // Nội dung tin nhắn gửi khách (Bạn có thể sửa lại cho chill hơn)
-                // Lưu ý: Zalo cá nhân không hỗ trợ xuống dòng tự động qua URL tốt, nên viết liền
-                var message = "Di Di Coffee chào " + c.name + "! Bạn vừa tích thành công " + c.points + " điểm hôm nay. Cảm ơn bạn đã ghé quán nhé ☕!";
-                var encodedMsg = encodeURIComponent(message);
-                var zaloUrl = "https://zalo.me/" + c.phone + "?text=" + encodedMsg;
-
-                html += `
-                    <div class="customer-item">
-                        <div class="info-text">
-                            <b>${c.name}</b>
-                            <p>SĐT: ${c.phone} | <span style="color:#8d6e63">${c.time}</span></p>
-                            <p>Điểm: <strong>${c.points}</strong></p>
-                        </div>
-                        <a href="${zaloUrl}" target="_blank" class="btn-zalo">GỬI ZALO</a>
+          const container = document.getElementById('customer-list');
+          if (!customers || customers.length === 0) {
+            container.innerHTML = "<div class='empty-msg'>Không tìm thấy dữ liệu nào phù hợp.</div>";
+            return;
+          }
+          let html = '';
+          customers.forEach(function(c) {
+            var message = "Di Di Coffee chào " + c.name + "! Bạn vừa tích thành công " + c.points + " điểm. Cảm ơn bạn nhé ☕!";
+            var encodedMsg = encodeURIComponent(message);
+            var zaloUrl = "https://zalo.me/" + c.phone + "?text=" + encodedMsg;
+    
+            html += `
+                <div class="customer-item">
+                    <div class="info-text">
+                        <b>${c.name}</b>
+                        <p>SĐT: ${c.phone} | <span style="color:#8d6e63">${c.time}</span></p>
+                        <p>Điểm: <strong>${c.points}</strong></p>
                     </div>
-                `;
-            });
-            container.innerHTML = html;
+                    <a href="${zaloUrl}" target="_blank" class="btn-zalo">GỬI ZALO</a>
+                </div>
+            `;
+          });
+          container.innerHTML = html;
         }
-
-        // Tự động tải khi mở trang
         window.onload = loadCustomers;
     </script>
 </body>
