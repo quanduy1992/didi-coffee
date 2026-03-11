@@ -43,3 +43,57 @@
     <div class="card">
         <h2 id="shopTitle">☕ QUẢN TRỊ GỬI ZALO</h2>
         <p style="color:#653d00; font-size:13px; font-weight:bold;">Danh sách khách tích điểm hôm nay</p>
+        <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+
+        <div id="customer-list">
+            <div id="loading">⌛ Đang tải danh sách khách...</div>
+        </div>
+
+        <br>
+        <button onclick="loadCustomers()" style="background:#8d6e63; font-size: 12px; padding: 10px;">LÀM MỚI DANH SÁCH</button>
+        
+        <br><br>
+        <a href="?" style="text-decoration:none; color:#5d4037; font-size:12px;">← Quay lại trang tích điểm</a>
+    </div>
+
+    <script>
+        // Hàm lấy dữ liệu từ Google Sheets thông qua Apps Script
+        function loadCustomers() {
+            document.getElementById('customer-list').innerHTML = '<div id="loading">⌛ Đang tải danh sách khách...</div>';
+            google.script.run.withSuccessHandler(showCustomers).getTodayCustomers();
+        }
+
+        function showCustomers(customers) {
+            const container = document.getElementById('customer-list');
+            
+            if (!customers || customers.length === 0) {
+                container.innerHTML = "<div class='empty-msg'>Hôm nay chưa có khách nào tích điểm.</div>";
+                return;
+            }
+            
+            let html = '';
+            customers.forEach(function(c) {
+                // Nội dung tin nhắn gửi khách (Bạn có thể sửa lại cho chill hơn)
+                // Lưu ý: Zalo cá nhân không hỗ trợ xuống dòng tự động qua URL tốt, nên viết liền
+                var message = "Di Di Coffee chào " + c.name + "! Bạn vừa tích thành công " + c.points + " điểm hôm nay. Cảm ơn bạn đã ghé quán nhé ☕!";
+                var encodedMsg = encodeURIComponent(message);
+                var zaloUrl = "https://zalo.me/" + c.phone + "?text=" + encodedMsg;
+
+                html += `
+                    <div class="customer-item">
+                        <div class="info-text">
+                            <b>${c.name}</b>
+                            <p>SĐT: ${c.phone}</p>
+                        </div>
+                        <a href="${zaloUrl}" target="_blank" class="btn-zalo">GỬI ZALO</a>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+        }
+
+        // Tự động tải khi mở trang
+        window.onload = loadCustomers;
+    </script>
+</body>
+</html>
