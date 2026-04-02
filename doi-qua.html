@@ -42,12 +42,12 @@
         validateSession(); 
         
         const urlParams = new URLSearchParams(window.location.search);
-        const fromWeb = urlParams.get('from') === 'web'; // Kiểm tra nếu khách bấm từ menu web
+        const fromWebs = urlParams.get('from') === 'web'; // Kiểm tra nếu khách bấm từ menu web
         const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
         // CHỈ CHẶN NẾU TRUY CẬP TỪ MENU WEB (CÓ ?from=web)
-        if (fromWeb) {
+        if (fromWebs) {
             document.getElementById('form-input').style.display = "none"; // Ẩn ô nhập liệu
             document.getElementById('status').innerHTML = `
                 <div class="success-box" style="background: #fff3e0; border-color: #ffb74d;">
