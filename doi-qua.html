@@ -47,7 +47,7 @@
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
         // CHỈ CHẶN NẾU TRUY CẬP TỪ MENU WEB (CÓ ?from=web)
-        if (fromWebs) {
+        if (fromWeb) {
             document.getElementById('form-input').style.display = "none"; // Ẩn ô nhập liệu
             document.getElementById('status').innerHTML = `
                 <div class="success-box" style="background: #fff3e0; border-color: #ffb74d;">
