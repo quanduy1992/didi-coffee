@@ -9,7 +9,33 @@ body {
     margin: 0; 
     font-family: 'Arial', sans-serif;
 }
+/* Tạo dải băng màu đỏ sao vàng ở góc trang web */
+.ribbon-3004 {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    z-index: 9999;
+}
 
+.ribbon-3004 span {
+    text-transform: uppercase;
+    text-align: center;
+    line-height: 30px;
+    transform: rotate(45deg);
+    display: block;
+    width: 225px;
+    background: #da251d; /* Màu đỏ cờ Việt Nam */
+    color: #ffff00; /* Màu vàng ngôi sao */
+    box-shadow: 0 3px 10px -5px rgba(0, 0, 0, 1);
+    position: absolute;
+    top: 40px;
+    right: -55px;
+    font-weight: bold;
+    font-size: 14px;
+}
 .card { 
     background: #ebebeb; 
     padding: 30px; 
