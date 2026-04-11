@@ -8,51 +8,38 @@
     
     <style>
         body {
-            /* Nền ngoài trong suốt nhẹ hoặc màu tối để làm nổi bật Card */
-            background-color: rgba(0,0,0,0.7) !important;
+            background-color: #da251d !important; 
+            background-image: radial-gradient(circle, #ff0000 0%, #a80000 100%) !important;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "★";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80vw;
+            color: rgba(255, 255, 0, 0.15);
+            z-index: -1;
+            font-family: Arial, sans-serif;
         }
 
         .card {
             border: 2px solid #ffde00 !important;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-            /* CẬP NHẬT: Nền đỏ cờ và ngôi sao vàng bên trong */
-            background-color: #da251d !important;
-            background-image: radial-gradient(circle, #ff0000 0%, #a80000 100%) !important;
-            position: relative;
-            overflow: hidden;
-            color: #fff !important; /* Đổi màu chữ chính sang TRẮNG để dễ đọc */
-        }
-
-        /* Thêm ngôi sao vàng chìm bên trong Card */
-        .card::before {
-            content: "★";
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 500px; /* Chỉnh kích thước sao cho phù hợp */
-            color: rgba(255, 255, 0, 0.1); /* Ngôi sao vàng mờ */
-            z-index: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        /* Đảm bảo nội dung nổi lên trên ngôi sao */
-        #shopTitle, #form-input, #pointBox, #result, span, p {
-            position: relative;
-            z-index: 1;
+            /* CẬP NHẬT: Nền trong suốt nhẹ để nhìn thấy cờ phía sau */
+            background-color: rgba(255, 255, 255, 0.85) !important; 
+            backdrop-filter: blur(5px); /* Thêm hiệu ứng mờ nhẹ để chữ dễ đọc hơn */
         }
 
         #shopTitle {
-            color: #fff !important; /* ShopTitle màu trắng */
+            color: #da251d !important;
             text-shadow: 1px 1px 0px #ffde00;
         }
 
-        /* Đổi màu label và các text khác sang trắng */
-        label, .pointBox span, #result, span[style], p[style] {
-            color: #fff !important;
-        }
-
-        /* Nút bấm hào hùng dân tộc */
+        /* Nút bấm giữ nguyên màu hào hùng */
         #btnSubmit {
             background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important;
             color: #fff !important;
@@ -73,7 +60,7 @@
             <label>Mã tích điểm:</label>
             <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
             <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
-            <br><br><span>Zalo Đặt Trước: 0968.97.37.87</span>
+            <br><br><span style="color:#5d4037;font-weight:bold;">Zalo Đặt Trước: 0968.97.37.87</span>
         </div>
         <div id="pointBox" style="display:none;">
             <span id="currentPoints">0</span>
