@@ -5,12 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Di Di Coffee - Tích Điểm</title>
     <link rel="stylesheet" href="style.css">
-    <!--<script src="hoamai.js"></script>-->
-    <!--Ghi chú trong html-->
+    
+    <style>
+        body {
+            /* Nền đỏ hào hùng dân tộc */
+            background-color: #da251d !important; 
+            background-image: radial-gradient(circle, #ff0000 0%, #a80000 100%) !important;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Hiệu ứng ngôi sao vàng tỏa sáng phía sau */
+        body::before {
+            content: "★";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80vw;
+            color: rgba(255, 255, 0, 0.15);
+            z-index: -1;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            border: 2px solid #ffde00 !important; /* Viền vàng sang trọng */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+        }
+
+        #shopTitle {
+            color: #da251d !important;
+            text-shadow: 1px 1px 0px #ffde00;
+        }
+
+        #btnSubmit {
+            background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important;
+            color: #fff !important;
+            font-weight: bold;
+            border: none;
+            box-shadow: 0 4px 15px rgba(218, 37, 29, 0.4);
+        }
+    </style>
 </head>
 <body>
     <div class="card">
-       <!-- <canvas id="flower-canvas"></canvas>-->
         <h2 id="shopTitle">☕ DI DI COFFEE</h2>
         <div id="form-input">
             <label>Tên khách hàng:</label>
@@ -29,19 +67,11 @@
         <br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly</span>
         <br><span style="color:#990900;font-weight:bold;">Đổi điểm tại quầy</span>
         <br><p style="color:#653d00;font-weight:bold;font-size:11px;">*Lưu Ý: Đổi điểm "KHÔNG" ảnh hưởng đến giá trị quà cuối năm.</p>
-        <!--<div class="nav-menu">
-            
-            <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
-            <a href="doi-qua.html?from=web" class="nav-item"><i>🎁</i> Đổi quà</a>
-            <a href="danhsach.html" class="nav-item"><i>⭐</i> Danh sách điểm</a>
-        </div>-->
     </div>
 
 <script src="config.js"></script> 
 <script>
-    /* =========================================
-       PHẦN 1: KHỞI TẠO VÀ LOAD DỮ LIỆU CŨ
-       ========================================= */
+    /* TOÀN BỘ PHẦN SCRIPT CŨ GIỮ NGUYÊN ĐỂ TRÁNH LỖI HỆ THỐNG */
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
             document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
@@ -60,9 +90,6 @@
         }
     };
 
-    /* =========================================
-       PHẦN 2: XỬ LÝ TÍCH ĐIỂM
-       ========================================= */
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -75,7 +102,6 @@
             return;
         }
 
-        // Chặn số điện thoại cửa hàng
         const shopPhone = "0968973787";
         const cleanPhone = phone.replace(/\D/g, ""); 
         if (cleanPhone === shopPhone) {
@@ -92,7 +118,6 @@
         
         const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
 
-        // Timeout an toàn 10s
         const safetyTimeout = setTimeout(function() {
             if (btnSubmit.disabled) {
                 btnSubmit.disabled = false;
@@ -101,7 +126,6 @@
             }
         }, 10000);
 
-        // Callback nhận dữ liệu từ Google Script
         window.googleCallback = function(resData) {
             clearTimeout(safetyTimeout);
             btnSubmit.disabled = false;
@@ -121,13 +145,11 @@
                 `;  
                 document.getElementById('inputCode').value = ""; 
 
-                // --- KIỂM TRA TOP ĐIỂM VÀ HIỂN THỊ ALERT ---
                 if (resData.isTop1 === true) {
                     setTimeout(function() {
                         alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm.");
                     }, 600);
                 }
-
             } 
             else if (resData.status === "USED") {
                 resultDiv.innerHTML = `
@@ -148,7 +170,6 @@
             if (oldScript) oldScript.remove();
         };
 
-        // Gọi API bằng kỹ thuật JSONP
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;        
