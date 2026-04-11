@@ -7,6 +7,109 @@
     <link rel="stylesheet" href="style.css">
     <script src="config.js"></script> 
     <!--<script src="hoamai.js"></script>-->
+    <style>
+        /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
+
+        /* 1. Tạo lớp nền lấp lánh (phía trên body) */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none; /* Không cản trở việc click */
+            z-index: -1; /* Nằm dưới thẻ card nhưng trên nền cờ */
+            
+            /* Hiệu ứng tạo ra các điểm sáng nhỏ */
+            background-image: 
+                radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1px 1px at 125px 20px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)), /* Ngôi sao vàng nhỏ */
+                radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+            background-size: 200px 200px; /* Kích thước vùng lặp lại hiệu ứng */
+            
+            /* Gọi hiệu ứng animation */
+            animation: twinkling 4s infinite alternate ease-in-out;
+        }
+
+        /* 2. Định nghĩa hiệu ứng animation twinkling (lấp lánh) */
+        @keyframes twinkling {
+            0% {
+                opacity: 0.3; /* Mờ nhẹ lúc đầu */
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.8; /* Sáng rõ hơn */
+                transform: scale(1.02); /* Phóng to nhẹ một chút */
+            }
+            100% {
+                opacity: 0.3; /* Quay lại mờ nhẹ */
+                transform: scale(1);
+            }
+        }
+
+        /* --- TÙY CHỌN BỔ SUNG: HIỆU ỨNG "NHỊP ĐẬP" CHO NÚT BẤM (NẾU BẠN MUỐN) --- */
+        
+        #btnSubmit {
+            animation: pulse-button 2s infinite;
+        }
+
+        @keyframes pulse-button {
+            0% {
+                box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(218, 37, 29, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(218, 37, 29, 0);
+            }
+        }
+        /* end ngoi sao lap lanh*/
+        body {
+            background-color: #da251d !important; 
+            background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: "★";
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80vw;
+            color: rgba(255, 255, 0, 0.15);
+            z-index: -1;
+            font-family: Arial, sans-serif;
+        }
+
+        .card {
+            border: 1px solid #ffde00 !important;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+            /* CẬP NHẬT: Nền trong suốt nhẹ để nhìn thấy cờ phía sau */
+            background-color: rgba(255, 255, 255, 0.5) !important; 
+            backdrop-filter: blur(5px); /* Thêm hiệu ứng mờ nhẹ để chữ dễ đọc hơn */
+        }
+
+        #shopTitle {
+            color: #da251d !important;
+            /*text-shadow: 1px 1px 0px #ffde00;*/
+        }
+
+        /* Nút bấm giữ nguyên màu hào hùng */
+        #btnSubmit {
+            background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important;
+            color: #fff !important;
+            font-weight: bold;
+            border: none;
+            box-shadow: 0 4px 15px rgba(218, 37, 29, 0.4);
+        }
+    </style>
+
 </head>
 <body>
 
