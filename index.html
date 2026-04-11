@@ -5,44 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Di Di Coffee - Tích Điểm</title>
     <link rel="stylesheet" href="style.css">
-    <style>
-        /* CHỈ BỔ SUNG PHẦN TRANG TRÍ 30/04 - KHÔNG THAY ĐỔI GÌ KHÁC */
-        .ribbon-3004 {
-            position: fixed;
-            top: 0;
-            right: 0;
-            width: 150px;
-            height: 150px;
-            overflow: hidden;
-            z-index: 9999;
-        }
-        .ribbon-3004 span {
-            text-transform: uppercase;
-            text-align: center;
-            line-height: 32px;
-            transform: rotate(45deg);
-            display: block;
-            width: 225px;
-            background: linear-gradient(135deg, #da251d 0%, #a00000 100%);
-            color: #ffde00;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            position: absolute;
-            top: 40px;
-            right: -50px;
-            font-weight: 800;
-            font-size: 14px;
-        }
-        #btnSubmit {
-            background-color: #da251d !important;
-            color: white !important;
-            font-weight: bold !important;
-        }
-    </style>
+    <!--<script src="hoamai.js"></script>-->
+    <!--Ghi chú trong html-->
 </head>
 <body>
-    <div class="ribbon-3004"><span>30/04 & 01/05</span></div>
     <div class="card">
-       <h2 id="shopTitle">☕ DI DI COFFEE</h2>
+       <!-- <canvas id="flower-canvas"></canvas>-->
+        <h2 id="shopTitle">☕ DI DI COFFEE</h2>
         <div id="form-input">
             <label>Tên khách hàng:</label>
             <input type="text" id="cusName" placeholder="Nhập tên của bạn">
@@ -60,7 +29,13 @@
         <br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly</span>
         <br><span style="color:#990900;font-weight:bold;">Đổi điểm tại quầy</span>
         <br><p style="color:#653d00;font-weight:bold;font-size:11px;">*Lưu Ý: Đổi điểm "KHÔNG" ảnh hưởng đến giá trị quà cuối năm.</p>
-        </div>
+        <!--<div class="nav-menu">
+            
+            <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
+            <a href="doi-qua.html?from=web" class="nav-item"><i>🎁</i> Đổi quà</a>
+            <a href="danhsach.html" class="nav-item"><i>⭐</i> Danh sách điểm</a>
+        </div>-->
+    </div>
 
 <script src="config.js"></script> 
 <script>
@@ -133,11 +108,6 @@
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
             if (resData.status === "SUCCESS") {
-                // CHÈN PHÁO HOA KHI THÀNH CÔNG
-                if (typeof confetti === 'function') {
-                    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#da251d', '#ffde00'] });
-                }
-
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
@@ -196,20 +166,3 @@
 </script>
 </body>
 </html>
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-<script>
-  /* HIỆU ỨNG PHÁO HOA KHI LOAD TRANG - DÙNG ADDEVENTLISTENER ĐỂ KHÔNG ĐÈ LÊN WINDOW.ONLOAD GỐC */
-  window.addEventListener('load', function() {
-    var duration = 3 * 1000;
-    var animationEnd = Date.now() + duration;
-    var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
-    function randomInRange(min, max) { return Math.random() * (max - min) + min; }
-    var interval = setInterval(function() {
-      var timeLeft = animationEnd - Date.now();
-      if (timeLeft <= 0) { return clearInterval(interval); }
-      var particleCount = 50 * (timeLeft / duration);
-      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
-      confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
-    }, 250);
-  });
-</script>
