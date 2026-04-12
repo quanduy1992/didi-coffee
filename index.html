@@ -171,6 +171,30 @@
             .banner-right { right: -50px; }
             .banner-corner::after { font-size: 24px; bottom: -30px; }
         }
+        /* --- PHẦN CẬP NHẬT: NGÔI SAO ĐỨNG THẲNG --- */
+        .banner-corner::after {
+            content: "★";
+            position: absolute;
+            bottom: -35px;
+            font-size: 30px;
+            color: #ffde00;
+            text-shadow: 0 0 10px rgba(255, 222, 0, 0.8);
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
+            /* Mặc định cho ngôi sao đứng thẳng */
+            display: block; 
+        }
+
+        .banner-left::after {
+            right: 60px;
+            /* Băng rôn xoay -30deg thì ta xoay ngược lại 30deg để ngôi sao đứng thẳng */
+            transform: rotate(30deg); 
+        }
+
+        .banner-right::after {
+            left: 60px;
+            /* Băng rôn xoay 30deg thì ta xoay ngược lại -30deg để ngôi sao đứng thẳng */
+            transform: rotate(-30deg);
+        }
     </style>
 </head>
 <body>
