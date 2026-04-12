@@ -18,61 +18,43 @@
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none; /* Không cản trở việc click */
-            z-index: -1; /* Nằm dưới thẻ card nhưng trên nền cờ */
+            pointer-events: none;
+            z-index: -1;
             
-            /* Hiệu ứng tạo ra các điểm sáng nhỏ */
             background-image: 
                 radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
                 radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
                 radial-gradient(1px 1px at 125px 20px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)), /* Ngôi sao vàng nhỏ */
+                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
                 radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
-            background-size: 200px 200px; /* Kích thước vùng lặp lại hiệu ứng */
+            background-size: 200px 200px;
             
-            /* Gọi hiệu ứng animation */
             animation: twinkling 4s infinite alternate ease-in-out;
         }
 
-        /* 2. Định nghĩa hiệu ứng animation twinkling (lấp lánh) */
         @keyframes twinkling {
-            0% {
-                opacity: 0.3; /* Mờ nhẹ lúc đầu */
-                transform: scale(1);
-            }
-            50% {
-                opacity: 0.8; /* Sáng rõ hơn */
-                transform: scale(1.02); /* Phóng to nhẹ một chút */
-            }
-            100% {
-                opacity: 0.3; /* Quay lại mờ nhẹ */
-                transform: scale(1);
-            }
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+            100% { opacity: 0.3; transform: scale(1); }
         }
 
-        /* --- TÙY CHỌN BỔ SUNG: HIỆU ỨNG "NHỊP ĐẬP" CHO NÚT BẤM (NẾU BẠN MUỐN) --- */
-        
         #btnSubmit {
             animation: pulse-button 2s infinite;
         }
 
         @keyframes pulse-button {
-            0% {
-                box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4);
-            }
-            70% {
-                box-shadow: 0 0 0 10px rgba(218, 37, 29, 0);
-            }
-            100% {
-                box-shadow: 0 0 0 0 rgba(218, 37, 29, 0);
-            }
+            0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
         }
-        /* end ngoi sao lap lanh*/
+
         body {
             background-color: #da251d !important; 
             background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important;
             position: relative;
             overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
 
         body::before {
@@ -90,23 +72,129 @@
         .card {
             border: 1px solid #ffde00 !important;
             box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-            /* CẬP NHẬT: Nền trong suốt nhẹ để nhìn thấy cờ phía sau */
             background-color: rgba(255, 255, 255, 0.5) !important; 
-            backdrop-filter: blur(5px); /* Thêm hiệu ứng mờ nhẹ để chữ dễ đọc hơn */
+            backdrop-filter: blur(5px);
+            z-index: 10;
         }
 
         #shopTitle {
             color: #da251d !important;
-            /*text-shadow: 1px 1px 0px #ffde00;*/
         }
 
-        /* Nút bấm giữ nguyên màu hào hùng */
         #btnSubmit {
             background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important;
             color: #fff !important;
             font-weight: bold;
             border: none;
             box-shadow: 0 4px 15px rgba(218, 37, 29, 0.4);
+        }
+
+        /* --- PHẦN CẬP NHẬT: BĂNG RÔN VÀ NGÔI SAO --- */
+        .banner-corner {
+            position: fixed;
+            top: 0;
+            width: 250px;
+            height: 60px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ffde00;
+            text-align: center;
+            font-family: 'Arial Black', sans-serif;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            border-radius: 40px; 
+        }
+
+        /* Tạo ngôi sao vàng dưới băng rôn */
+        .banner-corner::after {
+            content: "★";
+            position: absolute;
+            bottom: -35px; /* Vị trí dưới băng rôn */
+            font-size: 30px;
+            color: #ffde00;
+            text-shadow: 0 0 10px rgba(255, 222, 0, 0.8);
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
+        }
+
+        .banner-left {
+            left: -60px;
+            top: 25px;
+            background: linear-gradient(135deg, #a50000 0%, #da251d 100%);
+            transform: rotate(-30deg);
+            border: 2px solid #ffde00;
+        }
+
+        /* Chỉnh ngôi sao bên trái lệch một chút cho cân đối theo độ xoay */
+        .banner-left::after {
+            right: 108px;
+        }
+
+        .banner-right {
+            right: -60px;
+            top: 25px;
+            background: linear-gradient(-135deg, #a50000 0%, #da251d 100%);
+            transform: rotate(30deg);
+            border: 2px solid #ffde00;
+        }
+
+        /* Chỉnh ngôi sao bên phải lệch một chút cho cân đối theo độ xoay */
+        .banner-right::after {
+            left: 108px;
+        }
+
+        .banner-date {
+            font-size: 18px;
+            font-weight: 900;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .banner-text {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 2px 0 0 0;
+            color: #fff;
+            font-weight: bold;
+        }
+
+        @media (max-width: 400px) {
+            .banner-corner {
+                width: 200px;
+                height: 50px;
+            }
+            .banner-date { font-size: 14px; }
+            .banner-text { font-size: 8px; }
+            .banner-left { left: -50px; }
+            .banner-right { right: -50px; }
+            .banner-corner::after { font-size: 24px; bottom: -30px; }
+        }
+        /* --- PHẦN CẬP NHẬT: NGÔI SAO ĐỨNG THẲNG --- */
+        .banner-corner::after {
+            content: "★";
+            position: absolute;
+            bottom: -35px;
+            font-size: 30px;
+            color: #ffde00;
+            text-shadow: 0 0 10px rgba(255, 222, 0, 0.8);
+            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
+            /* Mặc định cho ngôi sao đứng thẳng */
+            display: block; 
+        }
+
+        .banner-left::after {
+            right: 108px;
+            /* Băng rôn xoay -30deg thì ta xoay ngược lại 30deg để ngôi sao đứng thẳng */
+            transform: rotate(30deg); 
+        }
+
+        .banner-right::after {
+            left: 108px;
+            /* Băng rôn xoay 30deg thì ta xoay ngược lại -30deg để ngôi sao đứng thẳng */
+            transform: rotate(-30deg);
         }
     </style>
 
