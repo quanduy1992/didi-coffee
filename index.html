@@ -72,6 +72,8 @@
             background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important;
             position: relative;
             overflow-x: hidden;
+            margin: 0;
+            padding: 0;
         }
 
         body::before {
@@ -92,6 +94,7 @@
             /* CẬP NHẬT: Nền trong suốt nhẹ để nhìn thấy cờ phía sau */
             background-color: rgba(255, 255, 255, 0.5) !important; 
             backdrop-filter: blur(5px); /* Thêm hiệu ứng mờ nhẹ để chữ dễ đọc hơn */
+            z-index: 10;
         }
 
         #shopTitle {
@@ -107,9 +110,75 @@
             border: none;
             box-shadow: 0 4px 15px rgba(218, 37, 29, 0.4);
         }
+
+        /* --- PHẦN MỚI: BĂNG RÔN 2 GÓC --- */
+        .banner-corner {
+            position: fixed;
+            top: 0;
+            width: 220px;
+            height: 100px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #ffde00;
+            text-align: center;
+            font-family: 'Arial Black', sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .banner-left {
+            left: 0;
+            background: linear-gradient(135deg, #a50000 0%, #da251d 100%);
+            transform: rotate(-35deg) translate(-50px, -20px);
+            border-bottom: 3px solid #ffde00;
+        }
+
+        .banner-right {
+            right: 0;
+            background: linear-gradient(-135deg, #a50000 0%, #da251d 100%);
+            transform: rotate(35deg) translate(50px, -20px);
+            border-bottom: 3px solid #ffde00;
+        }
+
+        .banner-date {
+            font-size: 20px;
+            font-weight: 900;
+            margin: 0;
+        }
+
+        .banner-text {
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 2px;
+            color: #fff;
+        }
+
+        /* Ẩn băng rôn trên màn hình quá nhỏ để tránh đè chữ quan trọng */
+        @media (max-width: 400px) {
+            .banner-corner {
+                width: 180px;
+                height: 80px;
+            }
+            .banner-date { font-size: 16px; }
+            .banner-text { font-size: 8px; }
+        }
     </style>
 </head>
 <body>
+    <div class="banner-corner banner-left">
+        <p class="banner-date">30/04/1975</p>
+        <p class="banner-text">Giải phóng Miền Nam</p>
+    </div>
+
+    <div class="banner-corner banner-right">
+        <p class="banner-date">30/04/2026</p>
+        <p class="banner-text">Kỷ niệm 51 năm</p>
+    </div>
+
     <div class="card">
         <h2 id="shopTitle">☕ DI DI COFFEE</h2>
         <div id="form-input">
@@ -129,12 +198,6 @@
         <br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly</span>
         <br><span style="color:#990900;font-weight:bold;">Đổi điểm tại quầy</span>
         <br><p style="color:#653d00;font-weight:bold;font-size:11px;">*Lưu Ý: Đổi điểm "KHÔNG" ảnh hưởng đến giá trị quà cuối năm.</p>
-        <!--<div class="nav-menu">
-            
-            <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
-            <a href="doi-qua.html?from=web" class="nav-item"><i>🎁</i> Đổi quà</a>
-            <a href="danhsach.html" class="nav-item"><i>⭐</i> Danh sách điểm</a>
-        </div>-->
     </div>
 
 <script src="config.js"></script> 
