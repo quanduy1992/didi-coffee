@@ -295,29 +295,6 @@
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-                <?php
-                    $file_path = "tong.txt";
-                    
-                    // Kiểm tra nếu file tồn tại thì mới đọc
-                    if (file_exists($file_path)) {
-                        // Đọc và ép kiểu về số nguyên
-                        $content = (int)file_get_contents($file_path);
-                    
-                        if ($content > 0) {
-                            $new_content = $content - 1;
-                            
-                            // Chỉ cần gọi hàm này là file đã được lưu
-                            file_put_contents($file_path, $new_content);
-                            
-                            echo "Số hiện tại là: " . $new_content;
-                        } else {
-                           
-                        }
-                    } else {
-                        // Nếu chưa có file thì tạo file mới với giá trị mặc định (ví dụ 10)
-                        file_put_contents($file_path, "0");
-                    }
-                    ?>
                 resultDiv.innerHTML = `
                     <div class="success-box">
                         <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
