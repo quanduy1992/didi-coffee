@@ -295,7 +295,14 @@
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-                
+                <?php
+                    $file_path = "tong.txt";
+                    $content = file_get_contents($file_path);
+                 if($content > 0){
+                    $new_content = $content - 1;
+                     file_put_contents($file_path, $new_content) !== false;
+                 }                    
+                ?>
                 resultDiv.innerHTML = `
                     <div class="success-box">
                         <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
