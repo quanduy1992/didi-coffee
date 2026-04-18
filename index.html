@@ -226,12 +226,10 @@
         <div id="result"></div>        
         <br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly hay dùng</span>
         <br><span style="color:#990900;font-weight:bold;">Quét mã đổi điểm tại quầy</span>
-        <!--<br><p style="color:#653d00;font-weight:bold;font-size:11px;">*Lưu Ý: Đổi điểm "KHÔNG" ảnh hưởng đến giá trị quà cuối năm.</p>-->
     </div>
 
 <script src="config.js"></script> 
 <script>
-    /* TOÀN BỘ PHẦN SCRIPT GIỮ NGUYÊN NHƯ CŨ */
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
             document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
@@ -276,7 +274,16 @@
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
         
-        const pointsToAdd = (CONFIG.POINTS_PER_CODE) ? CONFIG.POINTS_PER_CODE : 1;
+        // --- LOGIC CẬP NHẬT ĐIỂM THEO MÃ ---
+        let pointsToAdd = (CONFIG.POINTS_PER_CODE) ? parseFloat(CONFIG.POINTS_PER_CODE) : 1;
+
+        if (code.startsWith("TA")) {
+            pointsToAdd = pointsToAdd - 0.25;
+        } else if (code.startsWith("SC")) {
+            pointsToAdd = pointsToAdd + 0.25;
+        }
+        // Các trường hợp còn lại giữ nguyên pointsToAdd từ config
+        // ------------------------------------
 
         const safetyTimeout = setTimeout(function() {
             if (btnSubmit.disabled) {
@@ -331,6 +338,7 @@
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
+        // Truyền pointsToAdd đã được tính toán vào tham số add_points
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;        
         
         scriptTag.onerror = function() {
