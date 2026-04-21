@@ -141,21 +141,25 @@
         
         try {
             const res = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
-            const data = await res.json();
+            const text = await res.text(); // Lấy dạng văn bản trước
+            const data = JSON.parse(text); // Ép kiểu sang JSON
             
             let cp = parseFloat(data.points) || 0;
             currentSuggestedGift = giftMap[data.suggested_code] || "Ly đặc biệt Di Di";
 
-            display.innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào <b>${data.name}</b>! Hiện có: <strong>${cp}</strong> điểm.<br><small>Gợi ý: ${currentSuggestedGift}</small></div>`;
+            // Hiển thị tên khách (nếu không có thì để là Khách hàng)
+            let displayName = data.name || "Khách hàng";
+            display.innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào <b>${displayName}</b>! Hiện có: <strong>${cp}</strong> điểm.<br><small>Gợi ý: ${currentSuggestedGift}</small></div>`;
 
             if (cp >= minPoints) {
-                handleRedeem(); // Tự động đổi
+                handleRedeem(); 
             } else {
                 btn.innerText = "CHƯA ĐỦ ĐIỂM ĐỔI";
                 isProcessing = false;
             }
         } catch (err) {
-            display.innerHTML = "<div style='color:red; text-align:center;'>❌ Lỗi kết nối</div>";
+            console.error(err);
+            display.innerHTML = "<div style='color:red; text-align:center;'>❌ Lỗi dữ liệu</div>";
             btn.disabled = false;
             btn.innerText = "THỬ LẠI";
             isProcessing = false;
@@ -168,14 +172,17 @@
         const btn = document.getElementById('btnRedeem');
         if (phone.length >= 10) {
             fetch(`${scriptURL}?action=get_points&phone=${phone}`)
-                .then(res => res.json())
-                .then(data => {
+                .then(res => res.text())
+                .then(text => {
+                    const data = JSON.parse(text);
                     let cp = parseFloat(data.points) || 0;
                     currentSuggestedGift = giftMap[data.suggested_code] || "Ly đặc biệt Di Di";
-                    document.getElementById('pointDisplay').innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Hiện có: <strong>${cp}</strong> điểm.<br><small>Gợi ý: ${currentSuggestedGift}</small></div>`;
+                    let displayName = data.name || "Khách hàng";
+                    document.getElementById('pointDisplay').innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào <b>${displayName}</b>! Có: <strong>${cp}</strong> điểm.<br><small>Gợi ý: ${currentSuggestedGift}</small></div>`;
                     btn.disabled = cp < minPoints;
                     btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
-                });
+                })
+                .catch(e => console.log("Chưa tìm thấy dữ liệu"));
         }
     }
 
