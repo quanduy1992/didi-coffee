@@ -214,7 +214,7 @@
         <div id="form-input">
             <label>Số điện thoại:</label>
             <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()" style="width:100%; padding:10px; margin:10px 0;">
-            <button id="btnRedeem" onclick="handleRedeem()" disabled style="width: 100%;">ĐANG KIỂM TRA</button>
+            <button id="btnRedeem" onclick="handleRedeem()" disabled style="width: 100%;">XÁC NHẬN ĐỔI QUÀ</button>
         </div>
         <div id="status"></div>
     </div>
@@ -287,7 +287,7 @@
                     display.innerHTML = `<div style='text-align:center;'>Chào <b>${name}</b>! Bạn có: <b>${cp}</b> điểm</div>`;
                     
                     btn.disabled = cp < minPoints;
-                    btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
+                    btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "ĐANG KIỂM TRA";
                 })
                 .catch(err => {
                     display.innerHTML = "SĐT chưa có điểm tích lũy";
