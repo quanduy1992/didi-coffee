@@ -90,7 +90,7 @@
             let currentPoints = parseFloat(data.points) || 0;
             let customerName = data.name || "Khách hàng";
             
-            display.innerHTML = `<div style='text-align:center;'>Chào <b>${customerName}</b>! Bạn có: <b>${currentPoints}</b> điểm</div>`;
+            display.innerHTML = `<div style='text-align:center;'>Chào <b>${customerName}</b>! Bạn có: <b>${currentPoints}</b> điểm</div></br>`;
 
             if (currentPoints >= minPoints) {
                 handleRedeem();
