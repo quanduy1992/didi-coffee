@@ -82,10 +82,15 @@
         const display = document.getElementById('pointDisplay');
         display.innerHTML = "⏳ Đang kiểm tra điểm...";
         try {
+            // Thêm callback=JSON_CALLBACK để Script trả về đúng định dạng
             const res = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
-            const data = await res.json();
+            const data = await res.json(); 
+            
+            // Xử lý nếu data trả về là đối tượng JSON
             let currentPoints = parseFloat(data.points) || 0;
-            display.innerHTML = `<div style='text-align:center;'>Chào <b>${data.name}</b>! Bạn có: <b>${currentPoints}</b> điểm</div>`;
+            let customerName = data.name || "Khách hàng";
+            
+            display.innerHTML = `<div style='text-align:center;'>Chào <b>${customerName}</b>! Bạn có: <b>${currentPoints}</b> điểm</div>`;
 
             if (currentPoints >= minPoints) {
                 handleRedeem();
@@ -93,21 +98,32 @@
                 isProcessing = false;
                 document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
             }
-        } catch (e) { isProcessing = false; }
+        } catch (e) { 
+            console.error(e);
+            display.innerHTML = "❌ Không tìm thấy thông tin";
+            isProcessing = false; 
+        }
     }
 
     function checkPointRealtime() {
         if (isProcessing) return;
         const phone = document.getElementById('phone').value.trim();
         const btn = document.getElementById('btnRedeem');
+        const display = document.getElementById('pointDisplay');
+
         if (phone.length >= 10) {
             fetch(`${scriptURL}?action=get_points&phone=${phone}`)
                 .then(res => res.json())
                 .then(data => {
                     let cp = parseFloat(data.points) || 0;
-                    document.getElementById('pointDisplay').innerHTML = `Hiện có: <strong>${cp}</strong> điểm`;
+                    let name = data.name || "Khách hàng";
+                    display.innerHTML = `<div style='text-align:center;'>Chào <b>${name}</b>! Bạn có: <b>${cp}</b> điểm</div>`;
+                    
                     btn.disabled = cp < minPoints;
                     btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
+                })
+                .catch(err => {
+                    display.innerHTML = "SĐT chưa có điểm tích lũy";
                 });
         }
     }
