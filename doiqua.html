@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <script src="config.js"></script> 
     <style>
-        /* GIỮ NGUYÊN GIAO DIỆN LẤP LÁNH VÀ BĂNG RÔN CỦA ÔNG */
+        /* --- GIỮ NGUYÊN STYLE 30/04 VÀ HIỆU ỨNG LẤP LÁNH --- */
         body::after {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: -1;
@@ -18,16 +18,21 @@
             animation: twinkling 4s infinite alternate ease-in-out;
         }
         @keyframes twinkling { 0% { opacity: 0.3; } 50% { opacity: 0.8; } 100% { opacity: 0.3; } }
-        body { background-color: #da251d !important; background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important; margin: 0; padding: 0; font-family: sans-serif; }
-        .card { border: 1px solid #ffde00 !important; background-color: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(5px); margin: 20px auto; max-width: 400px; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        body { background-color: #da251d !important; background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important; margin: 0; padding: 0; font-family: sans-serif; position: relative; }
+        
+        .card { border: 1px solid #ffde00 !important; background-color: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(5px); margin: 20px auto; max-width: 400px; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); z-index: 10; position: relative; }
         #shopTitle { color: #da251d !important; text-align: center; }
+
+        /* BĂNG RÔN 30/04 */
         .banner-corner { position: fixed; top: 0; width: 250px; height: 60px; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffde00; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); border-radius: 40px; border: 2px solid #ffde00; }
         .banner-left { left: -60px; top: 25px; background: linear-gradient(135deg, #a50000 0%, #da251d 100%); transform: rotate(-30deg); }
         .banner-right { right: -60px; top: 25px; background: linear-gradient(-135deg, #a50000 0%, #da251d 100%); transform: rotate(30deg); }
         .banner-date { font-size: 18px; font-weight: 900; margin: 0; }
         .banner-text { font-size: 9px; text-transform: uppercase; margin: 0; color: #fff; }
+        
         #btnRedeem { background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer; }
         #btnRedeem:disabled { background: #ccc !important; }
+        input[type="tel"] { width: 94%; padding: 10px; border-radius: 5px; border: 1px solid #ccc; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -38,29 +43,30 @@
 <div class="card"> 
     <h2 id="shopTitle">☕ DI DI COFFEE</h2>
     <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 phần quà</p>
+    
     <div id="pointDisplay"></div> 
     <div id="form-input">
         <label>Số điện thoại:</label>
-        <input type="tel" id="phone" style="width:94%; padding:10px; border-radius:5px;" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
+        <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
         <button id="btnRedeem" onclick="handleRedeem()" disabled>XÁC NHẬN ĐỔI QUÀ</button>
     </div>
     <div id="status"></div>
 </div>
 
 <script>
-    // --- PHẦN TRA CỨU MÃ MÓN (Ông sửa tên món ở đây cho khớp với mã từ Script) ---
+    // --- BẢNG TRA CỨU MÃ MÓN (Ông sửa mã 2 ký tự ở đây) ---
     const giftMap = {
-        "CF": "1 Ly CF",
-        "DI": "1 Ly CF",
-        "TA": "1 Ly trà tắc",
-        "SC": "1 ly Sữa tươi/ Sữa chua"
+        "CF": "Ly Cafe tùy chọn",
+        "DI": "1 ly CF",
+        "CM": "Ly Cafe Muối",
+        "TX": "Ly Trà Xanh"
     };
-    const monMacDinh = "1 ly CF miễn phí"; 
+    const monMacDinh = "Phần quà may mắn";
 
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
     let isProcessing = false; 
-    let currentGiftName = monMacDinh; // Biến lưu tên món tạm thời
+    let currentGiftName = monMacDinh;
 
     document.getElementById('reqPoints').innerText = minPoints;
 
@@ -69,6 +75,7 @@
         const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone');
         const finalPhone = phoneFromUrl || savedPhone;
+        
         if (finalPhone) {
             document.getElementById('phone').value = finalPhone;
             autoProcess(finalPhone);
@@ -84,30 +91,28 @@
             const res = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
             const rawData = await res.text();
             
-            let points = 0;
-            let name = "bạn";
-            let code = "";
+            let points = 0, name = "bạn", code = "";
 
             try {
                 const data = JSON.parse(rawData);
                 points = parseFloat(data.points) || 0;
                 name = data.name || "bạn";
-                code = data.suggested_code || ""; // Mã 2 ký tự từ Script
+                code = data.suggested_code || ""; // Lấy mã 2 ký tự
             } catch(e) {
                 points = parseFloat(rawData) || 0;
             }
 
-            // Suy luận tên món từ mã
+            // Suy luận món quà từ mã trả về
             currentGiftName = giftMap[code.toUpperCase()] || monMacDinh;
 
             display.innerHTML = `
-                <div style='text-align:center; margin-bottom:10px;'>
+                <div style='text-align:center; margin-bottom:15px;'>
                     Chào <b>${name}</b>! Bạn có: <strong>${points}</strong> điểm<br>
-                    <span style="color:#da251d; font-size:13px;">🎁 Gợi ý quà: ${currentGiftName}</span>
+                    <span style="color:#da251d; font-weight:bold;">🎁 Gợi ý: ${currentGiftName}</span>
                 </div>`;
 
             if (points >= minPoints) {
-                handleRedeem();
+                handleRedeem(); // Tự động đổi nếu đủ điểm
             } else {
                 document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
                 isProcessing = false;
@@ -154,7 +159,6 @@
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
-        // Gửi tên món đã suy luận về Script
         fetch(`${scriptURL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent(currentGiftName)}&points=${minPoints}`)
         .then(res => res.text())
         .then(result => {
@@ -162,15 +166,15 @@
                 document.getElementById('form-input').style.display = "none";
                 document.getElementById('pointDisplay').style.display = "none";
                 statusDiv.innerHTML = `
-                    <div style="background:#e8f5e9; padding:15px; border-radius:10px; text-align:center; border:2px solid #4caf50;">
-                        <h3 style="color:#2e7d32;">✅ ĐỔI THÀNH CÔNG!</h3>
-                        <p>Món quà: <b>${currentGiftName}</b></p>
+                    <div style="background:#f0f9eb; padding:20px; border-radius:10px; text-align:center; border:2px solid #67c23a;">
+                        <h3 style="color:#67c23a; margin-top:0;">✅ ĐỔI THÀNH CÔNG!</h3>
+                        <p>Món quà của bạn: <br><b style="font-size:1.2em;">${currentGiftName}</b></p>
                     </div>
-                    <button onclick="location.reload()" style="width:100%; margin-top:10px; padding:10px;">TIẾP TỤC</button>
+                    <button onclick="location.reload()" style="width:100%; margin-top:15px; padding:12px; cursor:pointer;">TIẾP TỤC</button>
                 `;
                 localStorage.setItem('didi_customer_phone', phone);
             } else {
-                statusDiv.innerHTML = `<p style='color:red;'>❌ Lỗi: ${result}</p>`;
+                statusDiv.innerHTML = `<p style='color:red; text-align:center;'>❌ Lỗi: ${result}</p>`;
                 isProcessing = false;
                 btn.disabled = false;
             }
