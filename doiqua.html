@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Di Di Coffee - Đổi Thưởng</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="config.js"></script> 
+    <style>
+        /* GIỮ NGUYÊN CSS CỦA ÔNG */
+        body::after {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1;
+            background-image: radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1px 1px at 125px 20px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
+                radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+            background-size: 200px 200px;
+            animation: twinkling 4s infinite alternate ease-in-out;
+        }
+        @keyframes twinkling { 0% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.02); } 100% { opacity: 0.3; transform: scale(1); } }
+        #btnSubmit { animation: pulse-button 2s infinite; }
+        @keyframes pulse-button { 0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); } 100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); } }
+        body { background-color: #da251d !important; background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important; position: relative; overflow-x: hidden; margin: 0; padding: 0; }
+        body::before { content: "★"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80vw; color: rgba(255, 255, 0, 0.15); z-index: -1; font-family: Arial, sans-serif; }
+        .card { border: 1px solid #ffde00 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; background-color: rgba(255, 255, 255, 0.5) !important; backdrop-filter: blur(5px); z-index: 10; }
+        #shopTitle { color: #da251d !important; }
+        #btnSubmit { background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important; color: #fff !important; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(218, 37, 29, 0.4); }
+        .banner-corner { position: fixed; top: 0; width: 250px; height: 60px; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffde00; text-align: center; font-family: 'Arial Black', sans-serif; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.4); border-radius: 40px; }
+        .banner-corner::after { content: "★"; position: absolute; bottom: -35px; font-size: 30px; color: #ffde00; text-shadow: 0 0 10px rgba(255, 222, 0, 0.8); filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); display: block; }
+        .banner-left { left: -60px; top: 25px; background: linear-gradient(135deg, #a50000 0%, #da251d 100%); transform: rotate(-30deg); border: 2px solid #ffde00; }
+        .banner-left::after { right: 108px; transform: rotate(30deg); }
+        .banner-right { right: -60px; top: 25px; background: linear-gradient(-135deg, #a50000 0%, #da251d 100%); transform: rotate(30deg); border: 2px solid #ffde00; }
+        .banner-right::after { left: 108px; transform: rotate(-30deg); }
+        .banner-date { font-size: 18px; font-weight: 900; margin: 0; line-height: 1; }
+        .banner-text { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin: 2px 0 0 0; color: #fff; font-weight: bold; }
+        @media (max-width: 400px) { .banner-corner { width: 200px; height: 50px; } .banner-date { font-size: 14px; } .banner-text { font-size: 8px; } .banner-left { left: -50px; } .banner-right { right: -50px; } .banner-corner::after { font-size: 24px; bottom: -30px; } }
+    </style>
+</head>
+<body>
+    <div class="banner-corner banner-left">
+        <p class="banner-date">30/04/1975</p>
+        <p class="banner-text">Giải phóng Miền Nam</p>
+    </div>
+    <div class="banner-corner banner-right">
+        <p class="banner-date">30/04/2026</p>
+        <p class="banner-text">Kỷ niệm 51 năm</p>
+    </div>
+    <div class="card"> 
+        <h2 id="shopTitle">☕ DI DI COFFEE</h2>
+        <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
+        <div id="pointDisplay"></div> 
+        <div id="form-input">
+            <label>Số điện thoại:</label>
+            <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
+            <button id="btnRedeem" onclick="handleRedeem()" disabled style="width: 100%; margin-top: 10px;">XÁC NHẬN ĐỔI QUÀ</button>
+        </div>
+        <div id="status"></div>
+        <div class="nav-menu">
+            <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
+            <a href="doi-qua.html?from=web" class="nav-item active"><i>🎁</i> Đổi quà</a>
+        </div>
+    </div>
+
+<script>
+    const scriptURL = CONFIG.SCRIPT_URL;
+    const minPoints = CONFIG.REDEEM_POINTS;
+    let isProcessing = false;
+    let globalSuggestedGift = "Tặng 1 Ly"; // Biến lưu tên món quà được gợi ý
+    document.getElementById('reqPoints').innerText = minPoints;
+
+    window.onload = function() {
+        if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
+            document.querySelector('h2').innerText = "☕ " + CONFIG.SHOP_NAME;
+        }
+        validateSession(); 
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromWeb = urlParams.get('from') === 'webs'; 
+        const phoneFromUrl = urlParams.get('phone');
+        const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
+        
+        if (fromWeb) {
+            document.getElementById('form-input').style.display = "none";
+            document.getElementById('status').innerHTML = `
+                <div class="success-box" style="background: #fff3e0; border-color: #ffb74d;">
+                    <div style="color: #e65100;">⚠️ THÔNG BÁO</div>
+                    <span class="points-info" style="color: #8d6e63;">Vui lòng quét mã QR đặt tại quầy để đổi quà.</span>
+                </div>
+                <button class="btn-confirm" onclick="window.location.href='index.html'" style="background: #8d6e63;">QUAY LẠI</button>
+            `;
+            return; 
+        }
+
+        const finalPhone = phoneFromUrl || savedPhone;
+        if (finalPhone) {
+            document.getElementById('phone').value = finalPhone;
+            autoProcess(finalPhone);
+        }
+    };
+
+    function validateSession() {
+        const lastRedeem = localStorage.getItem('last_redeem_timestamp');
+        if (lastRedeem) {
+            const diff = (new Date().getTime() - parseInt(lastRedeem)) / (1000 * 60);
+            if (diff > 5) resetUI(); 
+        }
+    }
+
+    async function autoProcess(phone) {
+        const display = document.getElementById('pointDisplay');
+        const btn = document.getElementById('btnRedeem');
+        display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang phân tích gu uống của bạn...</div>";
+        btn.disabled = true;
+        btn.innerText = "⏳ ĐANG XỬ LÝ...";
+        isProcessing = true; 
+        
+        try {
+            // Sử dụng callback để khớp với hàm sendResponse của ông
+            const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}&callback=processData`);
+            const scriptText = await response.text();
+            eval(scriptText); // Thực thi callback để lấy data
+        } catch (err) {
+            display.innerHTML = "<div style='color:red; text-align:center;'>❌ Lỗi kết nối</div>";
+            isProcessing = false;
+        }
+    }
+
+    // Hàm bổ trợ xử lý dữ liệu trả về từ Script
+    function processData(data) {
+        const display = document.getElementById('pointDisplay');
+        const btn = document.getElementById('btnRedeem');
+        let cp = parseFloat(data.points) || 0;
+        globalSuggestedGift = data.suggested_gift || "Tặng 1 Ly";
+        
+        display.innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào <b>${data.name}</b>! Bạn có: <strong>${cp}</strong> điểm</div>`;
+
+        if (cp >= minPoints) {
+            setTimeout(() => { handleRedeem(); }, 1000);
+        } else {
+            btn.innerText = "CHƯA ĐỦ ĐIỂM ĐỔI";
+            isProcessing = false;
+        }
+    }
+
+    function checkPointRealtime() {
+        if (isProcessing) return;
+        const phone = document.getElementById('phone').value.trim();
+        const btn = document.getElementById('btnRedeem');
+        if (phone.length >= 10) {
+            fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}&callback=processData`);
+        }
+    }
+
+    function handleRedeem() {
+        const phone = document.getElementById('phone').value.trim();
+        const statusDiv = document.getElementById('status');
+        const btn = document.getElementById('btnRedeem');
+        const display = document.getElementById('pointDisplay');
+
+        isProcessing = true;
+        btn.disabled = true;
+        btn.innerText = "⏳ ĐANG ĐỔI QUÀ...";
+
+        fetch(`${CONFIG.SCRIPT_URL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent(globalSuggestedGift)}&points=${CONFIG.REDEEM_POINTS}`)
+        .then(res => res.text())
+        .then(async result => {
+            if (result === "SUCCESS") {
+                let newPointsDisplay = "---";
+                try {
+                    const resPoint = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                    newPointsDisplay = await resPoint.text();
+                } catch (e) {}
+
+                display.style.display = "none";
+                btn.style.display = "none";
+                document.getElementById('form-input').style.display = "none";
+
+                statusDiv.innerHTML = `
+                    <div class="success-box">
+                        <div>✅ ĐỔI THÀNH CÔNG!</div>
+                        <div style="background:#fff; color:#da251d; padding:10px; border-radius:10px; font-weight:bold; margin:10px 0;">
+                           🎁 QUÀ TẶNG: ${globalSuggestedGift}
+                        </div>
+                        <span class="time">Thời gian: ${new Date().toLocaleString('vi-VN')}</span>
+                        <span class="points-info">Số điểm còn lại: <span>${newPointsDisplay}</span></span>
+                    </div>
+                    <button class="btn-confirm" onclick="window.location.href='doi-qua.html'">TIẾP TỤC ĐỔI</button>
+                `;
+                localStorage.setItem('last_redeem_timestamp', new Date().getTime());
+                localStorage.setItem('didi_customer_phone', phone);
+            } else {
+                statusDiv.innerHTML = `<div style='color:red; text-align:center; margin-top:10px;'>❌ THẤT BẠI: ${result}</div>`;
+                btn.disabled = false;
+                btn.innerText = "THỬ LẠI";
+                isProcessing = false;
+            }
+        });
+    }
+
+    function resetUI() { localStorage.removeItem('last_redeem_timestamp'); location.reload(); }
+</script>
+</body>
+</html>
