@@ -7,302 +7,145 @@
     <link rel="stylesheet" href="style.css">
     <script src="config.js"></script> 
     <style>
-        /* --- 1. NỀN ĐỎ & NGÔI SAO LỚN CHÍNH GIỮA --- */
-        body {
-            background-color: #da251d !important; 
-            background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important;
-            margin: 0;
-            padding: 0;
-            font-family: sans-serif;
-            overflow-x: hidden;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        body::before {
-            content: "★";
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 80vw;
-            color: rgba(255, 255, 0, 0.15);
-            z-index: 0;
-        }
-
-        /* --- 2. HIỆU ỨNG LẤP LÁNH --- */
         body::after {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 1;
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1;
             background-image: 
-                radial-gradient(1.5px 1.5px at 25px 35px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(2px 2px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
-                radial-gradient(1.5px 1.5px at 300px 250px, white, rgba(255, 255, 255, 0));
-            background-size: 250px 250px;
+                radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0));
+            background-size: 200px 200px;
             animation: twinkling 4s infinite alternate ease-in-out;
         }
-
-        @keyframes twinkling {
-            0% { opacity: 0.3; }
-            100% { opacity: 0.8; }
-        }
-
-        /* --- 3. BĂNG RÔN 30/04 & NGÔI SAO NHỎ --- */
-        .banner-corner {
-            position: fixed;
-            width: 250px;
-            height: 60px;
-            z-index: 100;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            color: #ffde00;
-            border: 2px solid #ffde00;
-            border-radius: 40px;
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-        }
-
-        .banner-corner::after {
-            content: "★";
-            position: absolute;
-            bottom: -35px;
-            font-size: 30px;
-            color: #ffde00;
-            text-shadow: 0 0 10px rgba(255, 222, 0, 0.8);
-        }
-
-        .banner-left {
-            left: -60px; top: 25px;
-            background: linear-gradient(135deg, #a50000 0%, #da251d 100%);
-            transform: rotate(-30deg);
-        }
-        .banner-left::after { right: 108px; transform: rotate(30deg); }
-
-        .banner-right {
-            right: -60px; top: 25px;
-            background: linear-gradient(-135deg, #a50000 0%, #da251d 100%);
-            transform: rotate(30deg);
-        }
-        .banner-right::after { left: 108px; transform: rotate(-30deg); }
-
-        .banner-date { font-size: 18px; font-weight: 900; margin: 0; }
-        .banner-text { font-size: 9px; text-transform: uppercase; margin: 0; color: #fff; }
-
-        /* --- 4. GIAO DIỆN CARD --- */
-        .card {
-            position: relative;
-            z-index: 10;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 25px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 380px;
-            border: 1.5px solid #ffde00;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
-            text-align: center;
-        }
-
-        #shopTitle { color: #da251d; margin-top: 0; }
+        @keyframes twinkling { 0% { opacity: 0.3; transform: scale(1); } 100% { opacity: 0.8; transform: scale(1.02); } }
+        body { background-color: #da251d !important; background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important; margin: 0; overflow-x: hidden; }
+        .card { border: 1px solid #ffde00 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; background-color: rgba(255, 255, 255, 0.7) !important; backdrop-filter: blur(5px); z-index: 10; margin: 20px auto; max-width: 400px; padding: 20px; border-radius: 15px; }
+        #shopTitle { color: #da251d !important; text-align: center; }
+        #btnRedeem { background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important; color: #fff !important; font-weight: bold; border: none; padding: 12px; border-radius: 5px; cursor: pointer; animation: pulse-button 2s infinite; }
+        @keyframes pulse-button { 0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); } }
         
-        input[type="tel"] {
-            width: 100%;
-            padding: 12px;
-            margin: 15px 0;
-            border-radius: 8px;
-            border: 1px solid #ddd;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-
-        #btnRedeem {
-            width: 100%;
-            padding: 12px;
-            border-radius: 8px;
-            border: none;
-            background: linear-gradient(135deg, #da251d 0%, #ffde00 100%);
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(218, 37, 29, 0.3);
-        }
-
-        #btnRedeem:disabled { background: #ccc; cursor: not-allowed; }
-
-        /* --- PHẦN MENU DƯỚI --- */
-        .nav-menu {
-            display: flex;
-            justify-content: space-around;
-            margin-top: 20px;
-            border-top: 1px dashed #ccc;
-            padding-top: 15px;
-        }
-        .nav-item { text-decoration: none; color: #555; font-size: 14px; }
-        .nav-item.active { color: #da251d; font-weight: bold; }
+        .banner-corner { position: fixed; top: 25px; width: 250px; height: 60px; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffde00; text-align: center; font-family: 'Arial Black', sans-serif; border-radius: 40px; border: 2px solid #ffde00; }
+        .banner-left { left: -60px; background: linear-gradient(135deg, #a50000 0%, #da251d 100%); transform: rotate(-30deg); }
+        .banner-right { right: -60px; background: linear-gradient(-135deg, #a50000 0%, #da251d 100%); transform: rotate(30deg); }
+        .success-box { background: white; padding: 20px; border-radius: 10px; text-align: center; border: 3px solid #ffde00; }
     </style>
 </head>
 <body>
-
     <div class="banner-corner banner-left">
-        <p class="banner-date">30/04/1975</p>
-        <p class="banner-text">Giải phóng Miền Nam</p>
+        <p style="margin:0; font-size:18px;">30/04/1975</p>
+        <p style="margin:0; font-size:9px; color:white;">GIẢI PHÓNG MIỀN NAM</p>
     </div>
-
     <div class="banner-corner banner-right">
-        <p class="banner-date">30/04/2026</p>
-        <p class="banner-text">Kỷ niệm 51 năm</p>
+        <p style="margin:0; font-size:18px;">30/04/2026</p>
+        <p style="margin:0; font-size:9px; color:white;">KỶ NIỆM 51 NĂM</p>
     </div>
 
     <div class="card"> 
         <h2 id="shopTitle">☕ DI DI COFFEE</h2>
-        <p style="color: #8d6e63; font-size: 14px;">Đổi <span id="reqPoints">15</span> điểm = 1 phần quà</p>
-        
+        <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
         <div id="pointDisplay"></div> 
-        
         <div id="form-input">
-            <label style="font-size: 14px; color: #333; display: block; text-align: left;">Số điện thoại:</label>
-            <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
-            <button id="btnRedeem" onclick="handleRedeem()" disabled>XÁC NHẬN ĐỔI QUÀ</button>
+            <label>Số điện thoại:</label>
+            <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()" style="width:100%; padding:10px; margin:10px 0;">
+            <button id="btnRedeem" onclick="handleRedeem()" disabled style="width: 100%;">XÁC NHẬN ĐỔI QUÀ</button>
         </div>
-
         <div id="status"></div>
-
-        <div class="nav-menu">
-            <a href="index.html" class="nav-item">⭐ Tích điểm</a>
-            <a href="#" class="nav-item active">🎁 Đổi quà</a>
-        </div>
     </div>
 
 <script>
-    // Bảng tra cứu mã món
-    const giftMap = {
-        "DI": "Ly Cafe tùy chọn",
-        "TS": "Ly Trà Sữa tùy chọn",
-        "CM": "Ly Cafe Muối",
-        "TX": "Ly Trà Xanh"
-    };
-    const monMacDinh = "Ly đặc biệt Di Di";
-
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
     let isProcessing = false;
-    let currentGiftName = monMacDinh;
-
     document.getElementById('reqPoints').innerText = minPoints;
+
+    window.onload = function() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const fromWeb = urlParams.get('from') === 'webs';
+        const phoneFromUrl = urlParams.get('phone');
+        const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
+        
+        if (fromWeb) {
+            document.getElementById('form-input').style.display = "none";
+            document.getElementById('status').innerHTML = "<div class='success-box'>⚠️ Vui lòng quét mã QR tại quầy để đổi quà.</div>";
+            return; 
+        }
+
+        const finalPhone = phoneFromUrl || savedPhone;
+        if (finalPhone) {
+            document.getElementById('phone').value = finalPhone;
+            autoProcess(finalPhone);
+        }
+    };
 
     async function autoProcess(phone) {
         isProcessing = true;
         const display = document.getElementById('pointDisplay');
-        display.innerHTML = "⏳ Đang kiểm tra...";
-        
+        display.innerHTML = "⏳ Đang kiểm tra điểm...";
         try {
             const res = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
-            const rawData = await res.text();
-            
-            // --- LOGIC QUAN TRỌNG: Xử lý cả JSON và Text ---
-            let points = 0;
-            let name = "Khách hàng";
-            let code = "";
-    
-            try {
-                // Thử giải mã nếu Script trả về JSON (để lấy tên và mã gợi ý)
-                const data = JSON.parse(rawData);
-                // Xử lý vụ dấu phẩy trong điểm từ Sheets (thay , thành .)
-                points = parseFloat(data.points.toString().replace(',', '.')) || 0;
-                name = data.name || "Khách hàng";
-                code = data.suggested_code || "";
-            } catch (e) {
-                // Nếu chỉ là văn bản thuần (số điểm)
-                points = parseFloat(rawData.replace(',', '.')) || 0;
-            }
-    
-            // Tra cứu mã 2 ký tự (CF, TS...)
-            currentGiftName = giftMap[code.toUpperCase()] || monMacDinh;
-    
-            display.innerHTML = `
-                <div>
-                    Chào <b>${name}</b>! Hiện có: <b>${points}</b> điểm.<br>
-                    <small>🎁 Gợi ý: ${currentGiftName}</small>
-                </div>`;
-    
-            // So sánh điểm để kích hoạt nút
-            const btn = document.getElementById('btnRedeem');
-            if (points >= minPoints) {
-                btn.disabled = false;
-                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
-                // Nếu muốn tự động đổi luôn thì gọi handleRedeem() ở đây
+            const data = await res.json();
+            let currentPoints = parseFloat(data.points) || 0;
+            display.innerHTML = `<div style='text-align:center;'>Chào <b>${data.name}</b>! Bạn có: <b>${currentPoints}</b> điểm</div>`;
+
+            if (currentPoints >= minPoints) {
+                handleRedeem();
             } else {
-                btn.disabled = true;
-                btn.innerText = "CHƯA ĐỦ ĐIỂM";
                 isProcessing = false;
+                document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
             }
-        } catch (e) {
-            display.innerHTML = "❌ Lỗi kết nối Script";
-            isProcessing = false;
-        }
+        } catch (e) { isProcessing = false; }
     }
 
     function checkPointRealtime() {
         if (isProcessing) return;
         const phone = document.getElementById('phone').value.trim();
+        const btn = document.getElementById('btnRedeem');
         if (phone.length >= 10) {
             fetch(`${scriptURL}?action=get_points&phone=${phone}`)
                 .then(res => res.json())
                 .then(data => {
                     let cp = parseFloat(data.points) || 0;
-                    let code = data.suggested_code || "";
-                    currentGiftName = giftMap[code.toUpperCase()] || monMacDinh;
-                    
-                    document.getElementById('pointDisplay').innerHTML = `Hiện có: <b>${cp}</b> điểm. <br><small>Quà: ${currentGiftName}</small>`;
-                    document.getElementById('btnRedeem').disabled = cp < minPoints;
+                    document.getElementById('pointDisplay').innerHTML = `Hiện có: <strong>${cp}</strong> điểm`;
+                    btn.disabled = cp < minPoints;
+                    btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
                 });
         }
     }
 
     function handleRedeem() {
         const phone = document.getElementById('phone').value.trim();
+        const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
+        
         isProcessing = true;
         btn.disabled = true;
         btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
-        fetch(`${scriptURL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent(currentGiftName)}&points=${minPoints}`)
-        .then(res => res.text())
+        fetch(`${scriptURL}?action=doi_thuong&phone=${phone}&points=${minPoints}`)
+        .then(res => res.json())
         .then(result => {
-            if (result === "SUCCESS") {
+            if (result.status === "SUCCESS") {
+                const now = new Date();
+                statusDiv.innerHTML = `
+                    <div class="success-box">
+                        <div style="color: #da251d; font-size: 20px; font-weight: bold;">✅ ĐỔI THÀNH CÔNG!</div>
+                        <div style="margin: 15px 0;">
+                            Quà tặng: <br>
+                            <strong style="font-size: 24px; color: #da251d;">${result.gift_name.toUpperCase()}</strong>
+                        </div>
+                        <p style="font-size:12px; color:#666;">Thời gian: ${now.toLocaleString('vi-VN')}</p>
+                        <button onclick="location.reload()" style="background:#8d6e63; color:white; border:none; padding:10px; border-radius:5px; width:100%;">TIẾP TỤC</button>
+                    </div>
+                `;
                 document.getElementById('form-input').style.display = "none";
                 document.getElementById('pointDisplay').style.display = "none";
-                document.getElementById('status').innerHTML = `
-                    <div style="background:#f0f9eb; padding:20px; border-radius:10px; border:1px solid #67c23a;">
-                        <h3 style="color:#67c23a;">✅ THÀNH CÔNG!</h3>
-                        <p>Món quà: <b>${currentGiftName}</b></p>
-                    </div>
-                    <button onclick="location.reload()" style="width:100%; margin-top:15px; padding:10px;">TIẾP TỤC</button>
-                `;
             } else {
-                alert("Lỗi: " + result);
+                alert("Lỗi: " + result.status);
                 isProcessing = false;
                 btn.disabled = false;
             }
         });
     }
-
-    // Khởi tạo khi load trang
-    window.onload = function() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const phone = urlParams.get('phone') || localStorage.getItem('didi_customer_phone');
-        if (phone) {
-            document.getElementById('phone').value = phone;
-            autoProcess(phone);
-        }
-    };
 </script>
 </body>
 </html>
