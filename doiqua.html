@@ -204,28 +204,47 @@
         
         try {
             const res = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
-            const data = await res.json();
+            const rawData = await res.text();
             
-            let points = parseFloat(data.points) || 0;
-            let name = data.name || "Khách hàng";
-            let code = data.suggested_code || "";
-
+            // --- LOGIC QUAN TRỌNG: Xử lý cả JSON và Text ---
+            let points = 0;
+            let name = "Khách hàng";
+            let code = "";
+    
+            try {
+                // Thử giải mã nếu Script trả về JSON (để lấy tên và mã gợi ý)
+                const data = JSON.parse(rawData);
+                // Xử lý vụ dấu phẩy trong điểm từ Sheets (thay , thành .)
+                points = parseFloat(data.points.toString().replace(',', '.')) || 0;
+                name = data.name || "Khách hàng";
+                code = data.suggested_code || "";
+            } catch (e) {
+                // Nếu chỉ là văn bản thuần (số điểm)
+                points = parseFloat(rawData.replace(',', '.')) || 0;
+            }
+    
+            // Tra cứu mã 2 ký tự (CF, TS...)
             currentGiftName = giftMap[code.toUpperCase()] || monMacDinh;
-
+    
             display.innerHTML = `
-                <div style="margin-bottom:15px;">
+                <div>
                     Chào <b>${name}</b>! Hiện có: <b>${points}</b> điểm.<br>
-                    <small style="color:#da251d;">🎁 Gợi ý: ${currentGiftName}</small>
+                    <small>🎁 Gợi ý: ${currentGiftName}</small>
                 </div>`;
-
+    
+            // So sánh điểm để kích hoạt nút
+            const btn = document.getElementById('btnRedeem');
             if (points >= minPoints) {
-                handleRedeem();
+                btn.disabled = false;
+                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
+                // Nếu muốn tự động đổi luôn thì gọi handleRedeem() ở đây
             } else {
-                document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM ĐỔI";
+                btn.disabled = true;
+                btn.innerText = "CHƯA ĐỦ ĐIỂM";
                 isProcessing = false;
             }
         } catch (e) {
-            display.innerHTML = "❌ Không tìm thấy thông tin";
+            display.innerHTML = "❌ Lỗi kết nối Script";
             isProcessing = false;
         }
     }
