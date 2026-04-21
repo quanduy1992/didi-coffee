@@ -83,7 +83,7 @@
         display.innerHTML = "⏳ Đang kiểm tra điểm...";
         try {
             // Thêm callback=JSON_CALLBACK để Script trả về đúng định dạng
-            const res = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
+            const res = await fetch(`${scriptURL}?action=get_points_new&phone=${phone}`);
             const data = await res.json(); 
             
             // Xử lý nếu data trả về là đối tượng JSON
@@ -112,7 +112,7 @@
         const display = document.getElementById('pointDisplay');
 
         if (phone.length >= 10) {
-            fetch(`${scriptURL}?action=get_points&phone=${phone}`)
+            fetch(`${scriptURL}?action=get_points_new&phone=${phone}`)
                 .then(res => res.json())
                 .then(data => {
                     let cp = parseFloat(data.points) || 0;
