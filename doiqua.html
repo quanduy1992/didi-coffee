@@ -146,11 +146,10 @@
                 statusDiv.innerHTML = `
                     <div class="success-box">
                         <div >✅ ĐỔI THÀNH CÔNG!</div>
-                        <span class="time">Thời gian: ${timeStr}</span>
                         <div style="margin: 15px 0;">
                             <strong style="font-size: 18px; color: #da251d;">${result.gift_name.toUpperCase()}</strong>
                         </div>
-                        
+                        <span class="time">Thời gian: ${now.toLocaleString('vi-VN')}</span>
                         <button class="btn-confirm" onclick="window.location.href='doiqua.html'">TIẾP TỤC ĐỔI</button>
                     </div>
                 `;
