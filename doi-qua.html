@@ -247,7 +247,7 @@
     async function autoProcess(phone) {
         isProcessing = true;
         const display = document.getElementById('pointDisplay');
-        display.innerHTML = "⏳ Đang kiểm tra điểm...</br>";
+        display.innerHTML = "⏳ Đang kiểm tra điểm...</br></br>";
         try {
             // Thêm callback=JSON_CALLBACK để Script trả về đúng định dạng
             const res = await fetch(`${scriptURL}?action=get_points_new&phone=${phone}`);
