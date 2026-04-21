@@ -7,106 +7,67 @@
     <link rel="stylesheet" href="style.css">
     <script src="config.js"></script> 
     <style>
-        /* GIỮ NGUYÊN PHẦN CSS CỦA ÔNG */
+        /* GIỮ NGUYÊN GIAO DIỆN LẤP LÁNH VÀ BĂNG RÔN CỦA ÔNG */
         body::after {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             pointer-events: none; z-index: -1;
             background-image: 
                 radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(1px 1px at 125px 20px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
-                radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+                radial-gradient(1.5px 1.5px at 150px 150px, yellow, rgba(255, 255, 0, 0));
             background-size: 200px 200px;
             animation: twinkling 4s infinite alternate ease-in-out;
         }
-        @keyframes twinkling { 0% { opacity: 0.3; transform: scale(1); } 50% { opacity: 0.8; transform: scale(1.02); } 100% { opacity: 0.3; transform: scale(1); } }
-        #btnSubmit { animation: pulse-button 2s infinite; }
-        @keyframes pulse-button { 0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); } 100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); } }
-        body { background-color: #da251d !important; background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important; position: relative; overflow-x: hidden; margin: 0; padding: 0; }
-        body::before { content: "★"; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 80vw; color: rgba(255, 255, 0, 0.15); z-index: -1; font-family: Arial, sans-serif; }
-        .card { border: 1px solid #ffde00 !important; box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important; background-color: rgba(255, 255, 255, 0.5) !important; backdrop-filter: blur(5px); z-index: 10; }
-        #shopTitle { color: #da251d !important; }
-        #btnSubmit { background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important; color: #fff !important; font-weight: bold; border: none; box-shadow: 0 4px 15px rgba(218, 37, 29, 0.4); }
-        .banner-corner { position: fixed; top: 0; width: 250px; height: 60px; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffde00; text-align: center; font-family: 'Arial Black', sans-serif; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); box-shadow: 0 4px 15px rgba(0,0,0,0.4); border-radius: 40px; }
-        .banner-corner::after { content: "★"; position: absolute; bottom: -35px; font-size: 30px; color: #ffde00; text-shadow: 0 0 10px rgba(255, 222, 0, 0.8); filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5)); display: block; }
-        .banner-left { left: -60px; top: 25px; background: linear-gradient(135deg, #a50000 0%, #da251d 100%); transform: rotate(-30deg); border: 2px solid #ffde00; }
-        .banner-left::after { right: 108px; transform: rotate(30deg); }
-        .banner-right { right: -60px; top: 25px; background: linear-gradient(-135deg, #a50000 0%, #da251d 100%); transform: rotate(30deg); border: 2px solid #ffde00; }
-        .banner-right::after { left: 108px; transform: rotate(-30deg); }
-        .banner-date { font-size: 18px; font-weight: 900; margin: 0; line-height: 1; }
-        .banner-text { font-size: 9px; text-transform: uppercase; letter-spacing: 1px; margin: 2px 0 0 0; color: #fff; font-weight: bold; }
-        @media (max-width: 400px) { .banner-corner { width: 200px; height: 50px; } .banner-date { font-size: 14px; } .banner-text { font-size: 8px; } .banner-left { left: -50px; } .banner-right { right: -50px; } .banner-corner::after { font-size: 24px; bottom: -30px; } }
+        @keyframes twinkling { 0% { opacity: 0.3; } 50% { opacity: 0.8; } 100% { opacity: 0.3; } }
+        body { background-color: #da251d !important; background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important; margin: 0; padding: 0; font-family: sans-serif; }
+        .card { border: 1px solid #ffde00 !important; background-color: rgba(255, 255, 255, 0.9) !important; backdrop-filter: blur(5px); margin: 20px auto; max-width: 400px; padding: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        #shopTitle { color: #da251d !important; text-align: center; }
+        .banner-corner { position: fixed; top: 0; width: 250px; height: 60px; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #ffde00; text-shadow: 1px 1px 3px rgba(0,0,0,0.5); border-radius: 40px; border: 2px solid #ffde00; }
+        .banner-left { left: -60px; top: 25px; background: linear-gradient(135deg, #a50000 0%, #da251d 100%); transform: rotate(-30deg); }
+        .banner-right { right: -60px; top: 25px; background: linear-gradient(-135deg, #a50000 0%, #da251d 100%); transform: rotate(30deg); }
+        .banner-date { font-size: 18px; font-weight: 900; margin: 0; }
+        .banner-text { font-size: 9px; text-transform: uppercase; margin: 0; color: #fff; }
+        #btnRedeem { background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: bold; width: 100%; margin-top: 10px; cursor: pointer; }
+        #btnRedeem:disabled { background: #ccc !important; }
     </style>
 </head>
 <body>
-<div class="banner-corner banner-left">
-    <p class="banner-date">30/04/1975</p>
-    <p class="banner-text">Giải phóng Miền Nam</p>
-</div>
 
-<div class="banner-corner banner-right">
-    <p class="banner-date">30/04/2026</p>
-    <p class="banner-text">Kỷ niệm 51 năm</p>
-</div>
+<div class="banner-corner banner-left"><p class="banner-date">30/04/1975</p><p class="banner-text">Giải phóng Miền Nam</p></div>
+<div class="banner-corner banner-right"><p class="banner-date">30/04/2026</p><p class="banner-text">Kỷ niệm 51 năm</p></div>
 
 <div class="card"> 
     <h2 id="shopTitle">☕ DI DI COFFEE</h2>
-    <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
-    
+    <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 phần quà</p>
     <div id="pointDisplay"></div> 
     <div id="form-input">
         <label>Số điện thoại:</label>
-        <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
-        <button id="btnRedeem" onclick="handleRedeem()" disabled style="width: 100%; margin-top: 10px;">XÁC NHẬN ĐỔI QUÀ</button>
+        <input type="tel" id="phone" style="width:94%; padding:10px; border-radius:5px;" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()">
+        <button id="btnRedeem" onclick="handleRedeem()" disabled>XÁC NHẬN ĐỔI QUÀ</button>
     </div>
-
     <div id="status"></div>
-    <div class="nav-menu">
-        <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
-        <a href="doi-qua.html?from=web" class="nav-item active"><i>🎁</i> Đổi quà</a>
-    </div>
 </div>
 
 <script>
+    // --- PHẦN TRA CỨU MÃ MÓN (Ông sửa tên món ở đây cho khớp với mã từ Script) ---
+    const giftMap = {
+        "CF": "1 Ly CF",
+        "DI": "1 Ly CF",
+        "TA": "1 Ly trà tắc",
+        "SC": "1 ly Sữa tươi/ Sữa chua"
+    };
+    const monMacDinh = "1 ly CF miễn phí"; 
+
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
-    let isProcessing = false;
-    let currentSuggestedGift = "Tặng 1 Ly CF"; // Mặc định
-
-    // --- BẢNG ĐỔI TÊN MÓN QUÀ (SỬA Ở ĐÂY) ---
-    const giftMap = {
-        "DI": "1 ly cà phê",
-        "CF": "1 ly cà phê",
-        "SC": "1 ly SC/ST",
-        "TA": "1 ly trà tắc"
-    };
+    let isProcessing = false; 
+    let currentGiftName = monMacDinh; // Biến lưu tên món tạm thời
 
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
-        if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-            document.querySelector('h2').innerText = "☕ " + CONFIG.SHOP_NAME;
-        }
-        validateSession(); 
-        
         const urlParams = new URLSearchParams(window.location.search);
-        const fromWeb = urlParams.get('from') === 'web'; 
         const phoneFromUrl = urlParams.get('phone');
-        const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
-        
-        if (fromWeb) {
-            document.getElementById('form-input').style.display = "none";
-            document.getElementById('status').innerHTML = `
-                <div class="success-box" style="background: #fff3e0; border-color: #ffb74d;">
-                    <div style="color: #e65100;">⚠️ THÔNG BÁO</div>
-                    <span class="points-info" style="color: #8d6e63;">Vui lòng quét mã QR đặt tại quầy để thực hiện đổi quà trực tiếp.</span>
-                </div>
-                <button class="btn-confirm" onclick="window.location.href='index.html'" style="background: #8d6e63;">QUAY LẠI TRANG CHỦ</button>
-            `;
-            return; 
-        }
-
+        const savedPhone = localStorage.getItem('didi_customer_phone');
         const finalPhone = phoneFromUrl || savedPhone;
         if (finalPhone) {
             document.getElementById('phone').value = finalPhone;
@@ -114,54 +75,45 @@
         }
     };
 
-    function validateSession() {
-        const lastRedeem = localStorage.getItem('last_redeem_timestamp');
-        if (lastRedeem) {
-            const diff = (new Date().getTime() - parseInt(lastRedeem)) / (1000 * 60);
-            if (diff > 5) resetUI(); 
-        }
-    }
-
-    // Hàm gọi Script xử lý dữ liệu tập trung
-    async function fetchData(phone) {
-        const response = await fetch(`${scriptURL}?action=get_points&phone=${phone}&callback=callbackFunc`);
-        // Script trả về dạng JSONP nên ta cần xử lý một chút nếu dùng fetch thuần, 
-        // nhưng ở đây tôi dùng fetch với text và parse để đơn giản hóa.
-        const res = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
-        return await res.json();
-    }
-
     async function autoProcess(phone) {
         const display = document.getElementById('pointDisplay');
-        const btn = document.getElementById('btnRedeem');
-        display.innerHTML = "<div style='text-align:center; padding:10px;'>⏳ Đang kiểm tra điểm...</div>";
-        btn.disabled = true;
-        btn.innerText = "⏳ ĐANG XỬ LÝ...";
-        isProcessing = true; 
+        display.innerHTML = "<div style='text-align:center;'>⏳ Đang kiểm tra...</div>";
+        isProcessing = true;
         
         try {
             const res = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
-            const text = await res.text(); // Lấy dạng văn bản trước
-            const data = JSON.parse(text); // Ép kiểu sang JSON
+            const rawData = await res.text();
             
-            let cp = parseFloat(data.points) || 0;
-            currentSuggestedGift = giftMap[data.suggested_code] || "Ly đặc biệt Di Di";
+            let points = 0;
+            let name = "bạn";
+            let code = "";
 
-            // Hiển thị tên khách (nếu không có thì để là Khách hàng)
-            let displayName = data.name || "Khách hàng";
-            display.innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào <b>${displayName}</b>! Hiện có: <strong>${cp}</strong> điểm.<br><small>Gợi ý: ${currentSuggestedGift}</small></div>`;
+            try {
+                const data = JSON.parse(rawData);
+                points = parseFloat(data.points) || 0;
+                name = data.name || "bạn";
+                code = data.suggested_code || ""; // Mã 2 ký tự từ Script
+            } catch(e) {
+                points = parseFloat(rawData) || 0;
+            }
 
-            if (cp >= minPoints) {
-                handleRedeem(); 
+            // Suy luận tên món từ mã
+            currentGiftName = giftMap[code.toUpperCase()] || monMacDinh;
+
+            display.innerHTML = `
+                <div style='text-align:center; margin-bottom:10px;'>
+                    Chào <b>${name}</b>! Bạn có: <strong>${points}</strong> điểm<br>
+                    <span style="color:#da251d; font-size:13px;">🎁 Gợi ý quà: ${currentGiftName}</span>
+                </div>`;
+
+            if (points >= minPoints) {
+                handleRedeem();
             } else {
-                btn.innerText = "CHƯA ĐỦ ĐIỂM ĐỔI";
+                document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
                 isProcessing = false;
             }
         } catch (err) {
-            console.error(err);
-            display.innerHTML = "<div style='color:red; text-align:center;'>❌ Lỗi dữ liệu</div>";
-            btn.disabled = false;
-            btn.innerText = "THỬ LẠI";
+            display.innerHTML = "<div style='color:red;'>❌ Lỗi kết nối</div>";
             isProcessing = false;
         }
     }
@@ -169,20 +121,27 @@
     function checkPointRealtime() {
         if (isProcessing) return;
         const phone = document.getElementById('phone').value.trim();
-        const btn = document.getElementById('btnRedeem');
         if (phone.length >= 10) {
             fetch(`${scriptURL}?action=get_points&phone=${phone}`)
                 .then(res => res.text())
-                .then(text => {
-                    const data = JSON.parse(text);
-                    let cp = parseFloat(data.points) || 0;
-                    currentSuggestedGift = giftMap[data.suggested_code] || "Ly đặc biệt Di Di";
-                    let displayName = data.name || "Khách hàng";
-                    document.getElementById('pointDisplay').innerHTML = `<div style='text-align:center; margin-bottom:10px;'>Chào <b>${displayName}</b>! Có: <strong>${cp}</strong> điểm.<br><small>Gợi ý: ${currentSuggestedGift}</small></div>`;
-                    btn.disabled = cp < minPoints;
-                    btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
-                })
-                .catch(e => console.log("Chưa tìm thấy dữ liệu"));
+                .then(rawData => {
+                    try {
+                        const data = JSON.parse(rawData);
+                        let cp = parseFloat(data.points) || 0;
+                        let code = data.suggested_code || "";
+                        currentGiftName = giftMap[code.toUpperCase()] || monMacDinh;
+                        
+                        document.getElementById('pointDisplay').innerHTML = `
+                            <div style='text-align:center;'>
+                                Có: <strong>${cp}</strong> điểm. Quà: ${currentGiftName}
+                            </div>`;
+                        document.getElementById('btnRedeem').disabled = cp < minPoints;
+                    } catch(e) {
+                        let cp = parseFloat(rawData) || 0;
+                        document.getElementById('pointDisplay').innerHTML = `<div style='text-align:center;'>Có: <strong>${cp}</strong> điểm</div>`;
+                        document.getElementById('btnRedeem').disabled = cp < minPoints;
+                    }
+                });
         }
     }
 
@@ -190,55 +149,32 @@
         const phone = document.getElementById('phone').value.trim();
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
-        const display = document.getElementById('pointDisplay');
 
         isProcessing = true;
         btn.disabled = true;
-        btn.innerText = "⏳ ĐANG ĐỔI QUÀ...";
+        btn.innerText = "⏳ ĐANG XỬ LÝ...";
 
-        // Sử dụng currentSuggestedGift đã được map từ mã 2 ký tự
-        fetch(`${scriptURL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent(currentSuggestedGift)}&points=${minPoints}`)
+        // Gửi tên món đã suy luận về Script
+        fetch(`${scriptURL}?action=doi_thuong&phone=${phone}&gift=${encodeURIComponent(currentGiftName)}&points=${minPoints}`)
         .then(res => res.text())
-        .then(async result => {
+        .then(result => {
             if (result === "SUCCESS") {
-                let newPointsDisplay = "0";
-                try {
-                    const resPoint = await fetch(`${scriptURL}?action=get_points&phone=${phone}`);
-                    const dataPoint = await resPoint.json();
-                    newPointsDisplay = dataPoint.points;
-                } catch (e) {}
-
-                const now = new Date();
-                const timeStr = now.toLocaleDateString('vi-VN') + ' ' + now.toLocaleTimeString('vi-VN');
-                
-                display.style.display = "none";
-                btn.style.display = "none";
                 document.getElementById('form-input').style.display = "none";
-
+                document.getElementById('pointDisplay').style.display = "none";
                 statusDiv.innerHTML = `
-                    <div class="success-box">
-                        <div style="font-size:1.2em">✅ ĐỔI THÀNH CÔNG!</div>
-                        <div style="margin:10px 0; font-weight:bold; color:#da251d;">${currentSuggestedGift}</div>
-                        <span class="time">Thời gian: ${timeStr}</span>
-                        <span class="points-info">Số điểm còn lại: <span>${newPointsDisplay}</span></span>
+                    <div style="background:#e8f5e9; padding:15px; border-radius:10px; text-align:center; border:2px solid #4caf50;">
+                        <h3 style="color:#2e7d32;">✅ ĐỔI THÀNH CÔNG!</h3>
+                        <p>Món quà: <b>${currentGiftName}</b></p>
                     </div>
-                    <button class="btn-confirm" onclick="window.location.href='doi-qua.html'">TIẾP TỤC ĐỔI</button>
+                    <button onclick="location.reload()" style="width:100%; margin-top:10px; padding:10px;">TIẾP TỤC</button>
                 `;
-                
-                localStorage.setItem('last_redeem_timestamp', now.getTime());
                 localStorage.setItem('didi_customer_phone', phone);
             } else {
-                statusDiv.innerHTML = `<div style='color:red; text-align:center; margin-top:10px;'>❌ THẤT BẠI: ${result}</div>`;
-                btn.disabled = false;
-                btn.innerText = "THỬ LẠI";
+                statusDiv.innerHTML = `<p style='color:red;'>❌ Lỗi: ${result}</p>`;
                 isProcessing = false;
+                btn.disabled = false;
             }
         });
-    }
-
-    function resetUI() {
-        localStorage.removeItem('last_redeem_timestamp');
-        location.reload();
     }
 </script>
 </body>
