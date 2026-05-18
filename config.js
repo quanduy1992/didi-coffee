@@ -9,7 +9,7 @@ const CONFIG = {
     POINTS_PER_CODE: 1,
     LEVEL_1: 15,
     LEVEL_2: 50, // Ví dụ: mốc 2 là 20 điểm
-    SHOP_NAME: 'Cảm Ơn Bạn Đã Chọn Di Di'
+    SHOP_NAME: 'Di Di Coffee'
 };
 
 
