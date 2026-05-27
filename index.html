@@ -7,30 +7,69 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
-/* 1. Nhịp tim nút bấm */
-        @keyframes twinkling {
-            0% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.02); }
-            100% { opacity: 0.3; transform: scale(1); }
+        /* ================= STYLE MÙA HÈ TƯƠI MÁT ================= */
+        body {
+            background: linear-gradient(135deg, #e0f7fa 0%, #fff9c4 100%); /* Màu xanh nước biển hòa cát vàng */
+            position: relative;
+            overflow-x: hidden;
         }
 
+        /* Hiệu ứng sóng biển dập dềnh hiệu ứng nhẹ phía dưới background */
+        body::after {
+            content: "";
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 15px;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none"><path d="M0,0V46.29c47.79,22.2,103.59,32.17,158,28,70.36-5.37,136.33-33.31,206.8-37.5C438.64,32.43,512.34,53.67,583,72.05c69.27,18,138.3,24.88,209.4,13.08,36.15-6,69.85-17.84,104.45-29.34C989.49,25,1113-14.29,1200,42.4V0Z" fill="%234fc3f7" opacity=".3"/></svg>') repeat-x;
+            background-size: 1200px 15px;
+            animation: wave-move 6s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes wave-move {
+            0% { background-position-x: 0; }
+            100% { background-position-x: 1200px; }
+        }
+
+        /* Tiêu đề Summer nổi bật */
+        #shopTitle {
+            color: #007c91;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+        }
+
+        /* 1. Nhịp tim nút bấm Mùa Hè rực rỡ (Màu cam vàng nhiệt đới) */
         #btnSubmit {
-            animation: pulse-button 3s infinite;
+            background-color: #ff9100 !important;
+            color: #ffffff !important;
+            font-weight: bold;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            animation: pulse-button-summer 2.5s infinite;
+            transition: all 0.3s ease;
         }
 
-        @keyframes pulse-button {
-            0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
+        #btnSubmit:hover {
+            background-color: #ff6d00 !important;
         }
-/* 1. Nhịp tim nút bấm */
-       
+
+        @keyframes pulse-button-summer {
+            0% { box-shadow: 0 0 0 0 rgba(255, 145, 0, 0.5); transform: scale(1); }
+            50% { transform: scale(1.02); }
+            70% { box-shadow: 0 0 0 12px rgba(255, 145, 0, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 145, 0, 0); transform: scale(1); }
+        }
+        /* ======================================================== */
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 id="shopTitle">☕ Nghĩ lễ: 30/04 - 02/05</h2>
+        <h2 id="shopTitle">🍹 DI DI COFFEE - GIẢI NHIỆT MÙA HÈ</h2>
+        
         <div id="form-input">
             <label>Tên khách hàng:</label>
             <input type="text" id="cusName" placeholder="Nhập tên của bạn">
@@ -53,7 +92,8 @@
 <script>
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-            document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
+            // Nếu config có tên cửa hàng riêng thì đổi theo config, không thì giữ nguyên chữ Giải Nhiệt Mùa Hè
+            document.getElementById('shopTitle').innerText = "🍹 " + CONFIG.SHOP_NAME + " - GIẢI NHIỆT MÙA HÈ";
         }
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
@@ -159,7 +199,6 @@
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        // Truyền pointsToAdd đã được tính toán vào tham số add_points
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;        
         
         scriptTag.onerror = function() {
