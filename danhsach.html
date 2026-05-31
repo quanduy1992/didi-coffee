@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
-    <!--<script src="hoamai.js"></script>-->
     <style>
         /* GIỮ NGUYÊN STYLE CARD CỦA BẠN */
         .table-header {
@@ -62,11 +61,9 @@
 </head>
 <body>
     <div class="card">
-        <!-- <canvas id="flower-canvas"></canvas>-->
-
         <h3 style="color: #d32f2f; margin: 5px 0; font-size: 1em;">🏆 BẢNG VÀNG TÍCH ĐIỂM</h3>
 
-        <div class="leaderboard-wrapper">
+        <div class="leaderboard-wrapper {">
             <div class="table-header">
                 <div class="col-stt">STT</div>
                 <div class="col-name">TÊN KHÁCH</div>
@@ -91,30 +88,33 @@
 
     <script src="config.js"></script>
     <script>
+        // ĐƯA HÀM CALLBACK RA NGOÀI ĐỂ TRÌNH DUYỆT NHẬN DIỆN ĐÚNG KHI CÓ DATA TRẢ VỀ
+        window.leaderboardCB = function(res) {
+            if (res.status === "SUCCESS") {
+                let html = "";
+                res.data.forEach((item, index) => {
+                    let topClass = (index === 0) ? "top-1" : (index === 1 ? "top-2" : (index === 2 ? "top-3" : ""));
+                    let medal = (index === 0) ? "🥇 " : (index === 1 ? "🥈 " : (index === 2 ? "🥉 " : ""));
+                    
+                    html += `<div class="row-item ${topClass}">
+                                <div class="col-stt">${index + 1}</div>
+                                <div class="col-name"><span class="medal">${medal}</span>${item.name}</div>
+                                <div class="col-phone">${item.phone}</div>
+                                <div class="col-pts">${item.points}đ</div>
+                            </div>`;
+                });
+                document.getElementById('leaderboardData').innerHTML = html || "<div style='text-align:center; padding:20px;'>Chưa có dữ liệu</div>";
+            }
+            if (document.getElementById('api-list')) document.getElementById('api-list').remove();
+        };
+
         function loadData() {
             const scriptTag = document.createElement("script");
-            window.leaderboardCB = function(res) {
-                if (res.status === "SUCCESS") {
-                    let html = "";
-                    res.data.forEach((item, index) => {
-                        let topClass = (index === 0) ? "top-1" : (index === 1 ? "top-2" : (index === 2 ? "top-3" : ""));
-                        let medal = (index === 0) ? "🥇 " : (index === 1 ? "🥈 " : (index === 2 ? "🥉 " : ""));
-                        
-                        html += `<div class="row-item ${topClass}">
-                                    <div class="col-stt">${index + 1}</div>
-                                    <div class="col-name"><span class="medal">${medal}</span>${item.name}</div>
-                                    <div class="col-phone">${item.phone}</div>
-                                    <div class="col-pts">${item.points}đ</div>
-                                </div>`;
-                    });
-                    document.getElementById('leaderboardData').innerHTML = html || "<div style='text-align:center; padding:20px;'>Chưa có dữ liệu</div>";
-                }
-                if (document.getElementById('api-list')) document.getElementById('api-list').remove();
-            };
             scriptTag.id = "api-list";
             scriptTag.src = `${CONFIG.SCRIPT_URL}?action=get_leaderboard&callback=leaderboardCB&t=${new Date().getTime()}`;
             document.body.appendChild(scriptTag);
         }
+
         window.onload = loadData;
     </script>
 </body>
