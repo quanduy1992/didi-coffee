@@ -6,7 +6,15 @@
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* GIỮ NGUYÊN STYLE CARD CỦA BẠN */
+        /* GIỮ NGUYÊN STYLE CARD CỦA BẠN VÀ ĐÃ ĐƯỢC TỐI ƯU TO NGANG */
+        
+        /* Cấu hình lại body để giao diện tràn rộng ra hết cỡ trên điện thoại */
+        body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+        }
+
         .table-header {
             display: flex;
             background: #d32f2f;
@@ -18,19 +26,24 @@
             border-radius: 12px 12px 0 0;
         }
 
-        .col-stt { width: 12%; text-align: center; }
-        .col-name { width: 40%; text-align: left; padding-left: 5px; }
+        /* ĐÃ SỬA: Nới rộng tỷ lệ phần trăm các cột để tận dụng không gian lớn hơn */
+        .col-stt { width: 10%; text-align: center; }
+        .col-name { width: 44%; text-align: left; padding-left: 8px; }
         .col-phone { width: 28%; text-align: center; }
-        .col-pts { width: 20%; text-align: right; padding-right: 12px; }
+        .col-pts { width: 18%; text-align: right; padding-right: 12px; }
 
         .leaderboard-wrapper {
             background: #fff;
             border-radius: 15px;
-            margin: 10px;
+            /* ĐÃ SỬA: Đổi margin từ 10px thành '10px 4px' để bảng bung to sát viền trái/phải màn hình */
+            margin: 10px 4px; 
             border: 2px solid #d32f2f;
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            /* ĐÃ THÊM: Đảm bảo bảng luôn chiếm hết chiều rộng tối đa */
+            width: calc(100% - 8px); 
+            box-sizing: border-box;
         }
 
         /* VÙNG CUỘN THỦ CÔNG - TỐI ƯU CHO ĐIỆN THOẠI */
@@ -57,7 +70,7 @@
 
         /* Ẩn scrollbar để đẹp hơn */
         .scroll-container::-webkit-scrollbar { width: 0; display: none; }
-    </style>
+</style>
 </head>
 <body>
     <div class="card">
