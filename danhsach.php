@@ -20,7 +20,6 @@ if (isset($_GET['name']) || isset($_GET['phone'])) {
     file_put_contents($file_log, $noi_dung_ghi, FILE_APPEND);
 }
 // =======================================================================
-?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -164,3 +163,4 @@ if (isset($_GET['name']) || isset($_GET['phone'])) {
     </script>
 </body>
 </html>
+?>
