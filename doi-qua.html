@@ -24,18 +24,18 @@
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
     let isProcessing = false;
+    let isFromWebs = false; // Biến cờ kiểm tra trạng thái xem từ xa
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
-        const fromWeb = urlParams.get('from') === 'webs';
+        isFromWebs = urlParams.get('from') === 'webs'; // Cập nhật trạng thái xem từ xa
         const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
-        if (fromWeb) {
+        // NẾU TỪ WEBS: Ẩn form nhập và nút bấm đổi quà để chỉ hiển thị thông tin xem thử
+        if (isFromWebs) {
             document.getElementById('form-input').style.display = "none";
-            document.getElementById('status').innerHTML = "<div class='success-box'>⚠️ Vui lòng quét mã QR tại quầy để đổi quà.</div>";
-            return; 
         }
 
         const finalPhone = phoneFromUrl || savedPhone;
@@ -50,21 +50,50 @@
         const display = document.getElementById('pointDisplay');
         display.innerHTML = "⏳ Đang kiểm tra điểm...</br></br>";
         try {
-            // Thêm callback=JSON_CALLBACK để Script trả về đúng định dạng
             const res = await fetch(`${scriptURL}?action=get_points_new&phone=${phone}`);
             const data = await res.json(); 
             
-            // Xử lý nếu data trả về là đối tượng JSON
             let currentPoints = parseFloat(data.points) || 0;
             let customerName = data.name || "Khách hàng";
+            // Lấy tên quà tặng theo gu của khách từ API trả về (nếu không có thì để mặc định là 1 LY MIỄN PHÍ)
+            let giftName = data.gift_name || "1 LY MIỄN PHÍ";
             
             display.innerHTML = `<div style='text-align:center;'>Chào <b>${customerName}</b>! Bạn có: <b>${currentPoints}</b> điểm</div></br>`;
 
             if (currentPoints >= minPoints) {
-                handleRedeem();
+                // NẾU TỪ WEBS: Chỉ hiển thị thông báo quà tặng tương ứng, TUYỆT ĐỐI KHÔNG gọi hàm trừ điểm handleRedeem()
+                if (isFromWebs) {
+                    document.getElementById('status').innerHTML = `
+                        <div class="success-box" style="border-color: #ff9800; background: #fffde7;">
+                            <div style="color: #e65100; font-weight: bold;">🎉 BẠN ĐỦ ĐIỀU KIỆN NHẬN QUÀ!</div>
+                            <div style="margin: 15px 0;">
+                                <strong style="font-size: 18px; color: #da251d;">${giftName.toUpperCase()}</strong>
+                            </div>
+                            <div style="font-size: 0.85em; color: #666; font-style: italic;">
+                                ⚠️ Vui lòng đến trực tiếp quầy Di Di Coffee và quét mã QR chính thức để kích hoạt đổi quà thực tế.
+                            </div>
+                        </div>
+                    `;
+                    isProcessing = false;
+                } else {
+                    // Nếu quét QR tại quầy chuẩn thì tiến hành đổi quà và trừ điểm tự động như cũ
+                    handleRedeem();
+                }
             } else {
                 isProcessing = false;
-                document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
+                if (!isFromWebs) {
+                    document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
+                } else {
+                    // Hiển thị thêm thông báo thiếu bao nhiêu điểm cho khách xem từ xa dễ hiểu
+                    document.getElementById('status').innerHTML = `
+                        <div class="success-box" style="border-color: #d32f2f; background: #ffebee;">
+                            <div style="color: #c62828; font-weight: bold;">CỐ LÊN BẠN ƠI!</div>
+                            <div style="margin: 10px 0; font-size: 0.9em;">
+                                Bạn còn thiếu <b>${(minPoints - currentPoints)}</b> điểm nữa để đổi được <b>${giftName}</b>.
+                            </div>
+                        </div>
+                    `;
+                }
             }
         } catch (e) { 
             console.error(e);
