@@ -24,23 +24,24 @@
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
     let isProcessing = false;
-    let isFromWebs = false; 
+    let fromWeb = false; // Đưa ra biến toàn cục để dùng chung
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
-        isFromWebs = urlParams.get('from') === 'webs'; 
+        fromWeb = urlParams.get('from') === 'webs';
         const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
-        if (isFromWebs) {
+        // Nếu khách xem từ xa, ẩn form nhập SĐT đi cho gọn giao diện
+        if (fromWeb) {
             document.getElementById('form-input').style.display = "none";
         }
 
         const finalPhone = phoneFromUrl || savedPhone;
         if (finalPhone) {
             document.getElementById('phone').value = finalPhone;
-            autoProcess(finalPhone);
+            autoProcess(finalPhone); // Vẫn cho tự động chạy check điểm bình thường
         }
     };
 
@@ -54,46 +55,44 @@
             
             let currentPoints = parseFloat(data.points) || 0;
             let customerName = data.name || "Khách hàng";
-            // Lấy chính xác tên món quà trong data trả về của khách, nếu lỗi không thấy mới dự phòng chuỗi trống
-            let giftName = data.gift_name || ""; 
+            let guUongCuaKhach = data.gu_uong || "1 LY MIỄN PHÍ"; // Nhận biến gu_uong mới từ API về
             
             display.innerHTML = `<div style='text-align:center;'>Chào <b>${customerName}</b>! Bạn có: <b>${currentPoints}</b> điểm</div></br>`;
 
             if (currentPoints >= minPoints) {
-                if (isFromWebs) {
-                    // ĐÃ SỬA: Thay thế chữ "1 ly miễn phí" thành tên món quà chuẩn của khách ${giftName.toUpperCase()} y hệt ảnh image_daabfb.png
+                if (fromWeb) {
+                    // TÌNH HUỐNG 1: Khách đủ điểm và đang xem từ xa -> Bung hộp thông báo màu vàng chuẩn gu món tủ
                     document.getElementById('status').innerHTML = `
-                        <div class="success-box">
-                            <div>🎉 ĐỦ ĐIỀU KIỆN NHẬN QUÀ!</div>
+                        <div class="success-box" style="border-color: #ffb300; background-color: #fffde7; padding: 15px; border-radius: 8px; border: 1px solid #ffb300; text-align: center;">
+                            <div style="color: #ff8f00; font-weight: bold; font-size: 16px; margin-bottom: 10px;">🎉 BẠN ĐỦ ĐIỀU KIỆN NHẬN QUÀ!</div>
                             <div style="margin: 15px 0;">
-                                <strong style="font-size: 18px; color: #da251d;">${giftName.toUpperCase()}</strong>
+                                <strong style="font-size: 20px; color: #da251d; text-transform: uppercase;">${guUongCuaKhach}</strong>
                             </div>
-                            <span class="time" style="display:block; margin-bottom:10px; color:#da251d; font-weight:bold;">
-                                ⚠️ Quét mã QR tại quầy để nhận ly
-                            </span>
-                            <button class="btn-confirm" onclick="window.location.reload()">CẬP NHẬT ĐIỂM</button>
+                            <div style="font-size: 13px; color: #4e342e; text-align: left; line-height: 1.5; margin-top: 10px;">
+                                ⚠️ Vui lòng đến trực tiếp quầy Di Di Coffee và quét mã QR chính thức để kích hoạt đổi quà thực tế.
+                            </div>
                         </div>
                     `;
-                    document.getElementById('pointDisplay').style.display = "none";
                     isProcessing = false;
                 } else {
+                    // TÌNH HUỐNG 2: Quét tại quầy -> Tự động kích hoạt đổi luôn
                     handleRedeem();
                 }
             } else {
                 isProcessing = false;
-                if (!isFromWebs) {
+                if (!fromWeb) {
                     document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
                 } else {
+                    // TÌNH HUỐNG 3: Khách xem từ xa nhưng chưa đủ điểm
                     document.getElementById('status').innerHTML = `
-                        <div class="success-box" style="border-color: #757575;">
-                            <div style="color: #616161;">CHƯA ĐỦ ĐIỂM ĐỔI QUÀ</div>
+                        <div class="success-box" style="border-color: #757575; padding: 15px; text-align: center;">
+                            <div style="color: #616161; font-weight: bold;">CHƯA ĐỦ ĐIỂM ĐỔI QUÀ</div>
                             <div style="margin: 15px 0;">
                                 <strong style="font-size: 16px; color: #757575;">THIẾU ${(minPoints - currentPoints)} ĐIỂM</strong>
                             </div>
-                            <span class="time">Uống thêm để tích điểm đổi ${giftName.toLowerCase()} bạn nhé!</span>
+                            <span class="time" style="color: #757575; font-size: 13px;">Tích cực uống để đổi đúng món gu ${guUongCuaKhach.toLowerCase()} thương hiệu của bạn nhé!</span>
                         </div>
                     `;
-                    document.getElementById('pointDisplay').style.display = "none";
                 }
             }
         } catch (e) { 
@@ -118,7 +117,7 @@
                     display.innerHTML = `<div style='text-align:center;'>Chào <b>${name}</b>! Bạn có: <b>${cp}</b> điểm</div>`;
                     
                     btn.disabled = cp < minPoints;
-                    btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "ĐANG KIỂM TRA";
+                    btn.innerText = cp < minPoints ? "CHƯA ĐỦ ĐIỂM" : "XÁC NHẬN ĐỔI QUÀ";
                 })
                 .catch(err => {
                     display.innerHTML = "SĐT chưa có điểm tích lũy";
@@ -143,7 +142,7 @@
                 
                 statusDiv.innerHTML = `
                     <div class="success-box">
-                        <div >✅ ĐỔI THÀNH CÔNG!</div>
+                        <div>✅ ĐỔI THÀNH CÔNG!</div>
                         <div style="margin: 15px 0;">
                             <strong style="font-size: 18px; color: #da251d;">${result.gift_name.toUpperCase()}</strong>
                         </div>
@@ -157,6 +156,7 @@
                 alert("Lỗi: " + result.status);
                 isProcessing = false;
                 btn.disabled = false;
+                btn.innerText = "XÁC NHẬN ĐỔI QUÀ";
             }
         });
     }
