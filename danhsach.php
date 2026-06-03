@@ -6,8 +6,8 @@ if (isset($_GET['name']) || isset($_GET['phone'])) {
     // Ưu tiên lấy tên, nếu không có thì lấy SĐT
     $khach_hang = isset($_GET['name']) ? $_GET['name'] : $_GET['phone'];
     
-    // Lấy thời gian hiện tại (Múi giờ Việt Nam)
-    date_default_timezone_set('Asia/Ho_Minh_City');
+    // Lấy thời gian hiện tại (Múi giờ Việt Nam chuẩn)
+    date_default_timezone_set('Asia/Ho_Chi_Minh');
     $thoi_gian = date('Y-m-d H:i:s');
     
     // Định dạng dòng chữ sẽ lưu vào file txt
