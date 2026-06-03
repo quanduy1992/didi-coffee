@@ -1,3 +1,26 @@
+<?php
+// ==================== ĐOẠN XỬ LÝ LƯU FILE TXT (PHP) ====================
+// Kiểm tra nếu trên Link có truyền tên khách (?name=...) hoặc SĐT (?phone=...)
+if (isset($_GET['name']) || isset($_GET['phone'])) {
+    
+    // Ưu tiên lấy tên, nếu không có thì lấy SĐT
+    $khach_hang = isset($_GET['name']) ? $_GET['name'] : $_GET['phone'];
+    
+    // Lấy thời gian hiện tại (Múi giờ Việt Nam)
+    date_default_timezone_set('Asia/Ho_Minh_City');
+    $thoi_gian = date('Y-m-d H:i:s');
+    
+    // Định dạng dòng chữ sẽ lưu vào file txt
+    $noi_dung_ghi = "[" . $thoi_gian . "] - Khách xem danh sách: " . $khach_hang . "\n";
+    
+    // Tên file txt ông muốn lưu (File này sẽ tự sinh ra cùng thư mục nếu chưa có)
+    $file_log = "lich_su_xem.txt";
+    
+    // Dùng file_put_contents với cờ FILE_APPEND để ghi thêm vào cuối file (không bị ghi đè)
+    file_put_contents($file_log, $noi_dung_ghi, FILE_APPEND);
+}
+// =======================================================================
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
