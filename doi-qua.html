@@ -24,16 +24,15 @@
     const scriptURL = CONFIG.SCRIPT_URL;
     const minPoints = CONFIG.REDEEM_POINTS;
     let isProcessing = false;
-    let isFromWebs = false; // Biến cờ kiểm tra trạng thái xem từ xa
+    let isFromWebs = false; 
     document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
-        isFromWebs = urlParams.get('from') === 'webs'; // Cập nhật trạng thái xem từ xa
+        isFromWebs = urlParams.get('from') === 'webs'; 
         const phoneFromUrl = urlParams.get('phone');
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
-        // NẾU TỪ WEBS: Ẩn form nhập và nút bấm đổi quà để chỉ hiển thị thông tin xem thử
         if (isFromWebs) {
             document.getElementById('form-input').style.display = "none";
         }
@@ -55,28 +54,29 @@
             
             let currentPoints = parseFloat(data.points) || 0;
             let customerName = data.name || "Khách hàng";
-            // Lấy tên quà tặng theo gu của khách từ API trả về (nếu không có thì để mặc định là 1 LY MIỄN PHÍ)
-            let giftName = data.gift_name || "1 LY MIỄN PHÍ";
+            // Lấy chính xác tên món quà trong data trả về của khách, nếu lỗi không thấy mới dự phòng chuỗi trống
+            let giftName = data.gift_name || ""; 
             
             display.innerHTML = `<div style='text-align:center;'>Chào <b>${customerName}</b>! Bạn có: <b>${currentPoints}</b> điểm</div></br>`;
 
             if (currentPoints >= minPoints) {
-                // NẾU TỪ WEBS: Chỉ hiển thị thông báo quà tặng tương ứng, TUYỆT ĐỐI KHÔNG gọi hàm trừ điểm handleRedeem()
                 if (isFromWebs) {
+                    // ĐÃ SỬA: Thay thế chữ "1 ly miễn phí" thành tên món quà chuẩn của khách ${giftName.toUpperCase()} y hệt ảnh image_daabfb.png
                     document.getElementById('status').innerHTML = `
-                        <div class="success-box" style="border-color: #ff9800; background: #fffde7;">
-                            <div style="color: #e65100; font-weight: bold;">🎉 BẠN ĐỦ ĐIỀU KIỆN NHẬN QUÀ!</div>
+                        <div class="success-box">
+                            <div>🎉 ĐỦ ĐIỀU KIỆN NHẬN QUÀ!</div>
                             <div style="margin: 15px 0;">
-                                <strong style="font-size: 18px; color: #da251d;">${giftName.toUpperCase()}</strong>
+                                <strong style="font-size: 18px; color: #da251d;">${result.gift_name.toUpperCase()}</strong>
                             </div>
-                            <div style="font-size: 0.85em; color: #666; font-style: italic;">
-                                ⚠️ Vui lòng đến trực tiếp quầy Di Di Coffee và quét mã QR chính thức để kích hoạt đổi quà thực tế.
-                            </div>
+                            <span class="time" style="display:block; margin-bottom:10px; color:#da251d; font-weight:bold;">
+                                ⚠️ Quét mã QR tại quầy để nhận ly
+                            </span>
+                            <button class="btn-confirm" onclick="window.location.reload()">CẬP NHẬT ĐIỂM</button>
                         </div>
                     `;
+                    document.getElementById('pointDisplay').style.display = "none";
                     isProcessing = false;
                 } else {
-                    // Nếu quét QR tại quầy chuẩn thì tiến hành đổi quà và trừ điểm tự động như cũ
                     handleRedeem();
                 }
             } else {
@@ -84,15 +84,16 @@
                 if (!isFromWebs) {
                     document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
                 } else {
-                    // Hiển thị thêm thông báo thiếu bao nhiêu điểm cho khách xem từ xa dễ hiểu
                     document.getElementById('status').innerHTML = `
-                        <div class="success-box" style="border-color: #d32f2f; background: #ffebee;">
-                            <div style="color: #c62828; font-weight: bold;">CỐ LÊN BẠN ƠI!</div>
-                            <div style="margin: 10px 0; font-size: 0.9em;">
-                                Bạn còn thiếu <b>${(minPoints - currentPoints)}</b> điểm nữa để đổi được <b>${giftName}</b>.
+                        <div class="success-box" style="border-color: #757575;">
+                            <div style="color: #616161;">CHƯA ĐỦ ĐIỂM ĐỔI QUÀ</div>
+                            <div style="margin: 15px 0;">
+                                <strong style="font-size: 16px; color: #757575;">THIẾU ${(minPoints - currentPoints)} ĐIỂM</strong>
                             </div>
+                            <span class="time">Uống thêm để tích điểm đổi ${giftName.toLowerCase()} bạn nhé!</span>
                         </div>
                     `;
+                    document.getElementById('pointDisplay').style.display = "none";
                 }
             }
         } catch (e) { 
