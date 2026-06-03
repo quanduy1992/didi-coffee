@@ -126,7 +126,7 @@ if (isset($_GET['name']) || isset($_GET['phone'])) {
 
         <div class="nav-menu">
             <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
-            <a href="danhsach.html" class="nav-item active"><i>📜</i> Danh sách</a>
+            <a href="danhsach.php" class="nav-item active"><i>📜</i> Danh sách</a>
             <a href="doi-qua.html?from=web" class="nav-item"><i>🎁</i> Đổi quà</a>
         </div>
     </div>
