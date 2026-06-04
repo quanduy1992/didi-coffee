@@ -88,7 +88,7 @@
 
         <div class="nav-menu">
             <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
-            <a href="danhsach.html" class="nav-item active"><i>📜</i> Danh sách</a>
+            <a href="danhsach.html" class="nav-item active" id="btnDanhSach"><i>📜</i> Danh sách</a>
             <a href="doi-qua.html?from=webs" class="nav-item"><i>🎁</i> Xem quà</a>
         </div>
     </div>
@@ -115,23 +115,37 @@
         };
 
         function loadData() {
-            // Lấy số điện thoại từ URL link web nếu có (Ví dụ: danhsach.html?phone=09xxxx)
             const urlParams = new URLSearchParams(window.location.search);
             let viewerPhone = urlParams.get('phone') || "";
             
-            // Nếu trên link không có, thử tìm trong bộ nhớ máy xem trước đó họ đã nhập SĐT chưa (tùy thuộc vào biến ông lưu ở trang index)
             if (!viewerPhone) {
                 viewerPhone = localStorage.getItem('user_phone') || localStorage.getItem('phone') || "";
             }
 
             const scriptTag = document.createElement("script");
             scriptTag.id = "api-list";
-            // Gửi kèm thông tin người xem (viewerPhone) lên Server Google Sheets
             scriptTag.src = `${CONFIG.SCRIPT_URL}?action=get_leaderboard&callback=leaderboardCB&viewer=${encodeURIComponent(viewerPhone)}&t=${new Date().getTime()}`;
             document.body.appendChild(scriptTag);
         }
 
-        window.onload = loadData;
+        // =========================================================
+        // ĐOẠN CODE MỚI BỔ SUNG: TỰ ĐỘNG CẬP NHẬT ĐUÔI LINK MENU
+        // =========================================================
+        function updateMenuLink() {
+            let sdtLuuTrongMay = localStorage.getItem('user_phone') || localStorage.getItem('phone') || "";
+            if (sdtLuuTrongMay) {
+                const btnDanhSach = document.getElementById('btnDanhSach');
+                if (btnDanhSach) {
+                    btnDanhSach.href = `danhsach.html?phone=${encodeURIComponent(sdtLuuTrongMay)}`;
+                }
+            }
+        }
+
+        // Chạy đồng thời cả 2 hàm khi trang tải xong
+        window.onload = function() {
+            loadData();
+            updateMenuLink();
+        };
     </script>
 </body>
 </html>
