@@ -6,7 +6,6 @@
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* TỐI ƯU TOÀN BỘ KHUNG CARD ĐỂ BUNG TO SÁT VIỀN MÀN HÌNH CHUẨN GU */
         body {
             margin: 0;
             padding: 0;
@@ -115,11 +114,13 @@
         };
 
         function loadData() {
+            // 1. Kiểm tra xem trên Link URL có truyền số điện thoại không trước
             const urlParams = new URLSearchParams(window.location.search);
             let viewerPhone = urlParams.get('phone') || "";
             
+            // 2. Nếu trên link không có, lấy chính xác từ khóa 'didi_customer_phone' trong máy khách ra
             if (!viewerPhone) {
-                viewerPhone = localStorage.getItem('user_phone') || localStorage.getItem('phone') || "";
+                viewerPhone = localStorage.getItem('didi_customer_phone') || "";
             }
 
             const scriptTag = document.createElement("script");
@@ -128,11 +129,9 @@
             document.body.appendChild(scriptTag);
         }
 
-        // =========================================================
-        // ĐOẠN CODE MỚI BỔ SUNG: TỰ ĐỘNG CẬP NHẬT ĐUÔI LINK MENU
-        // =========================================================
+        // TỰ ĐỘNG CHÈN ĐUÔI SĐT VÀO NÚT MENU DANH SÁCH ĐỂ TẠO LINK CHUẨN KHÔNG BỊ ẨN DANH
         function updateMenuLink() {
-            let sdtLuuTrongMay = localStorage.getItem('user_phone') || localStorage.getItem('phone') || "";
+            let sdtLuuTrongMay = localStorage.getItem('didi_customer_phone') || "";
             if (sdtLuuTrongMay) {
                 const btnDanhSach = document.getElementById('btnDanhSach');
                 if (btnDanhSach) {
@@ -141,7 +140,6 @@
             }
         }
 
-        // Chạy đồng thời cả 2 hàm khi trang tải xong
         window.onload = function() {
             loadData();
             updateMenuLink();
