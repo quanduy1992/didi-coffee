@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -8,24 +7,20 @@
     <link rel="stylesheet" href="style.css">
     <style>
         /* TỐI ƯU TOÀN BỘ KHUNG CARD ĐỂ BUNG TO SÁT VIỀN MÀN HÌNH CHUẨN GU */
-        
         body {
             margin: 0;
             padding: 0;
             width: 100%;
-            background-color: #eee; /* Giữ màu nền xám phía ngoài của ông */
+            background-color: #eee;
         }
-
-        /* ĐÃ THÊM & SỬA: Ép khung trắng mở rộng tối đa trên điện thoại */
         .card {
             width: 100% !important;
-            max-width: 480px; /* Giới hạn vừa vặn chuẩn màn hình điện thoại lớn, không bị bè quá mức */
+            max-width: 480px;
             margin: 0 auto !important;
-            padding: 10px 5px !important; /* Thu nhỏ padding trái/phải để đẩy mọi thứ sát viền hơn */
+            padding: 10px 5px !important;
             box-sizing: border-box;
             background: #fff;
         }
-
         .table-header {
             display: flex;
             background: #d32f2f;
@@ -36,8 +31,6 @@
             text-transform: uppercase;
             border-radius: 12px 12px 0 0;
         }
-
-        /* Tỷ lệ các cột tối ưu cho không gian rộng */
         .col-stt { width: 10%; text-align: center; }
         .col-name { width: 44%; text-align: left; padding-left: 8px; }
         .col-phone { width: 28%; text-align: center; }
@@ -46,7 +39,6 @@
         .leaderboard-wrapper {
             background: #fff;
             border-radius: 15px;
-            /* Đã sửa margin sát viền trái/phải */
             margin: 10px 2px; 
             border: 2px solid #d32f2f;
             overflow: hidden;
@@ -55,14 +47,11 @@
             width: calc(100% - 4px); 
             box-sizing: border-box;
         }
-
-        /* VÙNG CUỘN THỦ CÔNG - TỐI ƯU CHO ĐIỆN THOẠI */
         .scroll-container {
             max-height: 450px; 
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
-
         .row-item {
             display: flex;
             padding: 10px 0;
@@ -70,23 +59,18 @@
             font-size: 0.75em; 
             align-items: center;
         }
-
-        /* HUY HIỆU */
         .medal { font-size: 0.85em; margin-right: 2px; }
-        
         .top-1 { background: #fff9e6 !important; font-weight: bold; color: #d32f2f; border-left: 2px solid #ffd700; }
         .top-2 { background: #f8f9fa !important; border-left: 2px solid #c0c0c0; }
         .top-3 { background: #fffdf9 !important; border-left: 2px solid #cd7f32; }
-
-        /* Ẩn scrollbar */
         .scroll-container::-webkit-scrollbar { width: 0; display: none; }
-</style>
+    </style>
 </head>
 <body>
     <div class="card">
         <h3 style="color: #d32f2f; margin: 5px 0; font-size: 1em;">🏆 BẢNG VÀNG TÍCH ĐIỂM</h3>
 
-        <div class="leaderboard-wrapper {">
+        <div class="leaderboard-wrapper">
             <div class="table-header">
                 <div class="col-stt">STT</div>
                 <div class="col-name">TÊN KHÁCH</div>
@@ -111,7 +95,6 @@
 
     <script src="config.js"></script>
     <script>
-        // ĐƯA HÀM CALLBACK RA NGOÀI ĐỂ TRÌNH DUYỆT NHẬN DIỆN ĐÚNG KHI CÓ DATA TRẢ VỀ
         window.leaderboardCB = function(res) {
             if (res.status === "SUCCESS") {
                 let html = "";
@@ -132,9 +115,19 @@
         };
 
         function loadData() {
+            // Lấy số điện thoại từ URL link web nếu có (Ví dụ: danhsach.html?phone=09xxxx)
+            const urlParams = new URLSearchParams(window.location.search);
+            let viewerPhone = urlParams.get('phone') || "";
+            
+            // Nếu trên link không có, thử tìm trong bộ nhớ máy xem trước đó họ đã nhập SĐT chưa (tùy thuộc vào biến ông lưu ở trang index)
+            if (!viewerPhone) {
+                viewerPhone = localStorage.getItem('user_phone') || localStorage.getItem('phone') || "";
+            }
+
             const scriptTag = document.createElement("script");
             scriptTag.id = "api-list";
-            scriptTag.src = `${CONFIG.SCRIPT_URL}?action=get_leaderboard&callback=leaderboardCB&t=${new Date().getTime()}`;
+            // Gửi kèm thông tin người xem (viewerPhone) lên Server Google Sheets
+            scriptTag.src = `${CONFIG.SCRIPT_URL}?action=get_leaderboard&callback=leaderboardCB&viewer=${encodeURIComponent(viewerPhone)}&t=${new Date().getTime()}`;
             document.body.appendChild(scriptTag);
         }
 
