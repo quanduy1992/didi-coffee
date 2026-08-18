@@ -7,94 +7,59 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* PHẦN CẬP NHẬT GIAO DIỆN: CHỦ ĐỀ CỜ ĐỎ SAO VÀNG - HÀO HÙNG DÂN TỘC */
-        
-        /* Thay đổi background thành Cờ Đỏ Sao Vàng */
+        /* PHẦN CẬP NHẬT GIAO DIỆN: ĐỎ THẮM QUỐC KỲ & VÀNG HUY HOÀNG */
         body {
-            background: 
-                /* Hiệu ứng lấp lánh nhẹ cho sao vàng */
-                radial-gradient(circle, rgba(255, 255, 0, 0.1) 1px, transparent 1px) 50px 50px / 100px 100px,
-                radial-gradient(circle, rgba(255, 255, 0, 0.05) 1px, transparent 1px) 100px 100px / 200px 200px,
-                /* Ngôi sao lớn mờ ở trung tâm */
-                radial-gradient(circle, #ffcc00, #da251d 50%) no-repeat center center / 300% 300%,
-                /* Nền đỏ chính */
-                #da251d;
+            background-color: #b30000;
+            background-image: linear-gradient(135deg, #e60000 0%, #800000 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
             margin: 0;
+            font-family: Arial, sans-serif;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.9); /* Thẻ bo góc trong suốt nhẹ */
-            border: 2px solid #ffcc00;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
-            backdrop-filter: blur(5px);
+            background: #fffdf9; /* Trắng ngà nhẹ nhàng, không bị chói mắt */
+            border-top: 6px solid #ffcc00;
+            border-bottom: 2px solid #ffcc00;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
             position: relative;
-            z-index: 1;
         }
 
-        /* Thêm ngôi sao to chìm ở header */
         #shopTitle {
-            color: #da251d;
-            font-weight: 900;
-            text-shadow: 2px 2px 0px #ffcc00;
-            position: relative;
-        }
-        #shopTitle::before {
-            content: '★';
-            position: absolute;
-            font-size: 1.5em;
-            color: rgba(255, 204, 0, 0.5);
-            top: -10px;
-            left: -20px;
-            z-index: -1;
-        }
-
-        /* Nút bấm: Đỏ đậm viền vàng */
-        #btnSubmit {
-            background: linear-gradient(to bottom, #da251d, #a71d17);
-            color: #ffcc00 !important;
-            border: 2px solid #ffcc00;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-        }
-        #btnSubmit:hover {
-            background: linear-gradient(to bottom, #e63a32, #c2211a);
-            transform: translateY(-2px);
+            color: #b30000;
+            font-weight: 800;
+            letter-spacing: 0.5px;
         }
 
         @keyframes twinkling {
             0% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.05); }
+            50% { opacity: 0.8; transform: scale(1.02); }
             100% { opacity: 0.3; transform: scale(1); }
         }
 
+        /* Nút bấm đỏ cờ chữ vàng chuẩn tinh thần 2/9 */
+        #btnSubmit {
+            background: linear-gradient(to bottom, #d90429, #a30018) !important;
+            color: #ffcc00 !important;
+            font-weight: bold;
+            border: 1px solid #ffcc00;
+            animation: pulse-button 3s infinite;
+        }
+
         @keyframes pulse-button {
-            0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.7); }
-            70% { box-shadow: 0 0 0 15px rgba(255, 204, 0, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0.5); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 204, 0, 0); }
             100% { box-shadow: 0 0 0 0 rgba(255, 204, 0, 0); }
         }
 
-        /* Cập nhật menu điều hướng cho hợp tông */
-        .nav-menu {
-             border-top: 2px solid #da251d;
-        }
         .nav-item.active {
-            color: #da251d !important;
-            background-color: rgba(218, 37, 29, 0.1);
-            border-radius: 10px;
+            color: #b30000 !important;
+            border-bottom: 2px solid #b30000;
             font-weight: bold;
         }
-
-        /* Cập nhật màu chữ chú ý */
-        span[style*="#007b16"] { color: #da251d !important; font-weight: bold; } /* 15 điểm */
-        span[style*="#990900"] { color: #5d4037 !important; font-weight: bold; } /* Quét mã */
-
     </style>
 </head>
 <body>
