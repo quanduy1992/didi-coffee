@@ -316,10 +316,17 @@
                 `;  
                 document.getElementById('inputCode').value = ""; 
 
+                // Kiểm tra nếu tổng điểm tích lũy (Cột K) >= 300 thì báo nâng cấp VIP
+                if (resData.all_time && parseFloat(resData.all_time) >= 300) {
+                    setTimeout(function() {
+                        alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 140 điểm để đổi 10 ly bất kỳ.");
+                    }, 400);
+                }
+
                 if (resData.isTop1 === true) {
                     setTimeout(function() {
                         alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm.");
-                    }, 600);
+                    }, 800);
                 }
             } 
             else if (resData.status === "USED") {
