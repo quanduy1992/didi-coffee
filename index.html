@@ -3,12 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Di Di Coffee - Tích Điểm</title>
+    <title>Di Di Coffee - Tích Điểm Quốc Khánh 2/9</title>
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
-/* 1. Nhịp tim nút bấm */
+        /* PHẦN CẬP NHẬT GIAO DIỆN: CHỦ ĐỀ 2/9 (ĐỎ - VÀNG) */
+        body {
+            background: linear-gradient(135deg, #da251d 0%, #fff 100%);
+            min-height: 100vh;
+        }
+
+        .card {
+            border-top: 5px solid #ffcc00;
+            box-shadow: 0 10px 25px rgba(218, 37, 29, 0.2);
+        }
+
+        #shopTitle {
+            color: #da251d;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
         @keyframes twinkling {
             0% { opacity: 0.3; transform: scale(1); }
             50% { opacity: 0.8; transform: scale(1.02); }
@@ -16,6 +30,9 @@
         }
 
         #btnSubmit {
+            background-color: #da251d !important;
+            color: #ffcc00 !important;
+            font-weight: bold;
             animation: pulse-button 3s infinite;
         }
 
@@ -24,13 +41,16 @@
             70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
             100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
         }
-/* 1. Nhịp tim nút bấm */
-       
+
+        .nav-item.active {
+            color: #da251d !important;
+            border-bottom: 2px solid #da251d;
+        }
     </style>
 </head>
 <body>
     <div class="card">
-        <h2 id="shopTitle">☕ Nghĩ lễ: 30/04 - 02/05</h2>
+        <h2 id="shopTitle">⭐ Chào mừng Quốc Khánh: 02/09 ⭐</h2>
         <div id="form-input">
             <label>Tên khách hàng:</label>
             <input type="text" id="cusName" placeholder="Nhập tên của bạn">
@@ -58,7 +78,7 @@
 <script>
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-            document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
+            document.getElementById('shopTitle').innerText = "⭐ " + CONFIG.SHOP_NAME + " - 02/09";
         }
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
