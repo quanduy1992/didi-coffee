@@ -1,638 +1,300 @@
 <!DOCTYPE html>
-
 <html lang="vi">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Di Di Coffee - Tích Điểm Quốc Khánh 2/9</title>
-
     <link rel="stylesheet" href="style.css">
-
     
-
     <style>
-
         /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
 
-
-
         /* 1. Tạo lớp nền lấp lánh (phía trên body) */
-
         body::after {
-
             content: "";
-
             position: fixed;
-
             top: 0;
-
             left: 0;
-
             width: 100%;
-
             height: 100%;
-
             pointer-events: none;
-
             z-index: -1;
-
             
-
             background-image: 
-
                 radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
-
                 radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
-
                 radial-gradient(1px 1px at 125px 20px, white, rgba(255, 255, 255, 0)),
-
                 radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
-
                 radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
-
             background-size: 200px 200px;
-
             
-
             animation: twinkling 4s infinite alternate ease-in-out;
-
         }
-
-
 
         @keyframes twinkling {
-
             0% { opacity: 0.3; transform: scale(1); }
-
             50% { opacity: 0.8; transform: scale(1.02); }
-
             100% { opacity: 0.3; transform: scale(1); }
-
         }
-
-
 
         #btnSubmit {
-
             animation: pulse-button 1s infinite;
-
         }
-
-
 
         @keyframes pulse-button {
-
             0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); }
-
             70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
-
             100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
-
         }
-
-
 
         body {
-
             background-color: #da251d !important; 
-
             background-image: radial-gradient(circle, #ff0000 0%, #750000 100%) !important;
-
             position: relative;
-
             overflow-x: hidden;
-
             margin: 0;
-
             padding: 0;
-
         }
-
-
 
         body::before {
-
             content: "★";
-
             position: fixed;
-
             top: 50%;
-
             left: 50%;
-
             transform: translate(-50%, -50%);
-
             font-size: 80vw;
-
             color: rgba(255, 255, 0, 0.15);
-
             z-index: -1;
-
             font-family: Arial, sans-serif;
-
         }
-
-
 
         .card {
-
             border: 1px solid #ffde00 !important;
-
             box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
-
             background-color: rgba(255, 255, 255, 0.5) !important; 
-
             backdrop-filter: blur(5px);
-
             z-index: 10;
-
         }
-
-
 
         #shopTitle {
-
             color: #da251d !important;
-
         }
-
-
 
         #btnSubmit {
-
             background: linear-gradient(135deg, #da251d 0%, #ffde00 100%) !important;
-
             color: #fff !important;
-
             font-weight: bold;
-
             border: none;
-
             box-shadow: 0 4px 15px rgba(218, 37, 29, 0.4);
-
         }
-
-
 
         /* --- PHẦN CẬP NHẬT: BĂNG RÔN VÀ NGÔI SAO --- */
-
         .banner-corner {
-
             position: fixed;
-
             top: 0;
-
             width: 250px;
-
             height: 60px;
-
             z-index: 100;
-
             display: flex;
-
             flex-direction: column;
-
             align-items: center;
-
             justify-content: center;
-
             color: #ffde00;
-
             text-align: center;
-
             font-family: 'Arial Black', sans-serif;
-
             text-shadow: 1px 1px 3px rgba(0,0,0,0.5);
-
             box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-
             border-radius: 40px; 
-
         }
-
-
-
-        /* Tạo ngôi sao vàng dưới băng rôn */
-
-        .banner-corner::after {
-
-            content: "★";
-
-            position: absolute;
-
-            bottom: -35px; /* Vị trí dưới băng rôn */
-
-            font-size: 30px;
-
-            color: #ffde00;
-
-            text-shadow: 0 0 10px rgba(255, 222, 0, 0.8);
-
-            filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
-
-        }
-
-
 
         .banner-left {
-
             left: -60px;
-
             top: 25px;
-
             background: linear-gradient(135deg, #a50000 0%, #da251d 100%);
-
             transform: rotate(-30deg);
-
             border: 2px solid #ffde00;
-
         }
-
-
-
-        /* Chỉnh ngôi sao bên trái lệch một chút cho cân đối theo độ xoay */
-
-        .banner-left::after {
-
-            right: 108px;
-
-        }
-
-
 
         .banner-right {
-
             right: -60px;
-
             top: 25px;
-
             background: linear-gradient(-135deg, #a50000 0%, #da251d 100%);
-
             transform: rotate(30deg);
-
             border: 2px solid #ffde00;
-
         }
-
-
-
-        /* Chỉnh ngôi sao bên phải lệch một chút cho cân đối theo độ xoay */
-
-        .banner-right::after {
-
-            left: 108px;
-
-        }
-
-
 
         .banner-date {
-
             font-size: 18px;
-
             font-weight: 900;
-
             margin: 0;
-
             line-height: 1;
-
         }
-
-
 
         .banner-text {
-
             font-size: 9px;
-
             text-transform: uppercase;
-
             letter-spacing: 1px;
-
             margin: 2px 0 0 0;
-
             color: #fff;
-
             font-weight: bold;
-
         }
 
-
-
         @media (max-width: 400px) {
-
             .banner-corner {
-
                 width: 200px;
-
                 height: 50px;
-
             }
-
             .banner-date { font-size: 14px; }
-
             .banner-text { font-size: 8px; }
-
             .banner-left { left: -50px; }
-
             .banner-right { right: -50px; }
-
             .banner-corner::after { font-size: 24px; bottom: -30px; }
-
         }
 
         /* --- PHẦN CẬP NHẬT: NGÔI SAO ĐỨNG THẲNG --- */
-
         .banner-corner::after {
-
             content: "★";
-
             position: absolute;
-
             bottom: -35px;
-
             font-size: 30px;
-
             color: #ffde00;
-
             text-shadow: 0 0 10px rgba(255, 222, 0, 0.8);
-
             filter: drop-shadow(2px 2px 2px rgba(0,0,0,0.5));
-
-            /* Mặc định cho ngôi sao đứng thẳng */
-
             display: block; 
-
         }
-
-
 
         .banner-left::after {
-
             right: 108px;
-
-            /* Băng rôn xoay -30deg thì ta xoay ngược lại 30deg để ngôi sao đứng thẳng */
-
             transform: rotate(30deg); 
-
         }
-
-
 
         .banner-right::after {
-
             left: 108px;
-
-            /* Băng rôn xoay 30deg thì ta xoay ngược lại -30deg để ngôi sao đứng thẳng */
-
             transform: rotate(-30deg);
-
         }
-
     </style>
-
-
-
 </head>
-
 <body>
-
     <div class="banner-corner banner-left">
-
         <p class="banner-date">02/09/1945</p>
-
         <p class="banner-text"></p>
-
     </div>
 
-
-
     <div class="banner-corner banner-right">
-
         <p class="banner-date">02/09/2026</p>
-
         <p class="banner-text"></p>
-
     </div>
 
     <div class="card">
-
         <h2 id="shopTitle">⭐ Chào mừng Quốc Khánh: 02/09 ⭐</h2>
-
         <div id="form-input">
-
             <label>Tên khách hàng:</label>
-
             <input type="text" id="cusName" placeholder="Nhập tên của bạn">
-
             <label>Số điện thoại:</label>
-
             <input type="tel" id="cusPhone" placeholder="Nhập số điện thoại">
-
             <label>Mã tích điểm:</label>
-
             <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
-
             <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button>
-
             <br><br><span style="color:#5d4037;font-weight:bold;">Zalo Đặt Trước: 0968.97.37.87</span>
-
         </div>
-
         <div id="pointBox" style="display:none;">
-
             <span id="currentPoints">0</span>
-
         </div> 
-
         <div id="result"></div>        
-
+        
         <div class="nav-menu">
-
             <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
-
             <a href="danhsach.html" class="nav-item"><i>📜</i> Danh sách</a>
-
             <a href="doi-qua.html?from=webs" class="nav-item"><i>🎁</i> Xem quà</a>
-
         </div>
-
         <br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly hay dùng</span>
-
         <br><span style="color:#990900;font-weight:bold;">Quét mã đổi điểm tại quầy</span>
-
     </div>
 
-
-
 <script src="config.js"></script> 
-
 <script>
-
     window.onload = function() {
-
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-
             document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
-
         }
-
         const urlParams = new URLSearchParams(window.location.search);
-
         const codeFromURL = urlParams.get('code');
-
         const savedName = localStorage.getItem('didi_customer_name');
-
         const savedPhone = localStorage.getItem('didi_customer_phone');
-
         
-
         if (savedName) document.getElementById('cusName').value = savedName;
-
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
-
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
-
         
-
         if (codeFromURL && savedName && savedPhone) {
-
             setTimeout(handleVerify, 500);
-
         }
-
     };
 
-
-
     function handleVerify() {
-
         const name = document.getElementById('cusName').value.trim();
-
         const phone = document.getElementById('cusPhone').value.trim();
-
         const code = document.getElementById('inputCode').value.trim().toUpperCase();
-
         const resultDiv = document.getElementById('result');
-
         const btnSubmit = document.getElementById('btnSubmit');
 
-
-
         if (!name || !phone || !code) {
-
             resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đầy đủ thông tin!</div>";
-
             return;
-
         }
-
-
 
         const shopPhone = "0968973787";
-
         const cleanPhone = phone.replace(/\D/g, ""); 
-
         if (cleanPhone === shopPhone) {
-
             resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập lại SĐT của bạn, Đây là số cửa hàng không thể tích điểm!</div>";
-
             return;
-
         }
-
-
 
         btnSubmit.disabled = true; 
-
         btnSubmit.innerHTML = "⌛ Đang tích điểm..."; 
-
         resultDiv.innerHTML = ""; 
-
         
-
         localStorage.setItem('didi_customer_name', name);
-
         localStorage.setItem('didi_customer_phone', phone);
-
         
-
         // --- LOGIC CẬP NHẬT ĐIỂM THEO MÃ ---
-
         let pointsToAdd = (CONFIG.POINTS_PER_CODE) ? parseFloat(CONFIG.POINTS_PER_CODE) : 1;
 
-
-
         if (code.startsWith("TA")) {
-
             pointsToAdd = pointsToAdd - 0;
-
         } else if (code.startsWith("SC")) {
-
             pointsToAdd = pointsToAdd + 0.25;
-
         }
-
         // Các trường hợp còn lại giữ nguyên pointsToAdd từ config
-
         // ------------------------------------
 
-
-
         const safetyTimeout = setTimeout(function() {
-
             if (btnSubmit.disabled) {
-
                 btnSubmit.disabled = false;
-
                 btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-
                 resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, vui lòng thử lại!</div>";
-
             }
-
         }, 20000);
 
-
-
         window.googleCallback = function(resData) {
-
             clearTimeout(safetyTimeout);
-
             btnSubmit.disabled = false;
-
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
-
-
             if (resData.status === "SUCCESS") {
-
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
                 const now = new Date();
-
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-
                 resultDiv.innerHTML = `
-
                     <div class="success-box">
-
                         <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
-
                         <span class="time">Thời gian: ${timeStr}</span>
-
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
-
                     </div>
-
                 `;  
-
                 document.getElementById('inputCode').value = ""; 
 
-                // Kiểm tra trạng thái VIP trả về từ cột VIP (resData.vip) đúng như code cũ của ông
+                // Kiểm tra trạng thái VIP trả về từ cột VIP (resData.vip) giữ nguyên câu chữ gốc
                 if (resData.vip && resData.vip.toUpperCase() === "VIP") {
                     setTimeout(function() {
                         alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 14 điểm để đổi 1 ly bất kỳ.");
@@ -644,79 +306,40 @@
                         alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm.");
                     }, 800);
                 }
-
             } 
-
             else if (resData.status === "USED") {
-
                 resultDiv.innerHTML = `
-
                     <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
-
                         <div>⚠️ Mã này đã được sử dụng.</div>
-
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
-
                     </div>
-
                 `;
-
             } 
-
             else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
-
                 resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
-
             }
-
             else {
-
                 resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
-
             }
-
             
-
             const oldScript = document.getElementById('api-call');
-
             if (oldScript) oldScript.remove();
-
         };
-
-
 
         const scriptTag = document.createElement("script");
-
         scriptTag.id = "api-call";
-
-        // Truyền pointsToAdd đã được tính toán vào tham số add_points
-
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;        
-
         
-
         scriptTag.onerror = function() {
-
             clearTimeout(safetyTimeout);
-
             resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
-
             btnSubmit.disabled = false;
-
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-
             const oldScript = document.getElementById('api-call');
-
             if (oldScript) oldScript.remove();
-
         };
-
         document.body.appendChild(scriptTag);
-
     }
-
 </script>
-
 </body>
-
 </html>
