@@ -6,22 +6,26 @@
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-       /* --- HIỆU ỨNG NỀN TÔN VINH DÀNH CHO KHÁCH HÀNG ĐẠT CHUẨN --- */
+      /* --- HIỆU ỨNG TÔN VINH VIP TOÀN DÒNG + VIỀN TÍM CHẠY QUANH --- */
     .row-vip {
         background: linear-gradient(135deg, #fffdf0 0%, #fff3cd 50%, #fff8e1 100%) !important;
         position: relative;
-        border-left: 3px solid #ffc107 !important;
-        box-shadow: inset 0 0 10px rgba(255, 193, 7, 0.15);
+        /* Viền tím nổi bật xung quanh toàn bộ dòng */
+        border: 2px solid #8e44ad !important;
+        border-radius: 8px; /* Bo tròn góc khung của dòng nhìn cho mềm mại, sang */
+        margin: 4px 0; /* Tạo khoảng cách nhẹ giữa các dòng VIP để thấy rõ khung viền */
+        box-shadow: 0 4px 10px rgba(142, 68, 173, 0.25), inset 0 0 10px rgba(255, 193, 7, 0.15);
     }
     
-    /* Hiệu ứng quét ánh kim nhẹ cho dòng VIP */
+    /* Hiệu ứng quét ánh kim vàng lấp lánh bên trong dòng */
     .row-vip::after {
         content: "";
         position: absolute;
         top: 0; right: 0; bottom: 0; left: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,215,0,0.2), transparent);
+        background: linear-gradient(90deg, transparent, rgba(255,215,0,0.25), transparent);
         pointer-events: none;
         animation: vip-shimmer 3s infinite;
+        border-radius: 8px;
     }
 
     @keyframes vip-shimmer {
