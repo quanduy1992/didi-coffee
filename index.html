@@ -173,6 +173,7 @@
             transform: rotate(-30deg);
         }
     </style>
+
 </head>
 <body>
     <div class="banner-corner banner-left">
@@ -184,7 +185,6 @@
         <p class="banner-date">02/09/2026</p>
         <p class="banner-text"></p>
     </div>
-
     <div class="card">
         <h2 id="shopTitle">⭐ Chào mừng Quốc Khánh: 02/09 ⭐</h2>
         <div id="form-input">
@@ -201,7 +201,6 @@
             <span id="currentPoints">0</span>
         </div> 
         <div id="result"></div>        
-        
         <div class="nav-menu">
             <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
             <a href="danhsach.html" class="nav-item"><i>📜</i> Danh sách</a>
@@ -265,7 +264,6 @@
         } else if (code.startsWith("SC")) {
             pointsToAdd = pointsToAdd + 0.25;
         }
-        // Các trường hợp còn lại giữ nguyên pointsToAdd từ config
         // ------------------------------------
 
         const safetyTimeout = setTimeout(function() {
@@ -294,7 +292,7 @@
                 `;  
                 document.getElementById('inputCode').value = ""; 
 
-                // Kiểm tra trạng thái VIP trả về từ cột VIP (resData.vip) giữ nguyên câu chữ gốc
+                // Kiểm tra kết quả VIP trả về từ cột VIP (resData.vip) thay vì check điểm
                 if (resData.vip && resData.vip.toUpperCase() === "VIP") {
                     setTimeout(function() {
                         alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 14 điểm để đổi 1 ly bất kỳ.");
