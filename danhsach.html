@@ -6,7 +6,7 @@
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-        /* --- HIỆU ỨNG TÔN VINH KHÁCH HÀNG VIP --- */
+       /* --- HIỆU ỨNG NỀN TÔN VINH DÀNH CHO KHÁCH HÀNG ĐẠT CHUẨN --- */
     .row-vip {
         background: linear-gradient(135deg, #fffdf0 0%, #fff3cd 50%, #fff8e1 100%) !important;
         position: relative;
@@ -14,7 +14,7 @@
         box-shadow: inset 0 0 10px rgba(255, 193, 7, 0.15);
     }
     
-    /* Hiệu ứng gợn sóng/chạy ánh kim nhẹ cho dòng VIP */
+    /* Hiệu ứng quét ánh kim nhẹ cho dòng VIP */
     .row-vip::after {
         content: "";
         position: absolute;
@@ -27,26 +27,6 @@
     @keyframes vip-shimmer {
         0% { transform: translateX(-100%); }
         100% { transform: translateX(100%); }
-    }
-
-    .vip-badge {
-        background: linear-gradient(135deg, #f39c12 0%, #f1c40f 100%);
-        color: #fff;
-        font-size: 0.65em;
-        font-weight: bold;
-        padding: 2px 6px;
-        border-radius: 10px;
-        margin-left: 6px;
-        text-shadow: 0 1px 1px rgba(0,0,0,0.2);
-        box-shadow: 0 2px 5px rgba(243, 156, 18, 0.4);
-        display: inline-block;
-        vertical-align: middle;
-        animation: vip-pulse 1.5s infinite alternate;
-    }
-
-    @keyframes vip-pulse {
-        0% { transform: scale(1); filter: brightness(1); }
-        100% { transform: scale(1.05); filter: brightness(1.15); }
     }
 
         /* 1. Tạo lớp nền lấp lánh (phía trên body) */
@@ -328,19 +308,17 @@
             if (res.status === "SUCCESS") {
                 let html = "";
                 res.data.forEach((item, index) => {
-                    // Kiểm tra dựa hoàn toàn vào cột VIP được truyền từ bảng Google Sheets lên
+                    // Kiểm tra cột VIP từ Google Sheets trả về
                     let isVip = (item.vip === "VIP" || item.isVip === "VIP");
                     
-                    // Ưu tiên hiển thị màu Top 1, 2, 3, nếu không thì áp dụng nền VIP, còn lại bình thường
+                    // Ưu tiên thứ hạng Top 1, 2, 3, nếu không thì áp dụng nền VIP, còn lại bình thường
                     let topClass = (index === 0) ? "top-1" : (index === 1 ? "top-2" : (index === 2 ? "top-3" : (isVip ? "row-vip" : "")));
                     let medal = (index === 0) ? "🥇 " : (index === 1 ? "🥈 " : (index === 2 ? "🥉 " : ""));
                     
-                    // Gắn huy hiệu vương miện VIP nếu cột VIP có chữ VIP
-                    let vipBadgeHtml = (isVip) ? `<span class="vip-badge">👑 VIP</span>` : "";
-
+                    // Đã bỏ chữ và icon vương miện, tên khách hiển thị sạch sẽ bình thường
                     html += `<div class="row-item ${topClass}">
                                 <div class="col-stt">${index + 1}</div>
-                                <div class="col-name"><span class="medal">${medal}</span>${item.name} ${vipBadgeHtml}</div>
+                                <div class="col-name"><span class="medal">${medal}</span>${item.name}</div>
                                 <div class="col-phone">${item.phone}</div>
                                 <div class="col-pts">${item.points}đ</div>
                             </div>`;
