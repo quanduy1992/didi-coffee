@@ -287,7 +287,6 @@
         } else if (code.startsWith("SC")) {
             pointsToAdd = pointsToAdd + 0.25;
         }
-        // Các trường hợp còn lại giữ nguyên pointsToAdd từ config
         // ------------------------------------
 
         const safetyTimeout = setTimeout(function() {
@@ -307,25 +306,26 @@
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+                
+                // Giao diện thông báo thành công (Đã bỏ hiển thị số điểm hiện tại theo yêu cầu)
                 resultDiv.innerHTML = `
                     <div class="success-box">
                         <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
                         <span class="time">Thời gian: ${timeStr}</span>
-                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;  
                 document.getElementById('inputCode').value = ""; 
 
-                // Kiểm tra nếu tổng điểm tích lũy (Cột K) >= 300 thì báo nâng cấp VIP
-                if (resData.all_time && parseFloat(resData.all_time) >= 250) {
+                // Kiểm tra trạng thái VIP trả về từ cột M (resData.vip)
+                if (resData.vip && resData.vip.toUpperCase() === "VIP") {
                     setTimeout(function() {
-                        alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 14 điểm để đổi 1 ly bất kỳ.");
+                        alert("🎉 Chúc mừng bạn đã đạt hạng thành viên VIP! Ưu đãi đặc quyền: Được giảm ngay 1 điểm khi đổi quà/quay vòng quay.");
                     }, 400);
                 }
 
                 if (resData.isTop1 === true) {
                     setTimeout(function() {
-                        alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm.");
+                        alert("Chúc mừng! Quý khách đang giữ vị trí Top 1 tích lũy.");
                     }, 800);
                 }
             } 
@@ -333,7 +333,6 @@
                 resultDiv.innerHTML = `
                     <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
                         <div>⚠️ Mã này đã được sử dụng.</div>
-                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;
             } 
@@ -350,7 +349,6 @@
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        // Truyền pointsToAdd đã được tính toán vào tham số add_points
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;        
         
         scriptTag.onerror = function() {
