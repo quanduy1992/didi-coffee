@@ -315,15 +315,17 @@
                     // Kiểm tra cột VIP từ Google Sheets trả về
                     let isVip = (item.vip === "VIP" || item.isVip === "VIP");
                     
-                    // Xác định huy chương cho Top 1, 2, 3
+                    // Xác định thứ hạng và class
                     let topClass = (index === 0) ? "top-1" : (index === 1 ? "top-2" : (index === 2 ? "top-3" : ""));
                     let medal = (index === 0) ? "🥇 " : (index === 1 ? "🥈 " : (index === 2 ? "🥉 " : ""));
                     
-                    // KẾT HỢP: Nếu là khách VIP (kể cả nằm trong Top 1, 2, 3 hay ở dưới), ta cộng thêm class "row-vip" vào
                     let finalClass = topClass + (isVip ? " row-vip" : "");
 
+                    // NẾU LÀ VIP: Thay số thứ tự thành vương miện 👑, ngược lại hiện số thứ tự (index + 1)
+                    let sttDisplay = isVip ? "👑" : (index + 1);
+
                     html += `<div class="row-item ${finalClass}">
-                                <div class="col-stt">${index + 1}</div>
+                                <div class="col-stt" ${isVip ? 'style="font-size: 1.1em;"' : ""}>${sttDisplay}</div>
                                 <div class="col-name"><span class="medal">${medal}</span>${item.name}</div>
                                 <div class="col-phone">${item.phone}</div>
                                 <div class="col-pts">${item.points}đ</div>
