@@ -6,31 +6,43 @@
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-      /* --- HIỆU ỨNG TÔN VINH VIP TOÀN DÒNG + VIỀN TÍM CHẠY QUANH --- */
+      /* --- HIỆU ỨNG VIỀN VÀ NỀN 7 SẮC CẦU VỒNG CHO VIP --- */
     .row-vip {
         background: linear-gradient(135deg, #fffdf0 0%, #fff3cd 50%, #fff8e1 100%) !important;
         position: relative;
-        /* Viền tím nổi bật xung quanh toàn bộ dòng */
-        border: 2px solid #8e44ad !important;
-        border-radius: 8px; /* Bo tròn góc khung của dòng nhìn cho mềm mại, sang */
-        margin: 4px 0; /* Tạo khoảng cách nhẹ giữa các dòng VIP để thấy rõ khung viền */
-        box-shadow: 0 4px 10px rgba(142, 68, 173, 0.25), inset 0 0 10px rgba(255, 193, 7, 0.15);
+        /* Viền cầu vồng chuyển động */
+        border: 2.5px solid transparent !important;
+        border-image: linear-gradient(to right, red, orange, yellow, green, blue, indigo, violet) 1;
+        border-radius: 8px; 
+        margin: 4px 0; 
+        box-shadow: 0 4px 15px rgba(255, 105, 180, 0.3), inset 0 0 10px rgba(255, 193, 7, 0.2);
+        animation: rainbow-border 6s infinite linear;
     }
-    
-    /* Hiệu ứng quét ánh kim vàng lấp lánh bên trong dòng */
+
+    /* Hiệu ứng chạy màu viền (nếu trình duyệt hỗ trợ border-image animation) hoặc ánh kim cầu vồng quét qua */
     .row-vip::after {
         content: "";
         position: absolute;
         top: 0; right: 0; bottom: 0; left: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,215,0,0.25), transparent);
+        background: linear-gradient(90deg, 
+            rgba(255,0,0,0.1), 
+            rgba(255,165,0,0.1), 
+            rgba(255,255,0,0.1), 
+            rgba(0,128,0,0.1), 
+            rgba(0,0,255,0.1), 
+            rgba(75,0,130,0.1), 
+            rgba(238,130,238,0.1)
+        );
+        background-size: 400% 400%;
         pointer-events: none;
-        animation: vip-shimmer 3s infinite;
+        animation: rainbow-bg 8s infinite ease-in-out;
         border-radius: 8px;
     }
 
-    @keyframes vip-shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
+    @keyframes rainbow-bg {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
     }
 
         /* 1. Tạo lớp nền lấp lánh (phía trên body) */
