@@ -315,12 +315,14 @@
                     // Kiểm tra cột VIP từ Google Sheets trả về
                     let isVip = (item.vip === "VIP" || item.isVip === "VIP");
                     
-                    // Ưu tiên thứ hạng Top 1, 2, 3, nếu không thì áp dụng nền VIP, còn lại bình thường
-                    let topClass = (index === 0) ? "top-1" : (index === 1 ? "top-2" : (index === 2 ? "top-3" : (isVip ? "row-vip" : "")));
+                    // Xác định huy chương cho Top 1, 2, 3
+                    let topClass = (index === 0) ? "top-1" : (index === 1 ? "top-2" : (index === 2 ? "top-3" : ""));
                     let medal = (index === 0) ? "🥇 " : (index === 1 ? "🥈 " : (index === 2 ? "🥉 " : ""));
                     
-                    // Đã bỏ chữ và icon vương miện, tên khách hiển thị sạch sẽ bình thường
-                    html += `<div class="row-item ${topClass}">
+                    // KẾT HỢP: Nếu là khách VIP (kể cả nằm trong Top 1, 2, 3 hay ở dưới), ta cộng thêm class "row-vip" vào
+                    let finalClass = topClass + (isVip ? " row-vip" : "");
+
+                    html += `<div class="row-item ${finalClass}">
                                 <div class="col-stt">${index + 1}</div>
                                 <div class="col-name"><span class="medal">${medal}</span>${item.name}</div>
                                 <div class="col-phone">${item.phone}</div>
