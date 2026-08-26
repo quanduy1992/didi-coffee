@@ -6,7 +6,7 @@
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-      /* --- HIỆU ỨNG TÔN VINH VIP TOÀN DÒNG + VIỀN TÍM --- */
+     /* --- HIỆU ỨNG TÔN VINH VIP TOÀN DÒNG + VIỀN TÍM --- */
     .row-vip {
         background: linear-gradient(135deg, #fffdf0 0%, #fff3cd 50%, #fff8e1 100%) !important;
         position: relative;
@@ -282,6 +282,34 @@
         .top-1 { background: #fff9e6 !important; font-weight: bold; color: #d32f2f; border-left: 2px solid #ffd700; }
         .top-2 { background: #f8f9fa !important; border-left: 2px solid #c0c0c0; }
         .top-3 { background: #fffdf9 !important; border-left: 2px solid #cd7f32; }
+
+        /* --- ĐÃ ĐƯA .row-vip XUỐNG DƯỚI CÁC CLASS TOP ĐỂ ƯU TIÊN NỀN VÀNG & ÁNH KIM TUYỆT ĐỐI --- */
+        .row-vip {
+            background: linear-gradient(135deg, #fffdf0 0%, #fff3cd 50%, #fff8e1 100%) !important;
+            position: relative;
+            border: 0.2px solid #8e44ad !important;
+            border-radius: 42px; 
+            margin: 4px 0; 
+            box-shadow: 0 4px 10px rgba(142, 68, 173, 0.25), inset 0 0 10px rgba(255, 193, 7, 0.15);
+            overflow: hidden;
+        }
+        
+        .row-vip::after {
+            content: "";
+            position: absolute;
+            top: 0; right: 0; bottom: 0; left: 0;
+            background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255, 215, 0, 0.2), 
+                rgba(255, 255, 255, 0.6), 
+                rgba(255, 215, 0, 0.55), 
+                transparent
+            );
+            pointer-events: none;
+            animation: vip-shimmer 2.5s infinite;
+            border-radius: 42px;
+        }
+
         .scroll-container::-webkit-scrollbar { width: 0; display: none; }
     </style>
 </head>
