@@ -6,26 +6,33 @@
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-      /* --- HIỆU ỨNG TÔN VINH VIP TOÀN DÒNG + VIỀN TÍM CHẠY QUANH --- */
+      /* --- HIỆU ỨNG TÔN VINH VIP TOÀN DÒNG + VIỀN TÍM --- */
     .row-vip {
         background: linear-gradient(135deg, #fffdf0 0%, #fff3cd 50%, #fff8e1 100%) !important;
         position: relative;
-        /* Viền tím nổi bật xung quanh toàn bộ dòng */
         border: 0.2px solid #8e44ad !important;
-        border-radius: 42px; /* Bo tròn góc khung của dòng nhìn cho mềm mại, sang */
-        margin: 4px 0; /* Tạo khoảng cách nhẹ giữa các dòng VIP để thấy rõ khung viền */
+        border-radius: 42px; 
+        margin: 4px 0; 
         box-shadow: 0 4px 10px rgba(142, 68, 173, 0.25), inset 0 0 10px rgba(255, 193, 7, 0.15);
+        overflow: hidden; /* Cực kỳ quan trọng để vệt sáng không bị tràn ra ngoài góc bo tròn 42px */
     }
     
-    /* Hiệu ứng quét ánh kim vàng lấp lánh bên trong dòng */
+    /* Hiệu ứng quét ánh kim vàng LẤM LÁNH & ĐẬM HƠN bên trong dòng */
     .row-vip::after {
         content: "";
         position: absolute;
         top: 0; right: 0; bottom: 0; left: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,215,0,0.25), transparent);
+        /* Đã nâng độ đậm của dải vàng từ 0.25 lên 0.55 và thêm dải sáng trắng ở giữa cho chói lọi */
+        background: linear-gradient(90deg, 
+            transparent, 
+            rgba(255, 215, 0, 0.2), 
+            rgba(255, 255, 255, 0.6), 
+            rgba(255, 215, 0, 0.55), 
+            transparent
+        );
         pointer-events: none;
-        animation: vip-shimmer 3s infinite;
-        border-radius: 8px;
+        animation: vip-shimmer 2.5s infinite; /* Tốc độ nhanh hơn xíu (2.5s) cho sinh động */
+        border-radius: 42px;
     }
 
     @keyframes vip-shimmer {
