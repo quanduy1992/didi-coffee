@@ -6,30 +6,30 @@
     <title>Bảng Vàng - Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-      /* --- HIỆU ỨNG VIỀN NEON RỰC RỠ CHẠY SÁNG CHO VIP --- */
+      /* --- HIỆU ỨNG NỀN CHUYỂN MÀU MƯỢT MÀ, THANH LỊCH CHO VIP --- */
     .row-vip {
-        background: linear-gradient(135deg, #fffdf0 0%, #fff3cd 50%, #fff8e1 100%) !important;
+        /* Hiệu ứng chuyển màu nền êm dịu, không bị chớp nháy giật cục */
+        background: linear-gradient(270deg, #fff3cd, #fffbe6, #fae1dd, #fff3cd) !important;
+        background-size: 400% 400% !important;
+        animation: smooth-bg-flow 8s ease infinite !important;
+        
+        /* Viền tĩnh nhẹ nhàng, tinh tế bao quanh, không lan man sang dòng khác */
+        border-top: 1px solid #f1c40f !important;
+        border-bottom: 1px solid #f1c40f !important;
+        border-left: none !important;
+        border-right: none !important;
         position: relative;
-        /* Viền sáng nổi bật với hiệu ứng chuyển màu rực rỡ */
-        border: 2.5px solid #ff4757 !important;
-        border-radius: 8px; 
-        margin: 4px 0; 
-        /* Hiệu ứng chớp nháy hào quang rực rỡ, không bị xám tối */
-        animation: neon-glow-animation 1.8s infinite alternate ease-in-out;
     }
 
-    @keyframes neon-glow-animation {
+    @keyframes smooth-bg-flow {
         0% {
-            border-color: #ff4757; /* Đỏ hồng rực */
-            box-shadow: 0 0 6px rgba(255, 71, 87, 0.5), inset 0 0 10px rgba(255, 193, 7, 0.2);
+            background-position: 0% 50%;
         }
         50% {
-            border-color: #ffa502; /* Chuyển sang cam vàng chói lọi */
-            box-shadow: 0 0 18px rgba(255, 165, 2, 0.8), 0 0 8px rgba(255, 71, 87, 0.6), inset 0 0 15px rgba(255, 215, 0, 0.4);
+            background-position: 100% 50%;
         }
         100% {
-            border-color: #ff6b81; /* Hồng sáng */
-            box-shadow: 0 0 6px rgba(255, 107, 129, 0.5), inset 0 0 10px rgba(255, 193, 7, 0.2);
+            background-position: 0% 50%;
         }
     }
 
