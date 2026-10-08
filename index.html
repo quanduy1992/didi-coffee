@@ -7,201 +7,41 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        * {
-            box-sizing: border-box;
-        }
 
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Nền xanh băng giá sáng sủa, phủ sương nghệ thuật bám quanh viền hệt ảnh mẫu */
-            background: 
-                radial-gradient(circle at 10% 10%, rgba(255,255,255,0.9) 0%, transparent 35%),
-                radial-gradient(circle at 90% 90%, rgba(255,255,255,0.8) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, #b8d0e5 0%, #7899b4 100%);
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        /* Hiệu ứng hoa văn băng giá viền ngoài và tuyết rơi mịn */
-        body::before {
-            content: "";
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none;
-            z-index: 1;
-            opacity: 0.4;
-            background-image: radial-gradient(#ffffff 1.5px, transparent 1.5px);
-            background-size: 40px 40px;
-        }
-
+        /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
+        /* 1. Tạo lớp nền lấp lánh (phía trên body) */
         body::after {
             content: "";
             position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             pointer-events: none;
-            z-index: 1;
+            z-index: -1;       
             background-image: 
-                radial-gradient(3px 3px at 50px 70px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(4px 4px at 200px 180px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(2.5px 2.5px at 320px 110px, #ffffff, rgba(255,255,255,0));
-            background-size: 350px 350px;
-            animation: snowfall 8s infinite linear;
+                radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1px 1px at 125px 20px, white, rgba(255, 255, 255, 0)),
+                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
+                radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+            background-size: 200px 200px;
+            animation: twinkling 4s infinite alternate ease-in-out;
         }
-
-        @keyframes snowfall {
-            0% { background-position: 0 0; }
-            100% { background-position: -60px 350px; }
+        @keyframes twinkling {
+            0% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+            100% { opacity: 0.3; transform: scale(1); }
         }
-
-        /* Khung Card chính: Mô phỏng chuẩn chất liệu nền chấm bi len kem vintage cao cấp */
-        .card {
-            background-color: #fcf9f4;
-            /* Tạo họa tiết chấm bi chấm chìm nhẹ nhàng hệt ảnh mẫu */
-            background-image: radial-gradient(#dcd5c7 1.2px, transparent 1.2px);
-            background-size: 16px 16px;
-            border: 6px solid #ffffff;
-            padding: 40px 28px 30px 28px;
-            border-radius: 36px;
-            box-shadow: 0 25px 60px rgba(30, 60, 90, 0.4),
-                        0 0 40px rgba(255, 255, 255, 0.95),
-                        inset 0 0 25px rgba(220, 210, 195, 0.6);
-            width: 100%;
-            max-width: 410px;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            margin: 20px;
-        }
-
-        /* Tiêu đề thương hiệu */
-        #shopTitle {
-            color: #4a1515;
-            font-size: 22px;
-            font-weight: 800;
-            margin-top: 5px;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            text-shadow: 0 1px 2px rgba(255,255,255,0.9);
-        }
-
-        #form-input {
-            text-align: left;
-        }
-
-        label {
-            font-size: 13px;
-            font-weight: 700;
-            color: #4a332b;
-            display: block;
-            margin-bottom: 6px;
-        }
-
-        /* Ô nhập liệu phủ lớp sương băng mờ sáng bóng sắc sảo */
-        input[type="text"], input[type="tel"] {
-            width: 100%;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            border: 2px solid #b8d0e5;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #eaf2f8 0%, #f4f8fb 100%);
-            font-size: 15px;
-            color: #1e3a5f;
-            outline: none;
-            transition: all 0.3s ease;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.03), 0 2px 5px rgba(184, 208, 229, 0.4);
-        }
-
-        input::placeholder {
-            color: #9ab4cc;
-        }
-
-        input:focus {
-            border-color: #990000;
-            background: #ffffff;
-            box-shadow: 0 0 10px rgba(153, 0, 0, 0.25), inset 0 2px 5px rgba(0,0,0,0.03);
-        }
-
-        /* Nút Tích Điểm ruy băng đỏ nhung sang trọng có viền bóng đổ 3D */
         #btnSubmit {
-            width: 100%;
-            background: linear-gradient(135deg, #a31d1d 0%, #680d0d 100%);
-            color: #ffffff;
-            border: none;
-            padding: 14px;
-            font-size: 16px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            border-radius: 16px;
-            cursor: pointer;
-            box-shadow: 0 8px 22px rgba(139, 0, 0, 0.45);
-            transition: all 0.3s ease;
-            margin-top: 10px;
-            margin-bottom: 10px;
+            animation: pulse-button 1s infinite;
         }
-
-        #btnSubmit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(139, 0, 0, 0.6);
-        }
-
-        /* Thanh menu 3 nút phía dưới mô phỏng chính xác khung thẻ mẫu */
-        .nav-menu {
-            display: flex;
-            justify-content: space-between;
-            gap: 12px;
-            margin-top: 22px;
-            padding-top: 16px;
-            border-top: 2.5px dashed #e2d2c4;
-        }
-
-        .nav-item {
-            text-decoration: none;
-            color: #4a3525;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 10px 6px;
-            border-radius: 16px;
-            background: #ffffff;
-            border: 2px solid #e8dad0;
-            transition: all 0.3s ease;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            flex: 1;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.04);
-        }
-
-        /* Nút active: Hiệu ứng khung kính băng giá độc quyền */
-        .nav-item.active {
-            background: linear-gradient(135deg, #d2e4f0 0%, #a8cde4 100%);
-            color: #1a365d;
-            border: 2px solid #ffffff;
-            box-shadow: 0 6px 15px rgba(40, 90, 130, 0.3), inset 0 0 10px rgba(255,255,255,0.9);
-        }
-
-        .nav-item:hover {
-            transform: translateY(-2px);
-        }
-
-        .nav-icon {
-            font-size: 18px;
-        }
-
-        #pointBox {
-            display: none;
+        @keyframes pulse-button {
+            0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
         }
     </style>
-
 </head>
 <body>
     <div class="card">
