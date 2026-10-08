@@ -19,13 +19,34 @@
             justify-content: center;
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Nền cảnh đêm mùa đông tuyết phủ lãng mạn, sâu thẳm */
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #16222a 100%);
+            /* Nền kính đóng băng trắng xóa nghệ thuật quanh khung */
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255,255,255,0.8) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(255,255,255,0.7) 0%, transparent 45%),
+                linear-gradient(135deg, #a2b9cd 0%, #c5d7e5 50%, #90aabf 100%);
             position: relative;
             overflow-x: hidden;
         }
 
-        /* Hiệu ứng tuyết rơi lấp lánh sống động nhiều kích thước */
+        /* Hoa văn tinh thể băng giá phủ ở các góc và nền */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.55;
+            background-image: 
+                radial-gradient(circle, #ffffff 1px, transparent 1px),
+                radial-gradient(circle, #ffffff 1px, transparent 1px);
+            background-size: 60px 60px;
+            background-position: 0 0, 30px 30px;
+        }
+
+        /* Hiệu ứng tuyết rơi lấp lánh */
         body::after {
             content: "";
             position: fixed;
@@ -36,69 +57,75 @@
             pointer-events: none;
             z-index: 1;
             background-image: 
-                radial-gradient(3px 3px at 20px 40px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(4px 4px at 100px 150px, rgba(255,255,255,0.9), rgba(255,255,255,0)),
-                radial-gradient(2px 2px at 200px 80px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(5px 5px at 280px 250px, rgba(255,255,255,0.8), rgba(255,255,255,0)),
-                radial-gradient(3px 3px at 350px 120px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(4px 4px at 120px 320px, #ffffff, rgba(255,255,255,0));
-            background-size: 350px 350px;
-            animation: snowfall 6s infinite linear;
+                radial-gradient(3px 3px at 30px 50px, #ffffff, rgba(255,255,255,0)),
+                radial-gradient(4px 4px at 120px 180px, #ffffff, rgba(255,255,255,0)),
+                radial-gradient(2.5px 2.5px at 250px 90px, #ffffff, rgba(255,255,255,0)),
+                radial-gradient(3.5px 3.5px at 320px 280px, #ffffff, rgba(255,255,255,0)),
+                radial-gradient(2px 2px at 80px 330px, rgba(255,255,255,0.9), rgba(255,255,255,0));
+            background-size: 320px 320px;
+            animation: snowfall 7s infinite linear;
         }
 
         @keyframes snowfall {
             0% { background-position: 0 0; }
-            100% { background-position: -60px 350px; }
+            100% { background-position: -50px 320px; }
         }
 
-        /* Khung Card chính: Thẻ gỗ/giấy phong cách vintage kết hợp viền tuyết đọng và ánh đèn ấm */
+        /* Khung Card chính: Giả lập chất liệu áo len dệt kim ấm áp mùa đông */
         .card {
-            background: #fffaf0;
-            /* Họa tiết lưới caro ấm áp của khăn choàng mùa đông */
+            background-color: #f7f2eb;
+            /* Mô phỏng đường đan len nổi tinh tế bằng CSS */
             background-image: 
-                radial-gradient(#e6d5c3 15%, transparent 16%), 
-                radial-gradient(#e6d5c3 15%, transparent 16%);
-            background-size: 24px 24px;
-            background-position: 0 0, 12px 12px;
-            border: 4px solid #ffffff;
-            padding: 35px 28px;
-            border-radius: 28px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
-                        0 0 35px rgba(255, 255, 255, 0.4), /* Đám mây ánh sáng tuyết quanh khung */
-                        inset 0 0 25px rgba(212, 163, 115, 0.3);
+                linear-gradient(30deg, #ede4d8 12%, transparent 12.5%, transparent 87%, #ede4d8 87.5%, #ede4d8),
+                linear-gradient(150deg, #ede4d8 12%, transparent 12.5%, transparent 87%, #ede4d8 87.5%, #ede4d8),
+                linear-gradient(30deg, #ede4d8 12%, transparent 12.5%, transparent 87%, #ede4d8 87.5%, #ede4d8),
+                linear-gradient(150deg, #ede4d8 12%, transparent 12.5%, transparent 87%, #ede4d8 87.5%, #ede4d8);
+            background-size: 20px 35px;
+            background-position: 0 0, 0 0, 10px 18px, 10px 18px;
+            border: 5px solid #ffffff;
+            padding: 35px 25px 28px 25px;
+            border-radius: 32px;
+            box-shadow: 0 25px 60px rgba(30, 60, 90, 0.4),
+                        0 0 30px rgba(255, 255, 255, 0.85),
+                        inset 0 0 20px rgba(220, 205, 190, 0.6);
             width: 100%;
-            max-width: 420px;
+            max-width: 410px;
             text-align: center;
             position: relative;
             z-index: 2;
             margin: 20px;
         }
 
-        /* Hiệu ứng đống tuyết phủ trắng ở đỉnh khung card */
-        .card::before {
-            content: "❄️ Đón Giáng Sinh & Mùa Đông Ấm Áp ❄️";
-            display: block;
-            background: linear-gradient(135deg, #b30000 0%, #800000 100%);
-            color: #fff;
-            font-size: 13px;
-            font-weight: bold;
-            padding: 6px 12px;
-            border-radius: 20px;
-            margin: -35px -28px 22px -28px;
-            box-shadow: 0 4px 10px rgba(131, 0, 0, 0.3);
-            letter-spacing: 0.5px;
+        /* Cành thông & quả châu góc trái trên */
+        .badge-left {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 22px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
         }
 
+        /* Đôi găng tay len góc phải trên */
+        .badge-right {
+            position: absolute;
+            top: 12px;
+            right: 20px;
+            font-size: 24px;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+        }
+
+        /* Tiêu đề thương hiệu */
         #shopTitle {
-            color: #78350f;
-            font-size: 23px;
+            color: #631414;
+            font-size: 22px;
             font-weight: 800;
-            margin-bottom: 18px;
-            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            margin-top: 10px;
+            margin-bottom: 22px;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.8);
         }
 
         #form-input {
@@ -108,94 +135,130 @@
         label {
             font-size: 13px;
             font-weight: 700;
-            color: #5c4033;
+            color: #593e36;
             display: block;
             margin-bottom: 5px;
         }
 
-        /* Ô nhập liệu phong cách tách kính ấm cúng */
+        /* Ô nhập liệu hiệu ứng phủ lớp băng mờ (frosted input) */
         input[type="text"], input[type="tel"] {
             width: 100%;
-            padding: 12px 16px;
-            margin-bottom: 15px;
-            border: 2px solid #d4a373;
+            padding: 11px 15px;
+            margin-bottom: 14px;
+            border: 2.5px solid rgba(160, 190, 215, 0.8);
             border-radius: 12px;
-            background: rgba(255, 255, 255, 0.95);
+            background: rgba(238, 245, 250, 0.9);
             font-size: 15px;
-            color: #3b2f2f;
+            color: #2c3e50;
             outline: none;
             transition: all 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.04);
         }
 
         input::placeholder {
-            color: #b0a194;
+            color: #9aaaba;
         }
 
         input:focus {
-            border-color: #b30000;
+            border-color: #990000;
             background: #ffffff;
-            box-shadow: 0 0 10px rgba(179, 0, 0, 0.25), inset 0 2px 4px rgba(0,0,0,0.05);
+            box-shadow: 0 0 10px rgba(153, 0, 0, 0.2), inset 0 2px 5px rgba(0,0,0,0.04);
         }
 
-        /* Nút Tích Điểm đỏ Ruby rực rỡ với hiệu ứng nhịp đập cảm xúc */
+        /* Vùng nút Tích Điểm kèm cành thông 2 bên hệt mẫu */
+        .btn-container {
+            position: relative;
+            margin: 20px 0 10px 0;
+        }
+
+        /* Cành thông trang trí 2 đầu nút */
+        .btn-container::before {
+            content: "🌲";
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            z-index: 3;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+        }
+
+        .btn-container::after {
+            content: "🌲";
+            position: absolute;
+            right: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 24px;
+            z-index: 3;
+            filter: drop-shadow(0 2px 3px rgba(0,0,0,0.2));
+        }
+
+        /* Nút Tích Điểm ruy băng nhung đỏ */
         #btnSubmit {
             width: 100%;
-            background: linear-gradient(135deg, #c53030 0%, #822727 100%);
+            background: linear-gradient(135deg, #a31d1d 0%, #680d0d 100%);
             color: #ffffff;
             border: none;
-            padding: 14px;
+            padding: 13px;
             font-size: 16px;
-            font-weight: bold;
-            border-radius: 12px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            border-radius: 16px;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(197, 48, 48, 0.4);
+            box-shadow: 0 6px 18px rgba(139, 0, 0, 0.45);
             transition: all 0.3s ease;
-            animation: pulse-button 2s infinite;
+            position: relative;
+            z-index: 2;
         }
 
         #btnSubmit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(197, 48, 48, 0.6);
+            box-shadow: 0 8px 22px rgba(139, 0, 0, 0.6);
         }
 
-        @keyframes pulse-button {
-            0% { box-shadow: 0 0 0 0 rgba(197, 48, 48, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(197, 48, 48, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(197, 48, 48, 0); }
-        }
-
-        /* Thanh menu điều hướng tinh tế, ấm áp */
+        /* Thanh menu 3 nút dưới (Tích điểm, Danh sách, Xem quà) */
         .nav-menu {
             display: flex;
-            justify-content: space-around;
-            margin-top: 25px;
+            justify-content: space-between;
+            gap: 10px;
+            margin-top: 20px;
             padding-top: 15px;
-            border-top: 2px dashed #d4a373;
+            border-top: 2px dashed #d8c4b6;
         }
 
         .nav-item {
             text-decoration: none;
-            color: #5c4033;
-            font-size: 13px;
+            color: #4a3525;
+            font-size: 12px;
             font-weight: 700;
-            padding: 9px 12px;
+            padding: 10px 6px;
             border-radius: 12px;
-            background: #fff5eb;
-            border: 1px solid #e3d0b9;
+            background: #ffffff;
+            border: 2px solid #e2d2c4;
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 4px;
+            gap: 5px;
+            flex: 1;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
         }
 
-        .nav-item.active, .nav-item:hover {
-            background: #c53030;
-            color: #ffffff;
-            border-color: #c53030;
-            box-shadow: 0 4px 12px rgba(197, 48, 48, 0.3);
+        /* Nút active (Tích điểm) bọc khung kính phủ tuyết phong cách mẫu */
+        .nav-item.active {
+            background: linear-gradient(135deg, #d2e4f0 0%, #a8cde4 100%);
+            color: #1a365d;
+            border-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(40, 90, 130, 0.25), inset 0 0 8px rgba(255,255,255,0.8);
+        }
+
+        .nav-item:hover {
             transform: translateY(-2px);
+        }
+
+        .nav-icon {
+            font-size: 18px;
         }
 
         #pointBox {
