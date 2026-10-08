@@ -7,9 +7,27 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
+        /* PHẦN CẬP NHẬT GIAO DIỆN: STYLE MÙA ĐÔNG / NOEL */
+        
+        * {
+            box-sizing: border-box;
+        }
 
-        /* 1. Tạo lớp nền lấp lánh (phía trên body) */
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Hiệu ứng nền tuyết rơi / lạnh giá mùa đông */
+            background: linear-gradient(135deg, #b0c4de 0%, #e0f6ff 50%, #87ceeb 100%);
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Lớp nền hiệu ứng bông tuyết lấp lánh */
         body::after {
             content: "";
             position: fixed;
@@ -18,33 +36,141 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            z-index: -1;
-            
+            z-index: 1;
             background-image: 
-                radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(1px 1px at 125px 20px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
-                radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
-            background-size: 200px 200px;
-            
-            animation: twinkling 4s infinite alternate ease-in-out;
+                radial-gradient(2px 2px at 30px 40px, #ffffff, rgba(255, 255, 255, 0)),
+                radial-gradient(3px 3px at 80px 120px, #ffffff, rgba(255, 255, 255, 0)),
+                radial-gradient(2px 2px at 150px 50px, #ffffff, rgba(255, 255, 255, 0)),
+                radial-gradient(2.5px 2.5px at 200px 200px, #ffffff, rgba(255, 255, 255, 0)),
+                radial-gradient(2px 2px at 270px 90px, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0));
+            background-size: 250px 250px;
+            animation: snowfall 6s infinite linear;
         }
 
-        @keyframes twinkling {
-            0% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.02); }
-            100% { opacity: 0.3; transform: scale(1); }
+        @keyframes snowfall {
+            0% { background-position: 0 0; }
+            100% { background-position: 100px 250px; }
         }
 
+        /* Khung Card chính mang phong cách len đan mùa đông ấm áp */
+        .card {
+            background: #fffaf5;
+            /* Mô phỏng hoạ tiết len đan nhẹ hoặc texture mùa đông */
+            background-image: radial-gradient(#e8d8c8 15%, transparent 16%), radial-gradient(#e8d8c8 15%, transparent 16%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            border: 2px solid #d4a373;
+            padding: 30px 25px;
+            border-radius: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15), inset 0 0 15px rgba(212, 163, 115, 0.2);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            margin: 20px;
+        }
+
+        /* Tiêu đề trang trí hoa tuyết / mùa đông */
+        #shopTitle {
+            color: #8b0000;
+            font-size: 24px;
+            margin-bottom: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        /* Form input và nhãn */
+        #form-input {
+            text-align: left;
+        }
+
+        label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #5c4033;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], input[type="tel"] {
+            width: 100%;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+            border: 1.5px solid #d4a373;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 15px;
+            color: #333;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #8b0000;
+            box-shadow: 0 0 8px rgba(139, 0, 0, 0.2);
+        }
+
+        /* Nút Tích Điểm mang sắc đỏ Giáng sinh */
         #btnSubmit {
-            animation: pulse-button 1s infinite;
+            width: 100%;
+            background: linear-gradient(135deg, #a4161a 0%, #660708 100%);
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(164, 22, 26, 0.4);
+            transition: all 0.3s ease;
+            animation: pulse-button 2s infinite;
+        }
+
+        #btnSubmit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(164, 22, 26, 0.6);
         }
 
         @keyframes pulse-button {
-            0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(164, 22, 26, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(164, 22, 26, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(164, 22, 26, 0); }
+        }
+
+        /* Thanh menu điều hướng dưới dạng thẻ quà / mùa đông */
+        .nav-menu {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed #d4a373;
+        }
+
+        .nav-item {
+            text-decoration: none;
+            color: #5c4033;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #fdf6ec;
+            border: 1px solid #e3d0b9;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+        }
+
+        .nav-item.active, .nav-item:hover {
+            background: #a4161a;
+            color: white;
+            border-color: #a4161a;
+        }
+
+        /* Thêm giữ nguyên các style cấu trúc cũ của bạn */
+        #pointBox {
+            display: none;
         }
     </style>
 
