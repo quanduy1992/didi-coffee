@@ -7,167 +7,85 @@
     <link rel="stylesheet" href="style.css">
     
     <style>
-        * {
-            box-sizing: border-box;
-        }
 
-        body {
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Đặt ảnh nền mùa đông thật của ông vào đây (hoặc để URL ảnh mẫu của ông) */
-            background: url('LINK_ANH_NEN_CUA_ONG_O_DAY.jpg') no-repeat center center fixed;
-            background-size: cover;
-            position: relative;
-            overflow-x: hidden;
-        }
+        /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
 
-        /* Lớp tuyết rơi nhẹ lấp lánh chồng lên ảnh */
+
+
+        /* 1. Tạo lớp nền lấp lánh (phía trên body) */
+
         body::after {
+
             content: "";
+
             position: fixed;
+
             top: 0;
+
             left: 0;
+
             width: 100%;
+
             height: 100%;
+
             pointer-events: none;
-            z-index: 1;
+
+            z-index: -1;
+
+            
+
             background-image: 
-                radial-gradient(3px 3px at 30px 50px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(4px 4px at 150px 200px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(2.5px 2.5px at 280px 100px, #ffffff, rgba(255,255,255,0));
-            background-size: 300px 300px;
-            animation: snowfall 6s infinite linear;
+
+                radial-gradient(1px 1px at 25px 35px, white, rgba(255, 255, 255, 0)),
+
+                radial-gradient(1.5px 1.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
+
+                radial-gradient(1px 1px at 125px 20px, white, rgba(255, 255, 255, 0)),
+
+                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
+
+                radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+
+            background-size: 200px 200px;
+
+            
+
+            animation: twinkling 4s infinite alternate ease-in-out;
+
         }
 
-        @keyframes snowfall {
-            0% { background-position: 0 0; }
-            100% { background-position: -40px 300px; }
+
+
+        @keyframes twinkling {
+
+            0% { opacity: 0.3; transform: scale(1); }
+
+            50% { opacity: 0.8; transform: scale(1.02); }
+
+            100% { opacity: 0.3; transform: scale(1); }
+
         }
 
-        /* Khung Card chính: Sử dụng hiệu ứng kính trong suốt nhẹ để nổi bật trên nền ảnh */
-        .card {
-            background: rgba(255, 255, 255, 0.88);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border: 4px solid rgba(255, 255, 255, 0.95);
-            padding: 35px 25px 28px 25px;
-            border-radius: 30px;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35),
-                        0 0 25px rgba(255, 255, 255, 0.6);
-            width: 100%;
-            max-width: 410px;
-            text-align: center;
-            position: relative;
-            z-index: 2;
-            margin: 20px;
-        }
 
-        #shopTitle {
-            color: #631414;
-            font-size: 22px;
-            font-weight: 800;
-            margin-bottom: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        #form-input {
-            text-align: left;
-        }
-
-        label {
-            font-size: 13px;
-            font-weight: 700;
-            color: #593e36;
-            display: block;
-            margin-bottom: 5px;
-        }
-
-        input[type="text"], input[type="tel"] {
-            width: 100%;
-            padding: 11px 15px;
-            margin-bottom: 14px;
-            border: 2px solid #b8d4e8;
-            border-radius: 12px;
-            background: rgba(240, 247, 252, 0.9);
-            font-size: 15px;
-            color: #2c3e50;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        input:focus {
-            border-color: #990000;
-            background: #ffffff;
-            box-shadow: 0 0 8px rgba(153, 0, 0, 0.2);
-        }
 
         #btnSubmit {
-            width: 100%;
-            background: linear-gradient(135deg, #a31d1d 0%, #680d0d 100%);
-            color: #ffffff;
-            border: none;
-            padding: 13px;
-            font-size: 16px;
-            font-weight: 800;
-            border-radius: 14px;
-            cursor: pointer;
-            box-shadow: 0 6px 18px rgba(139, 0, 0, 0.4);
-            transition: all 0.3s ease;
+
+            animation: pulse-button 1s infinite;
+
         }
 
-        #btnSubmit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 22px rgba(139, 0, 0, 0.6);
+
+
+        @keyframes pulse-button {
+
+            0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); }
+
+            70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
+
+            100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
+
         }
 
-        .nav-menu {
-            display: flex;
-            justify-content: space-between;
-            gap: 10px;
-            margin-top: 20px;
-            padding-top: 15px;
-            border-top: 2px dashed #d8c4b6;
-        }
-
-        .nav-item {
-            text-decoration: none;
-            color: #4a3525;
-            font-size: 12px;
-            font-weight: 700;
-            padding: 10px 6px;
-            border-radius: 12px;
-            background: #ffffff;
-            border: 2px solid #e2d2c4;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-            flex: 1;
-            box-shadow: 0 3px 8px rgba(0,0,0,0.04);
-            transition: all 0.3s ease;
-        }
-
-        .nav-item.active {
-            background: linear-gradient(135deg, #d2e4f0 0%, #a8cde4 100%);
-            color: #1a365d;
-            border-color: #ffffff;
-        }
-
-        .nav-item:hover {
-            transform: translateY(-2px);
-        }
-
-        #pointBox {
-            display: none;
-        }
     </style>
 
 </head>
