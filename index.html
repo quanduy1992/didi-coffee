@@ -19,13 +19,13 @@
             justify-content: center;
             align-items: center;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Nền mùa đông sương mờ rực rỡ, kết hợp ánh sáng băng giá */
-            background: radial-gradient(circle at 50% 30%, #e2f0fb 0%, #b2d5ed 60%, #83b9dc 100%);
+            /* Nền cảnh đêm mùa đông tuyết phủ lãng mạn, sâu thẳm */
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #16222a 100%);
             position: relative;
             overflow-x: hidden;
         }
 
-        /* Lớp tuyết rơi dày và mịn hơn */
+        /* Hiệu ứng tuyết rơi lấp lánh sống động nhiều kích thước */
         body::after {
             content: "";
             position: fixed;
@@ -36,32 +36,36 @@
             pointer-events: none;
             z-index: 1;
             background-image: 
-                radial-gradient(3px 3px at 20px 30px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(4px 4px at 90px 140px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(2px 2px at 160px 70px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(3.5px 3.5px at 240px 220px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(2.5px 2.5px at 320px 100px, #ffffff, rgba(255,255,255,0)),
-                radial-gradient(4px 4px at 400px 300px, #ffffff, rgba(255,255,255,0));
+                radial-gradient(3px 3px at 20px 40px, #ffffff, rgba(255,255,255,0)),
+                radial-gradient(4px 4px at 100px 150px, rgba(255,255,255,0.9), rgba(255,255,255,0)),
+                radial-gradient(2px 2px at 200px 80px, #ffffff, rgba(255,255,255,0)),
+                radial-gradient(5px 5px at 280px 250px, rgba(255,255,255,0.8), rgba(255,255,255,0)),
+                radial-gradient(3px 3px at 350px 120px, #ffffff, rgba(255,255,255,0)),
+                radial-gradient(4px 4px at 120px 320px, #ffffff, rgba(255,255,255,0));
             background-size: 350px 350px;
-            animation: snowfall 7s infinite linear;
+            animation: snowfall 6s infinite linear;
         }
 
         @keyframes snowfall {
             0% { background-position: 0 0; }
-            100% { background-position: -80px 350px; }
+            100% { background-position: -60px 350px; }
         }
 
-        /* Khung Card: Hiệu ứng cửa sổ đóng băng trắng xóa (Frosted Ice Crystal Border) */
+        /* Khung Card chính: Thẻ gỗ/giấy phong cách vintage kết hợp viền tuyết đọng và ánh đèn ấm */
         .card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border: 4px solid rgba(255, 255, 255, 0.95);
+            background: #fffaf0;
+            /* Họa tiết lưới caro ấm áp của khăn choàng mùa đông */
+            background-image: 
+                radial-gradient(#e6d5c3 15%, transparent 16%), 
+                radial-gradient(#e6d5c3 15%, transparent 16%);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
+            border: 4px solid #ffffff;
             padding: 35px 28px;
             border-radius: 28px;
-            box-shadow: 0 20px 50px rgba(31, 80, 120, 0.25),
-                        0 0 30px rgba(255, 255, 255, 0.8),
-                        inset 0 0 20px rgba(186, 222, 245, 0.7);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5),
+                        0 0 35px rgba(255, 255, 255, 0.4), /* Đám mây ánh sáng tuyết quanh khung */
+                        inset 0 0 25px rgba(212, 163, 115, 0.3);
             width: 100%;
             max-width: 420px;
             text-align: center;
@@ -70,15 +74,31 @@
             margin: 20px;
         }
 
-        /* Tiêu đề hiệu ứng mùa đông lấp lánh */
+        /* Hiệu ứng đống tuyết phủ trắng ở đỉnh khung card */
+        .card::before {
+            content: "❄️ Đón Giáng Sinh & Mùa Đông Ấm Áp ❄️";
+            display: block;
+            background: linear-gradient(135deg, #b30000 0%, #800000 100%);
+            color: #fff;
+            font-size: 13px;
+            font-weight: bold;
+            padding: 6px 12px;
+            border-radius: 20px;
+            margin: -35px -28px 22px -28px;
+            box-shadow: 0 4px 10px rgba(131, 0, 0, 0.3);
+            letter-spacing: 0.5px;
+        }
+
         #shopTitle {
-            color: #990000;
-            font-size: 24px;
+            color: #78350f;
+            font-size: 23px;
             font-weight: 800;
-            margin-bottom: 20px;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-bottom: 2px dashed rgba(131, 185, 220, 0.6);
-            padding-bottom: 12px;
+            margin-bottom: 18px;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         #form-input {
@@ -88,81 +108,81 @@
         label {
             font-size: 13px;
             font-weight: 700;
-            color: #1e3a5f;
+            color: #5c4033;
             display: block;
-            margin-bottom: 6px;
+            margin-bottom: 5px;
         }
 
-        /* Ô nhập liệu bọc lớp sương mờ tinh tế */
+        /* Ô nhập liệu phong cách tách kính ấm cúng */
         input[type="text"], input[type="tel"] {
             width: 100%;
             padding: 12px 16px;
             margin-bottom: 15px;
-            border: 2px solid rgba(131, 185, 220, 0.7);
-            border-radius: 14px;
-            background: rgba(240, 247, 252, 0.9);
+            border: 2px solid #d4a373;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.95);
             font-size: 15px;
-            color: #1e3a5f;
+            color: #3b2f2f;
             outline: none;
             transition: all 0.3s ease;
-            box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
         input::placeholder {
-            color: #8faac8;
+            color: #b0a194;
         }
 
         input:focus {
-            border-color: #990000;
+            border-color: #b30000;
             background: #ffffff;
-            box-shadow: 0 0 12px rgba(153, 0, 0, 0.2), inset 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 0 10px rgba(179, 0, 0, 0.25), inset 0 2px 4px rgba(0,0,0,0.05);
         }
 
-        /* Nút Tích Điểm đỏ Ruby sang trọng */
+        /* Nút Tích Điểm đỏ Ruby rực rỡ với hiệu ứng nhịp đập cảm xúc */
         #btnSubmit {
             width: 100%;
-            background: linear-gradient(135deg, #c0392b 0%, #8e1616 100%);
+            background: linear-gradient(135deg, #c53030 0%, #822727 100%);
             color: #ffffff;
             border: none;
             padding: 14px;
             font-size: 16px;
             font-weight: bold;
-            border-radius: 14px;
+            border-radius: 12px;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(192, 57, 43, 0.4);
+            box-shadow: 0 6px 20px rgba(197, 48, 48, 0.4);
             transition: all 0.3s ease;
             animation: pulse-button 2s infinite;
         }
 
         #btnSubmit:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(192, 57, 43, 0.6);
+            box-shadow: 0 8px 25px rgba(197, 48, 48, 0.6);
         }
 
         @keyframes pulse-button {
-            0% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(192, 57, 43, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(192, 57, 43, 0); }
+            0% { box-shadow: 0 0 0 0 rgba(197, 48, 48, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(197, 48, 48, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(197, 48, 48, 0); }
         }
 
-        /* Thanh menu điều hướng phong cách kính mờ */
+        /* Thanh menu điều hướng tinh tế, ấm áp */
         .nav-menu {
             display: flex;
             justify-content: space-around;
             margin-top: 25px;
             padding-top: 15px;
-            border-top: 2px dashed rgba(131, 185, 220, 0.6);
+            border-top: 2px dashed #d4a373;
         }
 
         .nav-item {
             text-decoration: none;
-            color: #1e3a5f;
+            color: #5c4033;
             font-size: 13px;
             font-weight: 700;
-            padding: 9px 14px;
+            padding: 9px 12px;
             border-radius: 12px;
-            background: rgba(226, 240, 251, 0.7);
-            border: 1px solid rgba(131, 185, 220, 0.8);
+            background: #fff5eb;
+            border: 1px solid #e3d0b9;
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
@@ -171,10 +191,11 @@
         }
 
         .nav-item.active, .nav-item:hover {
-            background: #c0392b;
+            background: #c53030;
             color: #ffffff;
-            border-color: #c0392b;
-            box-shadow: 0 4px 12px rgba(192, 57, 43, 0.3);
+            border-color: #c53030;
+            box-shadow: 0 4px 12px rgba(197, 48, 48, 0.3);
+            transform: translateY(-2px);
         }
 
         #pointBox {
