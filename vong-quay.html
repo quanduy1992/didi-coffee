@@ -132,76 +132,75 @@
             resDiv.innerHTML = "";
 
             try {
-                // 1. Kiểm tra điểm từ Apps Script
-                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-                const currentPoints = parseFloat(await response.text()) || 0;
+                // 1. Chọn trước quà ngẫu nhiên ở client
+                const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
+                let random = Math.random() * totalWeight;
+                let selectedIndex = 0;
+                for (let i = 0; i < GIFT_DATA.length; i++) {
+                    if (random < GIFT_DATA[i].weight) { selectedIndex = i; break; }
+                    random -= GIFT_DATA[i].weight;
+                }
+                const giftName = GIFT_DATA[selectedIndex].name;
 
-                if (currentPoints >= CONFIG.SPIN_POINTS) {
-                    localStorage.setItem('didi_customer_phone', phone);
-                    const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
-                    let random = Math.random() * totalWeight;
-                    let selectedIndex = 0;
-                    for (let i = 0; i < GIFT_DATA.length; i++) {
-                        if (random < GIFT_DATA[i].weight) { selectedIndex = i; break; }
-                        random -= GIFT_DATA[i].weight;
-                    }
-                    const giftName = GIFT_DATA[selectedIndex].name;
+                // 2. Gửi yêu cầu Quay thưởng trực tiếp lên Apps Script để backend xác thực điểm CÒN LẠI
+                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
+                const data = await response.json();
 
-                    const arc = 360 / GIFTS.length;
-                    const targetDegree = 360 - (selectedIndex * arc + arc / 2);
-                    currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
-                    document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
-                    btn.innerText = "🎡 ĐANG QUAY...";
-
-                    // 2. Gọi API thực hiện quay và HỨNG DỮ LIỆU TRẢ VỀ từ Google Apps Script
-                    let remainingPointsReal = currentPoints - CONFIG.SPIN_POINTS;
-                    try {
-                        const spinReq = await fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
-                        const spinData = await spinReq.json();
-                        if (spinData && spinData.remaining_points !== undefined) {
-                            remainingPointsReal = spinData.remaining_points;
-                        } else if (spinData && spinData.deducted_points !== undefined) {
-                            remainingPointsReal = Math.max(0, currentPoints - spinData.deducted_points);
-                        }
-                    } catch (err) {
-                        console.log("Lỗi parse kết quả trả về, dùng điểm ước tính:", err);
-                    }
-
-                    // 3. Hiển thị kết quả chính xác sau 4 giây quay xong
-                    setTimeout(() => {
-                        const now = new Date();
-                        const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-
-                        resDiv.innerHTML = `
-                            <div class="success-box">
-                                <div>${giftName.includes('Chúc') ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
-                                <span class="time">Thời gian quay: ${timeStr}</span>
-                                <span class="points-info">Số điểm còn lại: <span>${remainingPointsReal}</span></span>
-                            </div>
-                        `;
-                        
-                        if (!giftName.includes("Chúc")) {
-                            if (typeof confetti === 'function') {
-                                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                            }
-                        }
-                        btn.disabled = false;
-                        btn.innerText = "QUAY TIẾP";
-                    }, 4000);
-
-                } else {
-                    resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Hiện có: ${currentPoints})</div>`;
+                // Nếu Script báo không đủ điểm (ví dụ còn 93 < 200), chặn ngay không cho quay
+                if (data.status === "ERROR_POINTS") {
+                    resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm để quay!</div>`;
                     btn.disabled = false;
                     btn.innerText = "QUAY NGAY";
+                    return;
                 }
+
+                // 3. Nếu đủ điểm và thành công -> Mới thực hiện hiệu ứng quay vòng quay
+                localStorage.setItem('didi_customer_phone', phone);
+                const arc = 360 / GIFTS.length;
+                const targetDegree = 360 - (selectedIndex * arc + arc / 2);
+                currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
+                document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+                btn.innerText = "🎡 ĐANG QUAY...";
+
+                // Lấy điểm còn lại thực tế từ phản hồi nếu có, hoặc lấy points bị trừ
+                const deductedPoints = data.deducted_points || CONFIG.SPIN_POINTS;
+
+                setTimeout(async () => {
+                    // Gọi lại điểm còn lại cập nhật mới nhất từ backend
+                    let finalRemainingPoints = 0;
+                    try {
+                        const ptRes = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                        finalRemainingPoints = parseFloat(await ptRes.text()) || 0;
+                    } catch(e) {
+                        finalRemainingPoints = 0;
+                    }
+
+                    const now = new Date();
+                    const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+
+                    resDiv.innerHTML = `
+                        <div class="success-box">
+                            <div>${giftName.includes('Chúc') ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
+                            <span class="time">Thời gian quay: ${timeStr}</span>
+                            <span class="points-info">Số điểm còn lại: <span>${finalRemainingPoints}</span></span>
+                        </div>
+                    `;
+                    
+                    if (!giftName.includes("Chúc")) {
+                        if (typeof confetti === 'function') {
+                            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                        }
+                    }
+                    btn.disabled = false;
+                    btn.innerText = "QUAY TIẾP";
+                }, 4000);
+
             } catch (e) {
-                resDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối!</div>";
+                resDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối hoặc không đủ điểm!</div>";
                 btn.disabled = false;
                 btn.innerText = "THỬ LẠI";
             }
         }
     </script>
-    
-    <!--<script src="hoamai.js"></script>-->
 </body>
 </html>
