@@ -1,78 +1,207 @@
-async function checkAndSpin() {
-    const phoneInput = document.getElementById('phone');
-    const btn = document.getElementById('spinBtn');
-    const resDiv = document.getElementById('result');
-    const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
-
-    if (phone.length < 10) { 
-        resDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đúng SĐT!</div>";
-        return; 
-    }
-
-    btn.disabled = true;
-    btn.innerText = "⌛ ĐANG KIỂM TRA...";
-    resDiv.innerHTML = "";
-
-    try {
-        // 1. Kiểm tra điểm
-        const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-        const currentPoints = parseFloat(await response.text()) || 0;
-
-        if (currentPoints >= CONFIG.SPIN_POINTS) {
-            localStorage.setItem('didi_customer_phone', phone);
-            const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
-            let random = Math.random() * totalWeight;
-            let selectedIndex = 0;
-            for (let i = 0; i < GIFT_DATA.length; i++) {
-                if (random < GIFT_DATA[i].weight) { selectedIndex = i; break; }
-                random -= GIFT_DATA[i].weight;
-            }
-            const giftName = GIFT_DATA[selectedIndex].name;
-
-            const arc = 360 / GIFTS.length;
-            const targetDegree = 360 - (selectedIndex * arc + arc / 2);
-            currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
-            document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
-            btn.innerText = "🎡 ĐANG QUAY...";
-
-            // 2. Gửi request quay VÀ HỨNG KẾT QUẢ TRẢ VỀ TỪ SCRIPT
-            const spinReq = await fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
-            const spinData = await spinReq.json();
-
-            // Lấy điểm còn lại trực tiếp từ dữ liệu Script trả về (nếu không có thì mới dự phòng bằng currentPoints - CONFIG.SPIN_POINTS)
-            const remainingPointsReal = (spinData && spinData.remaining_points !== undefined) 
-                ? spinData.remaining_points 
-                : (currentPoints - CONFIG.SPIN_POINTS);
-
-            setTimeout(() => {
-                const now = new Date();
-                const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-
-                resDiv.innerHTML = `
-                    <div class="success-box">
-                        <div>${giftName.includes('Chúc') ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
-                        <span class="time">Thời gian quay: ${timeStr}</span>
-                        <span class="points-info">Số điểm còn lại: <span>${remainingPointsReal}</span></span>
-                    </div>
-                `;
-                
-                if (!giftName.includes("Chúc")) {
-                    if (typeof confetti === 'function') {
-                        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                    }
-                }
-                btn.disabled = false;
-                btn.innerText = "QUAY TIẾP";
-            }, 4000);
-
-        } else {
-            resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Hiện có: ${currentPoints})</div>`;
-            btn.disabled = false;
-            btn.innerText = "QUAY NGAY";
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>DI DI COFFEE - Vòng Quay May Mắn</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js" async></script>
+    <style>
+        #wheel-container {
+            position: relative;
+            width: 300px;
+            margin: 20px auto;
+            z-index: 10 !important;
         }
-    } catch (e) {
-        resDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối!</div>";
-        btn.disabled = false;
-        btn.innerText = "THỬ LẠI";
-    }
-}
+        #wheel {
+            width: 100%;
+            height: auto;
+            transition: transform 4s cubic-bezier(0.15, 0, 0.15, 1);
+            border-radius: 50%;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            display: block;
+        }
+        #pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            background: #d32f2f;
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
+            z-index: 11;
+            border-bottom: 2px solid #fff;
+        }
+    </style>
+</head>
+<body>
+    <div class="card"> 
+        <h2 id="shopTitle">🎡 VÒNG QUAY DI DI</h2>
+        <p id="sub-title" style="color: #8d6e63; font-size: 14px; margin-top: -10px;">Đang tải cấu hình...</p>
+        
+        <div id="wheel-container">
+            <div id="pointer"></div>
+            <canvas id="wheel" width="300" height="300"></canvas>
+        </div>
+
+        <div class="controls" id="form-input">
+            <label>Số điện thoại:</label>
+            <input type="tel" id="phone" placeholder="Nhập số điện thoại để quay">
+            <button id="spinBtn" onclick="checkAndSpin()">QUAY NGAY</button>
+        </div>
+
+        <div id="result"></div>
+
+        <div class="nav-menu">
+            <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
+            <a href="doi-qua.html?from=web" class="nav-item"><i>🎁</i> Đổi quà</a>
+            <a href="vong-quay.html" class="nav-item active"><i>🎡</i> Quay thưởng</a>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script>
+        const GIFTS = ["Tặng 10 ly", "Chúc bạn may mắn", "Tặng 30 ly", "Giỏ quà tết"];
+        const COLORS = ["#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f"];
+        const GIFT_DATA = [
+            { name: "Tặng 10 ly", weight: 25 }, { name: "Chúc bạn may mắn", weight: 25 }, 
+            { name: "Tặng 30 ly", weight: 25 }, { name: "Giỏ quà tết", weight: 25 }
+        ];
+
+        let currentRotation = 0;
+
+        function drawWheel() {
+            const canvas = document.getElementById('wheel');
+            const ctx = canvas.getContext('2d');
+            const arc = (Math.PI * 2) / GIFTS.length;
+            ctx.clearRect(0, 0, 300, 300);
+            ctx.save();
+            ctx.translate(150, 150);
+            ctx.rotate(-Math.PI / 2); 
+            ctx.translate(-150, -150);
+            GIFTS.forEach((gift, i) => {
+                ctx.beginPath();
+                ctx.fillStyle = COLORS[i];
+                ctx.moveTo(150, 150);
+                ctx.arc(150, 150, 145, i * arc, (i + 1) * arc);
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.save();
+                ctx.fillStyle = COLORS[i] === "#f1c40f" ? "#d32f2f" : "white";
+                ctx.font = "bold 13px Arial";
+                ctx.translate(150, 150);
+                ctx.rotate(i * arc + arc / 2);
+                ctx.textAlign = "right";
+                ctx.fillText(gift, 130, 5);
+                ctx.restore();
+            });
+            ctx.restore();
+            ctx.beginPath();
+            ctx.arc(150, 150, 15, 0, Math.PI * 2);
+            ctx.fillStyle = "#fff";
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            drawWheel();
+            if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
+                document.getElementById('shopTitle').innerText = "🎡 " + CONFIG.SHOP_NAME;
+                document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+            }
+            const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
+            if (savedPhone) document.getElementById('phone').value = savedPhone;
+        });
+
+        async function checkAndSpin() {
+            const phoneInput = document.getElementById('phone');
+            const btn = document.getElementById('spinBtn');
+            const resDiv = document.getElementById('result');
+            const phone = phoneInput.value.trim().replace(/[^0-9]/g, "");
+
+            if (phone.length < 10) { 
+                resDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đúng SĐT!</div>";
+                return; 
+            }
+
+            btn.disabled = true;
+            btn.innerText = "⌛ ĐANG KIỂM TRA...";
+            resDiv.innerHTML = "";
+
+            try {
+                // 1. Kiểm tra điểm từ Apps Script
+                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                const currentPoints = parseFloat(await response.text()) || 0;
+
+                if (currentPoints >= CONFIG.SPIN_POINTS) {
+                    localStorage.setItem('didi_customer_phone', phone);
+                    const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
+                    let random = Math.random() * totalWeight;
+                    let selectedIndex = 0;
+                    for (let i = 0; i < GIFT_DATA.length; i++) {
+                        if (random < GIFT_DATA[i].weight) { selectedIndex = i; break; }
+                        random -= GIFT_DATA[i].weight;
+                    }
+                    const giftName = GIFT_DATA[selectedIndex].name;
+
+                    const arc = 360 / GIFTS.length;
+                    const targetDegree = 360 - (selectedIndex * arc + arc / 2);
+                    currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
+                    document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+                    btn.innerText = "🎡 ĐANG QUAY...";
+
+                    // 2. Gọi API thực hiện quay và HỨNG DỮ LIỆU TRẢ VỀ từ Google Apps Script
+                    let remainingPointsReal = currentPoints - CONFIG.SPIN_POINTS;
+                    try {
+                        const spinReq = await fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
+                        const spinData = await spinReq.json();
+                        if (spinData && spinData.remaining_points !== undefined) {
+                            remainingPointsReal = spinData.remaining_points;
+                        } else if (spinData && spinData.deducted_points !== undefined) {
+                            remainingPointsReal = Math.max(0, currentPoints - spinData.deducted_points);
+                        }
+                    } catch (err) {
+                        console.log("Lỗi parse kết quả trả về, dùng điểm ước tính:", err);
+                    }
+
+                    // 3. Hiển thị kết quả chính xác sau 4 giây quay xong
+                    setTimeout(() => {
+                        const now = new Date();
+                        const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+
+                        resDiv.innerHTML = `
+                            <div class="success-box">
+                                <div>${giftName.includes('Chúc') ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
+                                <span class="time">Thời gian quay: ${timeStr}</span>
+                                <span class="points-info">Số điểm còn lại: <span>${remainingPointsReal}</span></span>
+                            </div>
+                        `;
+                        
+                        if (!giftName.includes("Chúc")) {
+                            if (typeof confetti === 'function') {
+                                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+                            }
+                        }
+                        btn.disabled = false;
+                        btn.innerText = "QUAY TIẾP";
+                    }, 4000);
+
+                } else {
+                    resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Hiện có: ${currentPoints})</div>`;
+                    btn.disabled = false;
+                    btn.innerText = "QUAY NGAY";
+                }
+            } catch (e) {
+                resDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối!</div>";
+                btn.disabled = false;
+                btn.innerText = "THỬ LẠI";
+            }
+        }
+    </script>
+    
+    <!--<script src="hoamai.js"></script>-->
+</body>
+</html>
