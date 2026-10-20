@@ -72,11 +72,21 @@
 
         const GIFTS = ["Tặng 20 ly", "-100 điểm", "Tặng 50 ly", "Giỏ quà tết"];
         const COLORS = ["#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f"];
+        
+        // Tỷ lệ dành riêng cho QUAY THỬ (Chia đều 25% cho cả 4 ô)
+        const TEST_GIFT_DATA = [
+            { name: "Tặng 20 ly", weight: 25 }, 
+            { name: "-100 điểm", weight: 25 }, 
+            { name: "Tặng 50 ly", weight: 25 }, 
+            { name: "Giỏ quà tết", weight: 25 }
+        ];
+
+        // Tỷ lệ dành cho QUAY THẬT (Gần Tết mở lại: 100% trúng Giỏ quà tết)
         const GIFT_DATA = [
-            { name: "Tặng 20 ly", weight: 50 }, 
-            { name: "-100 điểm", weight: 35 }, 
-            { name: "Tặng 50 ly", weight: 10 }, 
-            { name: "Giỏ quà tết", weight: 5 }
+            { name: "Tặng 20 ly", weight: 0 }, 
+            { name: "-100 điểm", weight: 0 }, 
+            { name: "Tặng 50 ly", weight: 0 }, 
+            { name: "Giỏ quà tết", weight: 100 }
         ];
 
         let currentRotation = 0;
@@ -232,7 +242,7 @@
             }, 4000);
         }
 
-        // HÀM QUAY THỬ (KHÔNG CẦN NHẬP SĐT, KHÔNG TRỪ ĐIỂM, KHÔNG GỬI LÊN SHEET)
+        // HÀM QUAY THỬ (SỬ DỤNG TEST_GIFT_DATA CHIA ĐỀU TỶ LỆ)
         function testSpin() {
             const resDiv = document.getElementById('result');
             const btn = document.getElementById('spinBtn');
@@ -244,14 +254,14 @@
             testBtn.innerText = "🎡 ĐANG QUAY THỬ...";
             resDiv.innerHTML = "";
 
-            const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
+            const totalWeight = TEST_GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
             let random = Math.random() * totalWeight;
             let selectedIndex = 0;
-            for (let i = 0; i < GIFT_DATA.length; i++) {
-                if (random < GIFT_DATA[i].weight) { selectedIndex = i; break; }
-                random -= GIFT_DATA[i].weight;
+            for (let i = 0; i < TEST_GIFT_DATA.length; i++) {
+                if (random < TEST_GIFT_DATA[i].weight) { selectedIndex = i; break; }
+                random -= TEST_GIFT_DATA[i].weight;
             }
-            const giftName = GIFT_DATA[selectedIndex].name;
+            const giftName = TEST_GIFT_DATA[selectedIndex].name;
 
             const arc = 360 / GIFTS.length;
             const targetDegree = 360 - (selectedIndex * arc + arc / 2);
