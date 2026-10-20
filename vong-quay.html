@@ -279,7 +279,9 @@
             }
             
             // Lệnh gửi ngầm không làm đơ/chậm giao diện
-            fetch(`${scriptURL}?action=save_test_history&name=${encodeURIComponent(customerInfo)}&gift=${encodeURIComponent(giftName)}`, { mode: 'no-cors' });
+            //fetch(`${scriptURL}?action=save_test_history&name=${encodeURIComponent(customerInfo)}&gift=${encodeURIComponent(giftName)}`, { mode: 'no-cors' });
+            // Tìm dòng fetch trong hàm testSpin() và đổi thành:
+            fetch(`${scriptURL}?action=save_test_history&phone=${phone}&name=${encodeURIComponent(currentCustomerName || 'Khách')}&gift=${encodeURIComponent(giftName)}`, { mode: 'no-cors' });
             // -------------------------------------------------------------
 
             setTimeout(() => {
