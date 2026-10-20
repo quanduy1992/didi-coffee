@@ -69,11 +69,12 @@
         const spinPoints = CONFIG.SPIN_POINTS || 200;
         let isProcessing = false;
         let currentClientPoints = 0; 
+        let currentCustomerName = ""; // Lưu tên khách từ hệ thống
 
         const GIFTS = ["Tặng 20 ly", "-100 điểm", "Tặng 50 ly", "Giỏ quà tết"];
         const COLORS = ["#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f"];
         
-        // Tỷ lệ dành riêng cho QUAY THỬ (Chia đều 25% cho cả 4 ô)
+        // Tỷ lệ dành riêng cho QUAY THỬ (Chia đều 25% mỗi ô)
         const TEST_GIFT_DATA = [
             { name: "Tặng 20 ly", weight: 25 }, 
             { name: "-100 điểm", weight: 25 }, 
@@ -81,7 +82,7 @@
             { name: "Giỏ quà tết", weight: 25 }
         ];
 
-        // Tỷ lệ dành cho QUAY THẬT (Gần Tết mở lại: 100% trúng Giỏ quà tết)
+        // Tỷ lệ dành cho QUAY THẬT
         const GIFT_DATA = [
             { name: "Tặng 20 ly", weight: 0 }, 
             { name: "-100 điểm", weight: 0 }, 
@@ -151,8 +152,8 @@
                     .then(res => res.json())
                     .then(data => {
                         currentClientPoints = parseFloat(data.points) || 0;
-                        let name = data.name || "Khách hàng";
-                        display.innerHTML = `Chào <b>${name}</b>! Bạn có: <b>${currentClientPoints}</b> điểm`;
+                        currentCustomerName = data.name || "Khách quay thử";
+                        display.innerHTML = `Chào <b>${currentCustomerName}</b>! Bạn có: <b>${currentClientPoints}</b> điểm`;
                         
                         btn.disabled = currentClientPoints < spinPoints;
                         btn.innerText = currentClientPoints < spinPoints ? "CHƯA ĐỦ ĐIỂM" : "QUAY NGAY";
@@ -161,18 +162,20 @@
                         }
                     })
                     .catch(err => {
+                        currentCustomerName = "Khách quay thử";
                         display.innerHTML = "❌ SĐT chưa có điểm tích lũy";
                         btn.disabled = true;
                         btn.innerText = "QUAY NGAY";
                     });
             } else {
+                currentCustomerName = "";
                 display.innerHTML = "";
                 btn.disabled = true;
                 btn.innerText = "QUAY NGAY";
             }
         }
 
-        // HÀM QUAY THẬT (TRỪ ĐIỂM, LƯU LÊN SHEET)
+        // HÀM QUAY THẬT
         function checkAndSpin() {
             const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, "");
             const btn = document.getElementById('spinBtn');
@@ -242,11 +245,12 @@
             }, 4000);
         }
 
-        // HÀM QUAY THỬ (SỬ DỤNG TEST_GIFT_DATA CHIA ĐỀU TỶ LỆ)
+        // HÀM QUAY THỬ (ĐÃ THÊM GỬI LỊCH SỬ LÊN SHEET LichSuXem)
         function testSpin() {
             const resDiv = document.getElementById('result');
             const btn = document.getElementById('spinBtn');
             const testBtn = document.getElementById('testBtn');
+            const phone = document.getElementById('phone').value.trim();
 
             isProcessing = true;
             testBtn.disabled = true;
@@ -267,6 +271,16 @@
             const targetDegree = 360 - (selectedIndex * arc + arc / 2);
             currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
             document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
+
+            // --- ĐOẠN MỚI THÊM: GỬI LỊCH SỬ NGẦM LÊN SHEET LichSuXem ---
+            let customerInfo = "Khách quay thử";
+            if (phone.length >= 10) {
+                customerInfo = (currentCustomerName ? currentCustomerName : "Khách") + " (" + phone + ")";
+            }
+            
+            // Lệnh gửi ngầm không làm đơ/chậm giao diện
+            fetch(`${scriptURL}?action=save_test_history&name=${encodeURIComponent(customerInfo)}&gift=${encodeURIComponent(giftName)}`, { mode: 'no-cors' });
+            // -------------------------------------------------------------
 
             setTimeout(() => {
                 resDiv.innerHTML = `
