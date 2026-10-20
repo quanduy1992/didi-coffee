@@ -110,7 +110,7 @@
             drawWheel();
             if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
                 document.getElementById('shopTitle').innerText = "🎡 " + CONFIG.SHOP_NAME;
-                document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+                document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} điểm còn lại = 1 lượt quay`;
             }
             const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
             if (savedPhone) document.getElementById('phone').value = savedPhone;
@@ -128,11 +128,24 @@
             }
 
             btn.disabled = true;
-            btn.innerText = "⌛ ĐANG KIỂM TRA...";
+            btn.innerText = "⌛ ĐANG KIỂM TRA ĐIỂM...";
             resDiv.innerHTML = "";
 
             try {
-                // 1. Chọn trước quà ngẫu nhiên ở client
+                // BƯỚC 1: Kiểm tra điểm CÒN LẠI hiện tại của khách trước khi cho phép quay
+                const ptCheck = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                const currentPoints = parseFloat(await ptCheck.text()) || 0;
+
+                // Nếu không đủ điểm -> Dừng ngay lập tức, báo lỗi, không cho quay
+                if (currentPoints < CONFIG.SPIN_POINTS) {
+                    resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Điểm còn lại: ${currentPoints}/${CONFIG.SPIN_POINTS})</div>`;
+                    btn.disabled = false;
+                    btn.innerText = "QUAY NGAY";
+                    return;
+                }
+
+                // BƯỚC 2: Đủ điểm -> Tiến hành chọn quà ngẫu nhiên và quay
+                localStorage.setItem('didi_customer_phone', phone);
                 const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
                 let random = Math.random() * totalWeight;
                 let selectedIndex = 0;
@@ -142,38 +155,24 @@
                 }
                 const giftName = GIFT_DATA[selectedIndex].name;
 
-                // 2. Gửi yêu cầu Quay thưởng trực tiếp lên Apps Script để backend xác thực điểm CÒN LẠI
-                const response = await fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
-                const data = await response.json();
-
-                // Nếu Script báo không đủ điểm (ví dụ còn 93 < 200), chặn ngay không cho quay
-                if (data.status === "ERROR_POINTS") {
-                    resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm để quay!</div>`;
-                    btn.disabled = false;
-                    btn.innerText = "QUAY NGAY";
-                    return;
-                }
-
-                // 3. Nếu đủ điểm và thành công -> Mới thực hiện hiệu ứng quay vòng quay
-                localStorage.setItem('didi_customer_phone', phone);
                 const arc = 360 / GIFTS.length;
                 const targetDegree = 360 - (selectedIndex * arc + arc / 2);
                 currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
                 document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
                 btn.innerText = "🎡 ĐANG QUAY...";
 
-                // Lấy điểm còn lại thực tế từ phản hồi nếu có, hoặc lấy points bị trừ
-                const deductedPoints = data.deducted_points || CONFIG.SPIN_POINTS;
+                // BƯỚC 3: Gửi request ghi dữ liệu trừ điểm ngầm lên Script (không cần đợi phản hồi lâu)
+                fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
 
+                // BƯỚC 4: Sau khi quay xong (4 giây), tính và hiển thị kết quả điểm còn lại chính xác
                 setTimeout(async () => {
-                    // Gọi lại điểm còn lại cập nhật mới nhất từ backend
-                    let finalRemainingPoints = 0;
+                    let finalRemainingPoints = Math.max(0, currentPoints - CONFIG.SPIN_POINTS);
                     try {
-                        const ptRes = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
-                        finalRemainingPoints = parseFloat(await ptRes.text()) || 0;
-                    } catch(e) {
-                        finalRemainingPoints = 0;
-                    }
+                        // Lấy lại điểm thực tế chuẩn từ bảng sheet sau khi đã trừ
+                        const updateRes = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
+                        const realPt = parseFloat(await updateRes.text());
+                        if (!isNaN(realPt)) finalRemainingPoints = realPt;
+                    } catch(err) {}
 
                     const now = new Date();
                     const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
@@ -196,7 +195,7 @@
                 }, 4000);
 
             } catch (e) {
-                resDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối hoặc không đủ điểm!</div>";
+                resDiv.innerHTML = "<div class='error'>⚠️ Lỗi kết nối!</div>";
                 btn.disabled = false;
                 btn.innerText = "THỬ LẠI";
             }
