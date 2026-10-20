@@ -110,7 +110,7 @@
             drawWheel();
             if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
                 document.getElementById('shopTitle').innerText = "🎡 " + CONFIG.SHOP_NAME;
-                document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} lượt tích lũy = 1 lượt quay`;
+                document.getElementById('sub-title').innerText = `Đổi ${CONFIG.SPIN_POINTS} điểm còn lại = 1 lượt quay`;
             }
             const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
             if (savedPhone) document.getElementById('phone').value = savedPhone;
@@ -132,6 +132,7 @@
             resDiv.innerHTML = "";
 
             try {
+                // Lấy số điểm còn lại thực tế từ Bảng tổng (Cột L / soDiemConLai)
                 const response = await fetch(`${CONFIG.SCRIPT_URL}?action=get_points&phone=${phone}`);
                 const currentPoints = parseFloat(await response.text()) || 0;
 
@@ -146,7 +147,6 @@
                     }
                     const giftName = GIFT_DATA[selectedIndex].name;
 
-                    // ĐÃ LOẠI BỎ LỆNH PHÁT ÂM THANH
                     const arc = 360 / GIFTS.length;
                     const targetDegree = 360 - (selectedIndex * arc + arc / 2);
                     currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
@@ -156,20 +156,19 @@
                     fetch(`${CONFIG.SCRIPT_URL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${CONFIG.SPIN_POINTS}`);
 
                     setTimeout(() => {
-                        const estimatedNewPoints = currentPoints - CONFIG.SPIN_POINTS;
+                        const estimatedNewPoints = Math.max(0, currentPoints - CONFIG.SPIN_POINTS);
                         const now = new Date();
                         const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
 
                         resDiv.innerHTML = `
                             <div class="success-box">
-                                <div>${giftName === 'Chúc May Mắn' ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
+                                <div>${giftName.includes('Chúc') ? '🍀' : '🎉'} ${giftName.toUpperCase()}</div>
                                 <span class="time">Thời gian quay: ${timeStr}</span>
                                 <span class="points-info">Số điểm còn lại: <span>${estimatedNewPoints}</span></span>
                             </div>
                         `;
                         
-                        if (giftName !== "Chúc May Mắn") {
-                            // Pháo giấy vẫn nổ bình thường
+                        if (!giftName.includes("Chúc")) {
                             if (typeof confetti === 'function') {
                                 confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
                             }
@@ -179,7 +178,7 @@
                     }, 4000);
 
                 } else {
-                    resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Hiện có: ${currentPoints})</div>`;
+                    resDiv.innerHTML = `<div class='error'>❌ Không đủ điểm! (Điểm còn lại: ${currentPoints}/${CONFIG.SPIN_POINTS})</div>`;
                     btn.disabled = false;
                     btn.innerText = "QUAY NGAY";
                 }
@@ -194,8 +193,3 @@
     <!--<script src="hoamai.js"></script>-->
 </body>
 </html>
-
-
-
-
-
