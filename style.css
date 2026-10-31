@@ -1,13 +1,49 @@
-/* --- DI DI COFFEE - GIAO DIỆN TẾT CHUẨN (HOA ĐÀO & MENU VUÔNG) --- */
-
-body { 
+/* --- DI DI COFFEE - GIAO DIỆN TẾT CHUẨN (HOA ĐÀO & MENU VUÔNG)
     background-color: #ebebeb; /*#fff5f5*/
     display: flex; 
     justify-content: center; 
     align-items: center; 
     min-height: 90vh; 
     margin: 0; 
+    font-family: 'Arial', sans-serif; --- */
+<!-- Style cho hoa rơi -->
+  .petal {
+    position: fixed;
+    top: -10px;
+    z-index: 9999;
+    pointer-events: none; /* Không làm vướng click của khách */
+    user-select: none;
+    animation: fall linear forwards;
+  }
+
+  @keyframes fall {
+    0% {
+      transform: translateY(0) rotate(0deg) translateX(0);
+      opacity: 1;
+    }
+    50% {
+      transform: translateY(50vh) rotate(180deg) translateX(20px);
+    }
+    100% {
+      transform: translateY(105vh) rotate(360deg) translateX(-20px);
+      opacity: 0.2;
+    }
+  }
+body { 
+    /* Nền đỏ nhung sang trọng kết hợp ánh sáng tỏa từ tâm */
+    background: radial-gradient(circle at center, #ba0c0c 0%, #7a0000 70%, #4a0000 100%);
+    background-attachment: fixed;
+    position: relative;
+    overflow-x: hidden;
+    
+    /* Các thuộc tính căn chỉnh ban đầu của anh */
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    min-height: 90vh; 
+    margin: 0; 
     font-family: 'Arial', sans-serif;
+    
 }
 /* Tạo dải băng màu đỏ sao vàng ở góc trang web */
 .ribbon-3004 {
