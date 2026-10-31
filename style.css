@@ -7,20 +7,14 @@
     margin: 0; 
     font-family: 'Arial', sans-serif; --- */
 body { 
-    /* Nền đỏ nhung sang trọng kết hợp ánh sáng tỏa từ tâm */
-    background: radial-gradient(circle at center, #ba0c0c 0%, #7a0000 70%, #4a0000 100%);
+    background: radial-gradient(circle at center, #ba0c0c 0%, #7a0000 70%, #4a0000 100%); /* Thay nền ở đây */
     background-attachment: fixed;
-    position: relative;
-    overflow-x: hidden;
-    
-    /* Các thuộc tính căn chỉnh ban đầu của anh */
     display: flex; 
     justify-content: center; 
     align-items: center; 
     min-height: 90vh; 
     margin: 0; 
     font-family: 'Arial', sans-serif;
-    
 }
 /* Tạo dải băng màu đỏ sao vàng ở góc trang web */
 .ribbon-3004 {
