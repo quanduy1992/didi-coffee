@@ -15,7 +15,7 @@ window.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         let flowers = [];
         let obstacles = [];
-
+        
         function updateObstacles() {
             obstacles = [];
             const elements = card.querySelectorAll('h2, label, input, button, .success-box, p, .nav-menu, span, img');
@@ -40,21 +40,27 @@ window.addEventListener('DOMContentLoaded', () => {
             updateObstacles();
         }
         window.addEventListener('resize', resize);
+       function drawFlower(x, y, size, rotation) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation * Math.PI / 180);
+            ctx.fillStyle = "#FFD700"; 
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.ellipse(0, -size/2, size/1.5, size, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.rotate((72 * Math.PI) / 180);
+            }
+            ctx.beginPath(); 
+            ctx.arc(0, 0, size/2.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#FF8C00"; 
+            ctx.fill();
+            ctx.restore();
+        }
 
         class FallingFlower {
             constructor(isInstant) { 
                 this.initialWait = isInstant ? 0 : Math.random() * 300; 
-                
-                // Phân bổ tỷ lệ: 40% Đào hồng (🌸), 40% Mai vàng (🌼), 20% Phấn hoa lấp lánh (✨)
-                const rand = Math.random();
-                if (rand < 0.4) {
-                    this.icon = '🌸';
-                } else if (rand < 0.8) {
-                    this.icon = '🌼';
-                } else {
-                    this.icon = '✨';
-                }
-
                 this.reset(true, isInstant); 
             }
             
@@ -62,18 +68,21 @@ window.addEventListener('DOMContentLoaded', () => {
                 this.x = Math.random() * canvas.width;
                 
                 if (isFirstTime && isInstant) {
+                    // Nếu muốn xuất hiện ngay, cho hoa nằm rải rác sẵn trên màn hình
                     this.y = Math.random() * canvas.height;
                 } else if (isFirstTime && !isInstant) {
+                    // Những bông còn lại sẽ rơi từ từ sau đó
                     this.y = -Math.random() * canvas.height - 50;
                 } else {
+                    // Khi reset (rơi hết màn hình), luôn bắt đầu lại từ đỉnh
                     this.y = -30;
                 }
 
-                this.size = Math.random() * 6 + 15; 
+                this.size = Math.random() * 3 + 4;
                 this.speedY = Math.random() * 0.4 + 0.3;
                 this.speedX = Math.random() * 0.2 - 0.1;
                 this.rotation = Math.random() * 360;
-                this.spin = Math.random() * 1.5 - 0.75; 
+                this.spin = Math.random() * 1 - 0.5;
                 this.isRolling = false;
                 this.rollDistance = 0;
                 this.maxRoll = Math.random() * 20 + 15; 
@@ -125,23 +134,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
             draw() {
                 if (this.initialWait > 0 || this.y < -this.size * 2) return;
-                ctx.save();
-                ctx.translate(this.x, this.y);
-                ctx.rotate(this.rotation * Math.PI / 180);
-                
-                ctx.font = `${this.size}px Arial`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(this.icon, 0, 0);
-                
-                ctx.restore();
+                drawFlower(this.x, this.y, this.size, this.rotation);
             }
         }
 
         resize();
-
-        for(let i=0; i<7; i++) { flowers.push(new FallingFlower(true)); }
-        for(let i=0; i<7; i++) { flowers.push(new FallingFlower(false)); }
+        // Tạo 10 bông hoa: 5 bông hiện ngay lập tức, 5 bông rơi dần sau
+        for(let i=0; i<5; i++) { flowers.push(new FallingFlower(true)); }
+        for(let i=0; i<5; i++) { flowers.push(new FallingFlower(false)); }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -149,7 +149,6 @@ window.addEventListener('DOMContentLoaded', () => {
             requestAnimationFrame(animate);
         }
         animate();
-        
         setInterval(updateObstacles, 3000); 
     }
 });
