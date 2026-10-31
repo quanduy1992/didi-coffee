@@ -15,7 +15,33 @@ window.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         let flowers = [];
         let obstacles = [];
-
+        <!-- Script tạo hiệu ứng hoa rơi nhẹ nhàng -->
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            
+            // Luân phiên hoa mai (🌼) và hoa đào (🌸)
+            const icons = ['🌸', '🌼', '✨'];
+            petal.innerText = icons[Math.floor(Math.random() * icons.length)];
+            
+            // Tùy chỉnh vị trí và kích thước ngẫu nhiên
+            petal.style.left = Math.random() * 100 + 'vw';
+            petal.style.fontSize = (Math.random() * 12 + 10) + 'px'; // Size từ 10px - 22px
+            
+            // Tốc độ rơi từ 5s đến 9s (rất nhẹ nhàng)
+            const duration = Math.random() * 4 + 5;
+            petal.style.animationDuration = duration + 's';
+            
+            document.body.appendChild(petal);
+        
+            // Tự xóa hoa khi rơi xong để tránh nặng web
+            setTimeout(() => {
+              petal.remove();
+            }, duration * 1000);
+          }
+        
+          // Cứ 600ms tạo 1 cánh hoa (vừa đủ đẹp, không bị rối mắt)
+          setInterval(createPetal, 600);
         function updateObstacles() {
             obstacles = [];
             const elements = card.querySelectorAll('h2, label, input, button, .success-box, p, .nav-menu, span, img');
