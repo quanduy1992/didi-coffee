@@ -40,30 +40,23 @@ window.addEventListener('DOMContentLoaded', () => {
             updateObstacles();
         }
         window.addEventListener('resize', resize);
-        function drawFlower(x, y, size, rotation) {
+       function drawFlower(x, y, size, rotation) {
             ctx.save();
             ctx.translate(x, y);
             ctx.rotate(rotation * Math.PI / 180);
-            
-            // Vẽ 5 cánh hoa đào (màu hồng phấn)
-            ctx.fillStyle = "#FFB7C5"; 
+            ctx.fillStyle = "#FFD700"; 
             for (let i = 0; i < 5; i++) {
                 ctx.beginPath();
-                // Dùng ellipse để tạo hình cánh hoa bầu dục mềm mại
-                ctx.ellipse(0, -size * 0.8, size * 0.6, size * 0.9, 0, 0, Math.PI * 2);
+                ctx.ellipse(0, -size/2, size/1.5, size, 0, 0, Math.PI * 2);
                 ctx.fill();
                 ctx.rotate((72 * Math.PI) / 180);
             }
-            
-            // Nhụy hoa ở giữa (màu hồng đậm hơn / đỏ hồng)
             ctx.beginPath(); 
-            ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
-            ctx.fillStyle = "#E75480"; 
+            ctx.arc(0, 0, size/2.5, 0, Math.PI * 2);
+            ctx.fillStyle = "#FF8C00"; 
             ctx.fill();
-            
             ctx.restore();
         }
-        
 
         class FallingFlower {
             constructor(isInstant) { 
