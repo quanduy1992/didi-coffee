@@ -1,14 +1,12 @@
-/* --- DI DI COFFEE - GIAO DIỆN TẾT CHUẨN (HOA ĐÀO & MENU VUÔNG)
-    background-color: #ebebeb; /*#fff5f5*/
-    display: flex; 
-    justify-content: center; 
-    align-items: center; 
-    min-height: 90vh; 
-    margin: 0; 
-    font-family: 'Arial', sans-serif; --- */
+/* --- DI DI COFFEE - GIAO DIỆN TẾT CHUẨN (HOA ĐÀO & MENU VUÔNG) --- */
 body { 
-    background: radial-gradient(circle at center, #ba0c0c 0%, #7a0000 70%, #4a0000 100%); /* Thay nền ở đây */
+    /* Nền đỏ nhung sang trọng kết hợp ánh sáng tỏa từ tâm */
+    background: radial-gradient(circle at center, #ba0c0c 0%, #7a0000 70%, #4a0000 100%);
     background-attachment: fixed;
+    position: relative;
+    overflow-x: hidden;
+    
+    /* Các thuộc tính căn chỉnh ban đầu của anh */
     display: flex; 
     justify-content: center; 
     align-items: center; 
