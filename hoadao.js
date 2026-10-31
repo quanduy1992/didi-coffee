@@ -5,6 +5,7 @@ style.innerHTML = `
     .card > *:not(#flower-canvas) { position: relative; z-index: 2; }
 `;
 document.head.appendChild(style);
+
 window.addEventListener('DOMContentLoaded', () => {
     const card = document.querySelector('.card');
     if (card) {
@@ -15,10 +16,10 @@ window.addEventListener('DOMContentLoaded', () => {
         let flowers = [];
         let obstacles = [];
         
-        // Tải hình ảnh hoa đào chuẩn nét màu hồng cánh sen viền tinh tế
+        // Tạo ảnh hoa đào từ SVG chuẩn nét
         const flowerImg = new Image();
-        // Dùng dữ liệu mã hóa chuẩn hình hoa đào sắc nét, đẹp y như hình mẫu của ông
-        flowerImg.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M60 10 C68 35 88 52 110 60 C88 68 68 85 60 110 C52 85 32 68 10 60 C32 52 52 35 60 10 Z" fill="%ffb7c5" stroke="%ffffff" stroke-width="2"/><circle cx="60" cy="60" r="18" fill="%ff69b4"/><circle cx="60" cy="60" r="8" fill="%ffffff"/></svg>';
+        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M60 10 C68 35 88 52 110 60 C88 68 68 85 60 110 C52 85 32 68 10 60 C32 52 52 35 60 10 Z" fill="%23ffb7c5" stroke="%23ffffff" stroke-width="3"/><circle cx="60" cy="60" r="18" fill="%23ff69b4"/><circle cx="60" cy="60" r="8" fill="%23ffffff"/></svg>`;
+        flowerImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
 
         function updateObstacles() {
             obstacles = [];
@@ -62,11 +63,11 @@ window.addEventListener('DOMContentLoaded', () => {
                     this.y = -30;
                 }
 
-                this.size = Math.random() * 8 + 14; // Kích thước hoa to rõ, sắc sảo
+                this.size = Math.random() * 8 + 14; 
                 this.speedY = Math.random() * 0.4 + 0.3;
                 this.speedX = Math.random() * 0.2 - 0.1;
                 this.rotation = Math.random() * 360;
-                this.spin = Math.random() * 1.5 - 0.75; // Tốc độ xoay nhẹ nhàng
+                this.spin = Math.random() * 1.5 - 0.75; 
                 this.isRolling = false;
                 this.rollDistance = 0;
                 this.maxRoll = Math.random() * 20 + 15; 
@@ -121,24 +122,29 @@ window.addEventListener('DOMContentLoaded', () => {
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation * Math.PI / 180);
-                // Vẽ chính xác hình ảnh hoa đào sắc nét thay vì code vẽ hình học cứng nhắc
-                ctx.drawImage(flowerImg, -this.size / 2, -this.size / 2, this.size, this.size);
+                try {
+                    ctx.drawImage(flowerImg, -this.size / 2, -this.size / 2, this.size, this.size);
+                } catch(e) {
+                    // Dự phòng nếu ảnh chưa kịp vẽ
+                    ctx.fillStyle = "#ffb7c5";
+                    ctx.beginPath(); ctx.arc(0, 0, this.size/2, 0, Math.PI*2); ctx.fill();
+                }
                 ctx.restore();
             }
         }
 
         resize();
-        flowerImg.onload = () => {
-            for(let i=0; i<5; i++) { flowers.push(new FallingFlower(true)); }
-            for(let i=0; i<5; i++) { flowers.push(new FallingFlower(false)); }
 
-            function animate() {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-                flowers.forEach(f => { f.update(); f.draw(); });
-                requestAnimationFrame(animate);
-            }
-            animate();
-        };
+        // Khởi tạo hoa ngay lập tức không cần đợi sự kiện onload bị kẹt
+        for(let i=0; i<5; i++) { flowers.push(new FallingFlower(true)); }
+        for(let i=0; i<5; i++) { flowers.push(new FallingFlower(false)); }
+
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            flowers.forEach(f => { f.update(); f.draw(); });
+            requestAnimationFrame(animate);
+        }
+        animate();
         
         setInterval(updateObstacles, 3000); 
     }
