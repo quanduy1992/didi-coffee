@@ -47,7 +47,7 @@ body {
     position: relative;
     box-sizing: border-box;
     overflow: hidden;
-    /* NỀN HOA ĐÀO RẢI RÁC 
+    /* NỀN HOA ĐÀO RẢI RÁC */
     background-image: 
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 80 80'%3E%3Ctext y='50' font-size='50' opacity='0.55'%3E🌸%3C/text%3E%3C/svg%3E"),
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Ctext y='40' font-size='30' opacity='0.75'%3E🌸%3C/text%3E%3C/svg%3E"),
@@ -57,9 +57,9 @@ body {
     
     background-position: 50% 20%, 99% 12%, 55% 45%, 15% 60%, 90% 50%; 
     background-repeat: no-repeat;
-    background-size: 80px 80px;*/
+    background-size: 80px 80px;
 }
-/* PHỤ KIỆN TRANG TRÍ GÓC 
+/* PHỤ KIỆN TRANG TRÍ GÓC */
 .card::before {
     content: '🧧'; 
     position: absolute; top: 5px; left: 8px; font-size: 26px;
@@ -67,7 +67,7 @@ body {
 .card::after {
     content: '🧧';
     position: absolute; top: 5px; right: 8px; font-size: 26px;
-}*/
+}
 
 h2 { 
     color: #990900; /*#d32f2f*/
@@ -77,7 +77,7 @@ h2 {
     display: flex; align-items: center; justify-content: center;
     position: relative; z-index: 2;
 }
-/*h2::before, h2::after { content: '🌸'; margin: 0 8px; font-size: 18px; }*/
+h2::before, h2::after { content: '🌸'; margin: 0 8px; font-size: 18px; }
 
 /* INPUT VÀ NHÃN */
 label { display: block; text-align: left; margin-bottom: 5px; font-weight: bold; color: #5d4037; position: relative; z-index: 2; }
@@ -241,24 +241,3 @@ button:disabled {
 .cust-list-table th, .cust-list-table td { border: 1px solid #d32f2f; padding: 8px; text-align: left; }
 .cust-list-table th { background-color: #d32f2f; color: white; }
 .points-red { color: #d32f2f; font-weight: bold; }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
