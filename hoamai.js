@@ -79,7 +79,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     this.y = -30;
                 }
 
-                this.size = Math.random() * 6 + 8;
+                this.size = Math.random() * 3 + 4;
                 this.speedY = Math.random() * 0.4 + 0.3;
                 this.speedX = Math.random() * 0.2 - 0.1;
                 this.rotation = Math.random() * 360;
