@@ -94,7 +94,7 @@ button {
     width: 100%; background-color: #c62828; color: white; border: none; 
     padding: 15px; border-radius: 10px; font-weight: bold; cursor: pointer; 
     font-size: 18px; position: relative; z-index: 2;
-    transition: 0.5s opacity;
+    transition: 1s opacity;
 }
 
 button:disabled {
