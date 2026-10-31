@@ -5,7 +5,6 @@ style.innerHTML = `
     .card > *:not(#flower-canvas) { position: relative; z-index: 2; }
 `;
 document.head.appendChild(style);
-
 window.addEventListener('DOMContentLoaded', () => {
     const card = document.querySelector('.card');
     if (card) {
