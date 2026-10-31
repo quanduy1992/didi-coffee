@@ -6,7 +6,29 @@
     <title>Di Di Coffee</title>
     <link rel="stylesheet" href="style.css">
     <style>
-
+        <!-- Style cho hoa rơi tết-->
+          .petal {
+            position: fixed;
+            top: -10px;
+            z-index: 9999;
+            pointer-events: none; /* Không làm vướng click của khách */
+            user-select: none;
+            animation: fall linear forwards;
+          }
+        
+          @keyframes fall {
+            0% {
+              transform: translateY(0) rotate(0deg) translateX(0);
+              opacity: 1;
+            }
+            50% {
+              transform: translateY(50vh) rotate(180deg) translateX(20px);
+            }
+            100% {
+              transform: translateY(105vh) rotate(360deg) translateX(-20px);
+              opacity: 0.2;
+            }
+          }
         /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
         /* 1. Tạo lớp nền lấp lánh (phía trên body) */
         body::after {
