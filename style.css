@@ -1,12 +1,8 @@
 /* --- DI DI COFFEE - GIAO DIỆN TẾT CHUẨN (HOA ĐÀO & MENU VUÔNG) --- */
 body { 
     /* Nền đỏ nhung sang trọng kết hợp ánh sáng tỏa từ tâm */
-    background: radial-gradient(circle at center, #ba0c0c 0%, #7a0000 70%, #4a0000 100%);
+    background: radial-gradient(circle at center, #ba0c0c 0%, #7a0000 70%, #4a0000 100%); /* Thay nền ở đây */
     background-attachment: fixed;
-    position: relative;
-    overflow-x: hidden;
-    
-    /* Các thuộc tính căn chỉnh ban đầu của anh */
     display: flex; 
     justify-content: center; 
     align-items: center; 
