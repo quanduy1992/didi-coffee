@@ -15,11 +15,6 @@ window.addEventListener('DOMContentLoaded', () => {
         const ctx = canvas.getContext('2d');
         let flowers = [];
         let obstacles = [];
-        
-        // Tạo ảnh hoa đào từ SVG chuẩn nét
-        const flowerImg = new Image();
-        const svgData = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120"><path d="M60 10 C68 35 88 52 110 60 C88 68 68 85 60 110 C52 85 32 68 10 60 C32 52 52 35 60 10 Z" fill="%23ffb7c5" stroke="%23ffffff" stroke-width="3"/><circle cx="60" cy="60" r="18" fill="%23ff69b4"/><circle cx="60" cy="60" r="8" fill="%23ffffff"/></svg>`;
-        flowerImg.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgData);
 
         function updateObstacles() {
             obstacles = [];
@@ -63,7 +58,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     this.y = -30;
                 }
 
-                this.size = Math.random() * 8 + 14; 
+                this.size = Math.random() * 6 + 16; // Kích thước icon hoa đào
                 this.speedY = Math.random() * 0.4 + 0.3;
                 this.speedX = Math.random() * 0.2 - 0.1;
                 this.rotation = Math.random() * 360;
@@ -122,22 +117,21 @@ window.addEventListener('DOMContentLoaded', () => {
                 ctx.save();
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation * Math.PI / 180);
-                try {
-                    ctx.drawImage(flowerImg, -this.size / 2, -this.size / 2, this.size, this.size);
-                } catch(e) {
-                    // Dự phòng nếu ảnh chưa kịp vẽ
-                    ctx.fillStyle = "#ffb7c5";
-                    ctx.beginPath(); ctx.arc(0, 0, this.size/2, 0, Math.PI*2); ctx.fill();
-                }
+                
+                // Vẽ trực tiếp icon emoji 🌸 lên Canvas
+                ctx.font = `${this.size}px Arial`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🌸', 0, 0);
+                
                 ctx.restore();
             }
         }
 
         resize();
 
-        // Khởi tạo hoa ngay lập tức không cần đợi sự kiện onload bị kẹt
-        for(let i=0; i<5; i++) { flowers.push(new FallingFlower(true)); }
-        for(let i=0; i<5; i++) { flowers.push(new FallingFlower(false)); }
+        for(let i=0; i<6; i++) { flowers.push(new FallingFlower(true)); }
+        for(let i=0; i<6; i++) { flowers.push(new FallingFlower(false)); }
 
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
