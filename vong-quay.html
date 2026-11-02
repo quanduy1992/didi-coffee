@@ -60,6 +60,9 @@
                     <div style="background: #d32f2f; color: white; padding: 5px 8px; border-radius: 4px; min-width: 35px;"><span id="seconds">00</span><br><sub style="font-size: 9px; font-weight: normal;">Giây</sub></div>
                 </div>
             </div>
+            <!-- Nút QUAY NGAY và QUAY THỬ hiện sẵn nhưng bị khóa mờ -->
+            <button id="spinBtn" onclick="checkAndSpin()" disabled style="width: 100%; opacity: 0.5; cursor: not-allowed;">QUAY NGAY</button>
+            <button id="testBtn" onclick="testSpin()" disabled style="width: 100%; margin-top: 8px; background-color: #795548; color: white; opacity: 0.5; cursor: not-allowed;">QUAY THỬ (KHÔNG TRỪ ĐIỂM)</button>
             <button id="spinBtn" onclick="checkAndSpin()" disabled style="width: 100%; display: none;">QUAY NGAY</button>
             <button id="testBtn" onclick="testSpin()" style="width: 100%; margin-top: 8px; background-color: #795548; color: white; display: none;">QUAY THỬ (KHÔNG TRỪ ĐIỂM)</button>
         </div>
@@ -323,7 +326,7 @@
                 btn.disabled = currentClientPoints < spinPoints;
             }, 4000);
         }
-        // Đồng hồ đếm ngược tới ngày 27/11/2026
+        // Đồng hồ đếm ngược tới ngày 27/11/2026 và mở khóa 2 nút khi hết giờ
         function startCountdown() {
             const targetDate = new Date('2026-11-27T00:00:00').getTime();
         
@@ -331,11 +334,35 @@
                 const now = new Date().getTime();
                 const distance = targetDate - now;
         
-                if (distance < 0) {
-                    document.getElementById('countdown-timer').innerHTML = "<span style='color: red; font-weight: bold;'>🎉 Vòng quay đã chính thức mở!</span>";
-                    return;
+                // KHI ĐẾM NGƯỢC KẾT THÚC
+                if (distance <= 0) {
+                    const timerElem = document.getElementById('countdown-timer');
+                    if (timerElem) {
+                        timerElem.innerHTML = "<span style='color: red; font-weight: bold;'>🎉 Vòng quay đã chính thức mở!</span>";
+                    }
+        
+                    // 1. Lấy 2 nút theo ID
+                    const spinBtn = document.getElementById('spinBtn');
+                    const testBtn = document.getElementById('testBtn');
+        
+                    // 2. Mở khóa nút QUAY NGAY (hiển thị rõ, cho phép bấm)
+                    if (spinBtn) {
+                        spinBtn.removeAttribute('disabled'); // Cho phép bấm
+                        spinBtn.style.opacity = '1';         // Sáng rõ lại
+                        spinBtn.style.cursor = 'pointer';    // Đổi con trỏ chuột thành hình bàn tay
+                    }
+        
+                    // 3. Mở khóa nút QUAY THỬ
+                    if (testBtn) {
+                        testBtn.removeAttribute('disabled'); // Cho phép bấm
+                        testBtn.style.opacity = '1';         // Sáng rõ lại
+                        testBtn.style.cursor = 'pointer';    // Đổi con trỏ chuột thành hình bàn tay
+                    }
+        
+                    return; // Dừng đếm ngược
                 }
         
+                // Tính toán thời gian đếm ngược còn lại
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -356,7 +383,7 @@
             setInterval(updateTimer, 1000);
         }
         
-        // Kích hoạt khi trang tải xong
+        // Kích hoạt hàm đếm ngược
         window.addEventListener('DOMContentLoaded', startCountdown);
     </script>
 </body>
