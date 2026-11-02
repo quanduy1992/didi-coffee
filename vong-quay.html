@@ -50,7 +50,16 @@
         <div class="controls" id="form-input">
             <label>Số điện thoại:</label>
             <input type="tel" id="phone" placeholder="Nhập số điện thoại để quay" oninput="checkPointRealtime()" style="width:100%; padding:10px; margin:10px 0;">
-            <p style="width: 100%; display: block; color: green; font-weight: bold;">Vòng quay sẽ mở từ ngày 27/11/2026 đến 27/01/2027 Rất mong Quý Khách sắp xếp điểm để đăng ký quay nếu có nhu cầu.</p>
+            <!-- Đồng hồ đếm ngược vòng quay -->
+            <div id="countdown-timer" style="text-align: center; margin: 10px 0; font-family: Arial, sans-serif;">
+                <span style="font-size: 13px; font-weight: bold; color: #5d4037; display: block; margin-bottom: 5px;">⏳ Vòng quay mở sau:</span>
+                <div style="display: inline-flex; gap: 8px; font-weight: bold;">
+                    <div style="background: #d32f2f; color: white; padding: 5px 8px; border-radius: 4px; min-width: 35px;"><span id="days">00</span><br><sub style="font-size: 9px; font-weight: normal;">Ngày</sub></div>
+                    <div style="background: #d32f2f; color: white; padding: 5px 8px; border-radius: 4px; min-width: 35px;"><span id="hours">00</span><br><sub style="font-size: 9px; font-weight: normal;">Giờ</sub></div>
+                    <div style="background: #d32f2f; color: white; padding: 5px 8px; border-radius: 4px; min-width: 35px;"><span id="minutes">00</span><br><sub style="font-size: 9px; font-weight: normal;">Phút</sub></div>
+                    <div style="background: #d32f2f; color: white; padding: 5px 8px; border-radius: 4px; min-width: 35px;"><span id="seconds">00</span><br><sub style="font-size: 9px; font-weight: normal;">Giây</sub></div>
+                </div>
+            </div>
             <button id="spinBtn" onclick="checkAndSpin()" disabled style="width: 100%; display: none;">QUAY NGAY</button>
             <button id="testBtn" onclick="testSpin()" style="width: 100%; margin-top: 8px; background-color: #795548; color: white; display: none;">QUAY THỬ (KHÔNG TRỪ ĐIỂM)</button>
         </div>
