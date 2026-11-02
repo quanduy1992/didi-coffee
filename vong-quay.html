@@ -62,9 +62,7 @@
             </div>
             <!-- Nút QUAY NGAY và QUAY THỬ hiện sẵn nhưng bị khóa mờ -->
             <button id="spinBtn" onclick="checkAndSpin()" disabled style="width: 100%; opacity: 0.5; cursor: not-allowed;">QUAY NGAY</button>
-            <button id="testBtn" onclick="testSpin()" disabled style="width: 100%; margin-top: 8px; background-color: #795548; color: white; opacity: 0.5; cursor: not-allowed;">QUAY THỬ (KHÔNG TRỪ ĐIỂM)</button>
-            <button id="spinBtn" onclick="checkAndSpin()" disabled style="width: 100%; display: none;">QUAY NGAY</button>
-            <button id="testBtn" onclick="testSpin()" style="width: 100%; margin-top: 8px; background-color: #795548; color: white; display: none;">QUAY THỬ (KHÔNG TRỪ ĐIỂM)</button>
+            <button id="testBtn" onclick="testSpin()" style="width: 100%; margin-top: 8px; background-color: #795548; color: white; display: block;">QUAY THỬ (KHÔNG TRỪ ĐIỂM)</button>
         </div>
 
         <div id="result"></div>
@@ -198,6 +196,11 @@
 
         // HÀM QUAY THẬT
         function checkAndSpin() {
+            // CHẶN NGAY LẬP TỨC NẾU CHƯA ĐẾM NGƯỢC XONG
+            if (new Date().getTime() < TARGET_TIME) {
+                alert("Vòng quay chưa mở! Vui lòng chờ đến ngày 27/11/2026.");
+                return; 
+            }
             const phone = document.getElementById('phone').value.trim().replace(/[^0-9]/g, "");
             const btn = document.getElementById('spinBtn');
             const resDiv = document.getElementById('result');
