@@ -182,15 +182,14 @@
 
             if (phone.length >= 10) {
                 display.innerHTML = "⏳ Đang kiểm tra thông tin...";
+                
+                // 1. Giữ nguyên lệnh check điểm cũ
                 fetch(`${scriptURL}?action=get_points_new&phone=${phone}`)
                     .then(res => res.json())
                     .then(data => {
                         currentClientPoints = parseFloat(data.points) || 0;
                         currentCustomerName = data.name || "Khách";
                         
-                        // Nhận số lần đã quay thật (đếm từ từ khóa VONG_QUAY trong Trang tính 1)
-                        currentRealSpinCount = parseInt(data.realSpinCount) || 0;
-
                         display.innerHTML = `Chào <b>${currentCustomerName}</b>! Bạn có: <b>${currentClientPoints}</b> điểm`;
                         
                         btn.disabled = currentClientPoints < spinPoints;
@@ -201,10 +200,19 @@
                     })
                     .catch(err => {
                         currentCustomerName = "Khách";
-                        currentRealSpinCount = 0;
                         display.innerHTML = "❌ SĐT chưa có điểm tích lũy";
                         btn.disabled = true;
                         btn.innerText = "QUAY NGAY";
+                    });
+
+                // 2. BỔ SUNG MỚI: Gọi sang phần 6 (check_spin_count) để đếm từ khóa VONG_QUAY trong Trang tính 1
+                fetch(`${scriptURL}?action=check_spin_count&phone=${phone}`)
+                    .then(res => res.json())
+                    .then(resCount => {
+                        currentRealSpinCount = parseInt(resCount.realSpinCount) || 0;
+                    })
+                    .catch(() => {
+                        currentRealSpinCount = 0;
                     });
             } else {
                 currentCustomerName = "";
