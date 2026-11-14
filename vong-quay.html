@@ -78,35 +78,49 @@
     <script>
         const scriptURL = CONFIG.SCRIPT_URL;
         const spinPoints = CONFIG.SPIN_POINTS || 200;
+        const TARGET_TIME = new Date('2026-11-27T00:00:00').getTime();
         let isProcessing = false;
         let currentClientPoints = 0; 
-        let currentCustomerName = ""; // Lưu tên khách từ hệ thống
+        let currentCustomerName = ""; 
+        let currentRealSpinCount = 0; // Biến lưu số lần đã quay thật từ sheet
 
         const GIFTS = ["Tặng 20 ly", "Tặng 5 Ly", "Tặng 40 ly", "Giỏ quà tết", "Tặng 10 ly", "Tặng 30 Ly", "Tặng 50 ly", "Giỏ quà tết"];
         const COLORS = ["#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f","#d32f2f", "#f1c40f", "#d32f2f", "#f1c40f"];
         
-        // Tỷ lệ dành riêng cho QUAY THỬ (Chia đều 25% mỗi ô)
+        // Tỷ lệ dành riêng cho QUAY THỬ (Chia đều tỷ lệ)
         const TEST_GIFT_DATA = [
             { name: "Tặng 20 ly", weight: 20 }, 
             { name: "Tặng 5 ly", weight: 20 }, 
             { name: "Tặng 40 ly", weight: 5 }, 
             { name: "Giỏ quà tết", weight: 5 },
             { name: "Tặng 10 ly", weight: 20 }, 
-            { name: "Tặng 30 ly", weight: 20 },
+            { name: "Tặng 30 ly", weight: 20 }, 
             { name: "Tặng 50 ly", weight: 5 }, 
             { name: "Giỏ quà tết", weight: 5 }
         ];
 
-        // Tỷ lệ dành cho QUAY THẬT
+        // Tỷ lệ QUAY THẬT LẦN ĐẦU (100% Giỏ quà tết)
         const GIFT_DATA = [
             { name: "Tặng 20 ly", weight: 0 }, 
             { name: "Tặng 5 ly", weight: 0 }, 
             { name: "Tặng 40 ly", weight: 0 }, 
             { name: "Giỏ quà tết", weight: 50 },
             { name: "Tặng 10 ly", weight: 0 }, 
-            { name: "Tặng 30 ly", weight: 0 },
+            { name: "Tặng 30 ly", weight: 0 }, 
             { name: "Tặng 50 ly", weight: 0 }, 
             { name: "Giỏ quà tết", weight: 50 }
+        ];
+
+        // Tỷ lệ QUAY THẬT TỪ LẦN 2 TRỞ ĐI (Tỷ lệ bình thường)
+        const NORMAL_GIFT_DATA = [
+            { name: "Tặng 20 ly", weight: 20 }, 
+            { name: "Tặng 5 ly", weight: 20 }, 
+            { name: "Tặng 40 ly", weight: 5 }, 
+            { name: "Giỏ quà tết", weight: 5 },
+            { name: "Tặng 10 ly", weight: 20 }, 
+            { name: "Tặng 30 ly", weight: 20 }, 
+            { name: "Tặng 50 ly", weight: 5 }, 
+            { name: "Giỏ quà tết", weight: 5 }
         ];
 
         let currentRotation = 0;
@@ -159,6 +173,7 @@
             }
         };
 
+        // Hàm kiểm tra điểm và đồng thời lấy số lần đã quay thật từ Trang tính 1
         function checkPointRealtime() {
             if (isProcessing) return;
             const phone = document.getElementById('phone').value.trim();
@@ -166,12 +181,16 @@
             const display = document.getElementById('pointDisplay');
 
             if (phone.length >= 10) {
-                display.innerHTML = "⏳ Đang kiểm tra điểm...";
+                display.innerHTML = "⏳ Đang kiểm tra thông tin...";
                 fetch(`${scriptURL}?action=get_points_new&phone=${phone}`)
                     .then(res => res.json())
                     .then(data => {
                         currentClientPoints = parseFloat(data.points) || 0;
-                        currentCustomerName = data.name || "Khách quay thử";
+                        currentCustomerName = data.name || "Khách";
+                        
+                        // Nhận số lần đã quay thật (đếm từ từ khóa VONG_QUAY trong Trang tính 1)
+                        currentRealSpinCount = parseInt(data.realSpinCount) || 0;
+
                         display.innerHTML = `Chào <b>${currentCustomerName}</b>! Bạn có: <b>${currentClientPoints}</b> điểm`;
                         
                         btn.disabled = currentClientPoints < spinPoints;
@@ -181,13 +200,15 @@
                         }
                     })
                     .catch(err => {
-                        currentCustomerName = "Khách quay thử";
+                        currentCustomerName = "Khách";
+                        currentRealSpinCount = 0;
                         display.innerHTML = "❌ SĐT chưa có điểm tích lũy";
                         btn.disabled = true;
                         btn.innerText = "QUAY NGAY";
                     });
             } else {
                 currentCustomerName = "";
+                currentRealSpinCount = 0;
                 display.innerHTML = "";
                 btn.disabled = true;
                 btn.innerText = "QUAY NGAY";
@@ -196,7 +217,6 @@
 
         // HÀM QUAY THẬT
         function checkAndSpin() {
-            // CHẶN NGAY LẬP TỨC NẾU CHƯA ĐẾM NGƯỢC XONG
             if (new Date().getTime() < TARGET_TIME) {
                 alert("Vòng quay chưa mở! Vui lòng chờ đến ngày 27/11/2026.");
                 return; 
@@ -223,21 +243,28 @@
             btn.innerText = "🎡 ĐANG QUAY...";
             resDiv.innerHTML = "";
 
-            const totalWeight = GIFT_DATA.reduce((sum, item) => sum + item.weight, 0);
+            // Nếu currentRealSpinCount === 0 (chưa có dòng VONG_QUAY nào trên sheet) -> 100% Giỏ quà tết
+            // Từ lần 2 trở đi (>= 1) -> Tỷ lệ bình thường
+            const activeGiftData = currentRealSpinCount === 0 ? GIFT_DATA : NORMAL_GIFT_DATA;
+            
+            // Tăng biến đếm tại chỗ để nếu bấm quay tiếp trong phiên đó sẽ chuyển sang tỷ lệ thường luôn
+            currentRealSpinCount++;
+
+            const totalWeight = activeGiftData.reduce((sum, item) => sum + item.weight, 0);
             let random = Math.random() * totalWeight;
             let selectedIndex = 0;
-            for (let i = 0; i < GIFT_DATA.length; i++) {
-                if (random < GIFT_DATA[i].weight) { selectedIndex = i; break; }
-                random -= GIFT_DATA[i].weight;
+            for (let i = 0; i < activeGiftData.length; i++) {
+                if (random < activeGiftData[i].weight) { selectedIndex = i; break; }
+                random -= activeGiftData[i].weight;
             }
-            const giftName = GIFT_DATA[selectedIndex].name;
+            const giftName = activeGiftData[selectedIndex].name;
 
             const arc = 360 / GIFTS.length;
             const targetDegree = 360 - (selectedIndex * arc + arc / 2);
             currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
             document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
-            // Gửi dữ liệu ngầm lên server
+            // Gửi dữ liệu quay thật ngầm lên server (Lưu vào Trang tính 1 với từ khóa VONG_QUAY)
             fetch(`${scriptURL}?action=vong_quay&phone=${phone}&gift=${encodeURIComponent(giftName)}&points=${spinPoints}`);
 
             currentClientPoints = Math.max(0, currentClientPoints - spinPoints);
@@ -269,7 +296,7 @@
             }, 4000);
         }
 
-        // HÀM QUAY THỬ (ĐÃ THÊM GỬI LỊCH SỬ LÊN SHEET LichSuXem)
+        // HÀM QUAY THỬ (Lưu vào LichSuXem, không ảnh hưởng đến số lần quay thật)
         function testSpin() {
             const resDiv = document.getElementById('result');
             const btn = document.getElementById('spinBtn');
@@ -296,17 +323,7 @@
             currentRotation += 1440 + (targetDegree - (currentRotation % 360) + 360) % 360;
             document.getElementById('wheel').style.transform = `rotate(${currentRotation}deg)`;
 
-            // --- ĐOẠN MỚI THÊM: GỬI LỊCH SỬ NGẦM LÊN SHEET LichSuXem ---
-            let customerInfo = "Khách quay thử";
-            if (phone.length >= 10) {
-                customerInfo = (currentCustomerName ? currentCustomerName : "Khách") + " (" + phone + ")";
-            }
-            
-            // Lệnh gửi ngầm không làm đơ/chậm giao diện
-            //fetch(`${scriptURL}?action=save_test_history&name=${encodeURIComponent(customerInfo)}&gift=${encodeURIComponent(giftName)}`, { mode: 'no-cors' });
-            // Tìm dòng fetch trong hàm testSpin() và đổi thành:
             fetch(`${scriptURL}?action=save_test_history&phone=${phone}&name=${encodeURIComponent(currentCustomerName || 'Khách')}&gift=${encodeURIComponent(giftName)}`, { mode: 'no-cors' });
-            // -------------------------------------------------------------
 
             setTimeout(() => {
                 resDiv.innerHTML = `
@@ -329,7 +346,8 @@
                 btn.disabled = currentClientPoints < spinPoints;
             }, 4000);
         }
-        // Đồng hồ đếm ngược tới ngày 27/11/2026 và mở khóa 2 nút khi hết giờ
+
+        // Đồng hồ đếm ngược tới ngày 27/11/2026
         function startCountdown() {
             const targetDate = new Date('2026-11-27T00:00:00').getTime();
         
@@ -337,35 +355,30 @@
                 const now = new Date().getTime();
                 const distance = targetDate - now;
         
-                // KHI ĐẾM NGƯỢC KẾT THÚC
                 if (distance <= 0) {
                     const timerElem = document.getElementById('countdown-timer');
                     if (timerElem) {
                         timerElem.innerHTML = "<span style='color: red; font-weight: bold;'>🎉 Vòng quay đã chính thức mở!</span>";
                     }
         
-                    // 1. Lấy 2 nút theo ID
                     const spinBtn = document.getElementById('spinBtn');
                     const testBtn = document.getElementById('testBtn');
         
-                    // 2. Mở khóa nút QUAY NGAY (hiển thị rõ, cho phép bấm)
                     if (spinBtn) {
-                        spinBtn.removeAttribute('disabled'); // Cho phép bấm
-                        spinBtn.style.opacity = '1';         // Sáng rõ lại
-                        spinBtn.style.cursor = 'pointer';    // Đổi con trỏ chuột thành hình bàn tay
+                        spinBtn.removeAttribute('disabled');
+                        spinBtn.style.opacity = '1';         
+                        spinBtn.style.cursor = 'pointer';    
                     }
         
-                    // 3. Mở khóa nút QUAY THỬ
                     if (testBtn) {
-                        testBtn.removeAttribute('disabled'); // Cho phép bấm
-                        testBtn.style.opacity = '1';         // Sáng rõ lại
-                        testBtn.style.cursor = 'pointer';    // Đổi con trỏ chuột thành hình bàn tay
+                        testBtn.removeAttribute('disabled'); 
+                        testBtn.style.opacity = '1';         
+                        testBtn.style.cursor = 'pointer';    
                     }
         
-                    return; // Dừng đếm ngược
+                    return; 
                 }
         
-                // Tính toán thời gian đếm ngược còn lại
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
@@ -386,7 +399,6 @@
             setInterval(updateTimer, 1000);
         }
         
-        // Kích hoạt hàm đếm ngược
         window.addEventListener('DOMContentLoaded', startCountdown);
     </script>
 </body>
