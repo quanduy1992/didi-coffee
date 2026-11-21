@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quét Mã QR Tích Điểm — Di Di Coffee</title>
+  <!-- Tải Tailwind CSS qua CDN cho giao diện gọn gàng, đáp ứng tốt cả màn hình đứng và ngang -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Tải font Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- Tải thư viện html5-qrcode qua CDN để bật camera trực tiếp trong trình duyệt -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            crimson: {
+              800: '#7f1d1d',
+              900: '#6b1212',
+              950: '#450a0a',
+            },
+            cream: {
+              50: '#fffdf9',
+              100: '#fbf5ea',
+              200: '#f3e5cf',
+            },
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Tùy chỉnh nhẹ khung quét html5-qrcode để vừa vặn mọi kích thước màn hình */
+    #qr-reader {
+      width: 100%;
+      border: none !important;
+      border-radius: 1rem;
+      overflow: hidden;
+      background: #1a0909;
+    }
+    #qr-reader video {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 52vh;
+      object-fit: cover;
+      border-radius: 1rem;
+    }
+    #qr-reader__dashboard_section_csr span,
+    #qr-reader__dashboard_section_swaplink {
+      font-size: 0.875rem !important;
+    }
+  </style>
+</head>
+<body class="bg-cream-100 text-crimson-950 min-h-screen font-sans antialiased selection:bg-crimson-800 selection:text-cream-50">
+  <!-- Thanh đầu trang gọn gàng cho quầy cà phê mang đi -->
+  <header class="bg-crimson-900 text-cream-50 border-b border-crimson-800 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-5xl mx-auto px-3 sm:px-5 py-3 flex flex-wrap items-center justify-between gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <span class="inline-flex items-center justify-center w-9 h-9 rounded-xl bg-cream-50 text-crimson-900 font-extrabold text-lg shrink-0">
+          ☕
+        </span>
+        <div class="min-w-0">
+          <div class="flex items-center gap-2">
+            <h1 class="text-base sm:text-lg font-extrabold tracking-tight truncate">DI DI COFFEE</h1>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-crimson-800 text-cream-100 shrink-0">
+              Quầy Quét QR
+            </span>
+          </div>
+          <p class="text-xs text-cream-200 truncate">Luật tích điểm: 15 điểm = 1 ly hay dùng</p>
+        </div>
+      </div>
+
+      <!-- Các nút điều khiển nhanh: Bật/Tắt Camera, Chạy thử nghiệm, Cấu hình -->
+      <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+        <button
+          id="btn-toggle-camera"
+          type="button"
+          class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-cream-50 text-crimson-900 hover:bg-cream-200 active:scale-[0.99] transition"
+        >
+          📷 Bật Camera
+        </button>
+        <button
+          id="btn-toggle-sim"
+          type="button"
+          class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-crimson-800 text-cream-50 hover:bg-crimson-950 border border-cream-200/20 active:scale-[0.99] transition"
+        >
+          🧪 Chạy thử
+        </button>
+        <button
+          id="btn-toggle-config"
+          type="button"
+          class="px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-crimson-800 text-cream-50 hover:bg-crimson-950 border border-cream-200/20 active:scale-[0.99] transition"
+        >
+          ⚙️ Cấu hình
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-3 sm:px-5 py-4 space-y-4">
+    <!-- Thông báo hệ thống / lỗi (thay thế hoàn toàn alert/confirm) -->
+    <div id="system-banner" class="hidden rounded-2xl px-4 py-3 text-sm font-medium border flex items-start justify-between gap-3">
+      <div id="system-banner-text" class="leading-relaxed"></div>
+      <button id="btn-close-banner" type="button" class="text-xs font-bold px-2 py-1 rounded-lg opacity-75 hover:opacity-100">
+        Đóng
+      </button>
+    </div>
+
+    <!-- Khu vực cấu hình lưu localStorage (mặc định thu gọn cho đỡ chiếm chỗ lúc bán hàng) -->
+    <section id="config-panel" class="hidden bg-cream-50 border border-crimson-900/15 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+      <div class="flex items-center justify-between gap-2 border-b border-crimson-900/10 pb-3">
+        <div>
+          <h2 class="text-base font-bold text-crimson-900">Cấu hình kết nối &amp; luật quét tại quầy</h2>
+          <p class="text-xs text-crimson-950/70">Dữ liệu được lưu trực tiếp trên trình duyệt của thiết bị này (localStorage).</p>
+        </div>
+        <span id="config-status-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full bg-cream-200 text-crimson-900">
+          Đang lưu cục bộ
+        </span>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+        <div class="md:col-span-2">
+          <label for="cfg-apps-script-url" class="block text-xs font-bold uppercase tracking-wide text-crimson-900 mb-1.5">
+            URL Google Apps Script (Web App endpoint)
+          </label>
+          <input
+            id="cfg-apps-script-url"
+            type="url"
+            placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+            class="w-full rounded-xl border border-crimson-900/20 bg-white px-3.5 py-2.5 text-sm text-crimson-950 focus:outline-none focus:ring-2 focus:ring-crimson-800"
+          />
+          <p class="text-[11px] text-crimson-950/65 mt-1">
+            Nếu để trống URL, hệ thống tự động chạy ở chế độ mô phỏng nội bộ để ông test trực tiếp trên máy.
+          </p>
+        </div>
+
+        <div>
+          <label for="cfg-secret-key" class="block text-xs font-bold uppercase tracking-wide text-crimson-900 mb-1.5">
+            Mã bí mật chủ quán (Secret / Admin Key)
+          </label>
+          <input
+            id="cfg-secret-key"
+            type="password"
+            placeholder="Ví dụ: DIDI_SECRET_2026"
+            class="w-full rounded-xl border border-crimson-900/20 bg-white px-3.5 py-2.5 text-sm text-crimson-950 focus:outline-none focus:ring-2 focus:ring-crimson-800"
+          />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="cfg-points-per-scan" class="block text-xs font-bold uppercase tracking-wide text-crimson-900 mb-1.5">
+              Điểm cộng / lần quét
+            </label>
+            <input
+              id="cfg-points-per-scan"
+              type="number"
+              min="1"
+              max="50"
+              step="1"
+              value="1"
+              class="w-full rounded-xl border border-crimson-900/20 bg-white px-3.5 py-2.5 text-sm font-semibold text-crimson-950 focus:outline-none focus:ring-2 focus:ring-crimson-800"
+            />
+          </div>
+
+          <div>
+            <label for="cfg-cooldown-sec" class="block text-xs font-bold uppercase tracking-wide text-crimson-900 mb-1.5">
+              Chống quét trùng (giây)
+            </label>
+            <input
+              id="cfg-cooldown-sec"
+              type="number"
+              min="1"
+              max="60"
+              step="1"
+              value="5"
+              class="w-full rounded-xl border border-crimson-900/20 bg-white px-3.5 py-2.5 text-sm font-semibold text-crimson-950 focus:outline-none focus:ring-2 focus:ring-crimson-800"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-crimson-900/10">
+        <button
+          id="btn-reset-config"
+          type="button"
+          class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold text-crimson-900 bg-cream-200 hover:bg-cream-200/80 transition"
+        >
+          Khôi phục mặc định
+        </button>
+        <div class="flex items-center gap-2">
+          <button
+            id="btn-save-config"
+            type="button"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-crimson-900 text-cream-50 hover:bg-crimson-800 active:scale-[0.99] transition shadow-sm"
+          >
+            💾 Lưu cấu hình
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Bố cục chính: Cột trái là Camera + Mô phỏng; Cột phải là Trạng thái quét tức thì + Lịch sử gần đây -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
+      <!-- Cột trái (7/12 trên desktop): Khung quét QR tự động & Chạy thử nghiệm -->
+      <section class="lg:col-span-7 bg-cream-50 border border-crimson-900/15 rounded-2xl p-4 sm:p-5 shadow-sm space-y-4">
+        <div class="flex items-center justify-between gap-2">
+          <div>
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-crimson-800 block">
+              Bước 2 — Giơ mã QR vào khung
+            </span>
+            <h2 class="text-base sm:text-lg font-extrabold text-crimson-900">Khung quét mã QR tự động</h2>
+            <p class="text-xs sm:text-sm text-crimson-950/75">
+            Đưa thẻ hoặc ảnh mã QR của khách vào khung — tự cộng điểm, không cần bấm nút.
+          </p>
+        </div>
+        <span id="scanner-state-pill" class="text-xs font-bold px-3 py-1 rounded-full bg-cream-200 text-crimson-900 shrink-0">
+          Chờ bật camera
+        </span>
+      </div>
+
+      <!-- Vùng hiển thị camera -->
+      <div class="relative rounded-2xl overflow-hidden bg-crimson-950 text-cream-50 min-h-[240px] sm:min-h-[290px] flex flex-col items-center justify-center p-3">
+        <div id="qr-reader"></div>
+
+        <!-- Lớp phủ trạng thái khi camera đang tắt hoặc đang chờ quyền -->
+        <div id="camera-placeholder" class="text-center space-y-3 py-6 px-4 max-w-sm">
+          <div class="w-14 h-14 rounded-2xl bg-crimson-900 text-cream-50 flex items-center justify-center text-2xl mx-auto shadow">
+            📷
+          </div>
+          <div class="space-y-1">
+            <p class="font-bold text-sm sm:text-base text-cream-50">Camera đang tạm nghỉ</p>
+            <p class="text-xs text-cream-200/85 leading-relaxed">
+              Bấm <strong>"Bật Camera"</strong> ở trên để quét trực tiếp, hoặc dùng <strong>"Chạy thử nghiệm"</strong> bên dưới nếu đang test trên máy tính / chưa gắn camera.
+            </p>
+          </div>
+          <button
+            id="btn-start-from-placeholder"
+            type="button"
+            class="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-cream-50 text-crimson-900 hover:bg-cream-200 transition"
+          >
+            Bật camera ngay
+          </button>
+        </div>
+      </div>
+
+      <!-- Cụm CHỌN / NHẬP SỐ LƯỢNG đặt phía dưới ngay tầm ngón cái, tồn tại song song cùng camera -->
+      <div id="thumb-qty-panel" class="bg-white border-2 border-crimson-900/20 rounded-2xl p-3.5 sm:p-4 space-y-3 shadow-xs">
+        <div class="flex flex-wrap items-center justify-between gap-2">
+          <div>
+            <span class="text-[11px] font-extrabold uppercase tracking-wider text-crimson-800 block">
+              Nhập trước khi quét • Tầm ngón cái
+            </span>
+            <h3 class="text-sm sm:text-base font-extrabold text-crimson-950">
+              Số ly / điểm cộng cho lần quét tới
+            </h3>
+          </div>
+
+          <!-- Tùy chọn giữ nguyên số lượng cho nhiều đơn mua sỉ liên tiếp -->
+          <label
+            for="toggle-keep-qty"
+            class="inline-flex items-center gap-2 cursor-pointer select-none px-3 py-1.5 rounded-xl bg-cream-100 border border-crimson-900/15 text-xs font-bold text-crimson-900 hover:bg-cream-200 transition"
+          >
+            <input
+              id="toggle-keep-qty"
+              type="checkbox"
+              class="w-4 h-4 rounded accent-crimson-800 cursor-pointer"
+            />
+            <span>Giữ số lượng cho đơn sau</span>
+          </label>
+        </div>
+
+        <!-- Cụm nút - / Ô nhập trực tiếp / nút + -->
+        <div class="flex items-center gap-2 sm:gap-3">
+          <button
+            id="btn-qty-minus"
+            type="button"
+            aria-label="Giảm số lượng"
+            class="w-12 h-12 rounded-xl bg-cream-200 hover:bg-cream-200/80 active:scale-[0.98] text-crimson-950 font-extrabold text-xl flex items-center justify-center transition shrink-0"
+          >
+            −
+          </button>
+
+          <div class="relative flex-1">
+            <input
+              id="scan-qty-input"
+              type="number"
+              min="1"
+              max="100"
+              step="1"
+              value="1"
+              aria-label="Số lượng ly hoặc điểm cộng trước khi quét"
+              class="w-full h-12 rounded-xl border-2 border-crimson-900/25 bg-cream-50 px-3 text-center text-2xl font-extrabold text-crimson-900 focus:outline-none focus:border-crimson-800 focus:ring-2 focus:ring-crimson-800/30"
+            />
+            <span class="hidden sm:inline-block absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-crimson-950/60 pointer-events-none">
+              ly / điểm
+            </span>
+          </div>
+
+          <button
+            id="btn-qty-plus"
+            type="button"
+            aria-label="Tăng số lượng"
+            class="w-12 h-12 rounded-xl bg-crimson-900 hover:bg-crimson-800 active:scale-[0.98] text-cream-50 font-extrabold text-xl flex items-center justify-center transition shrink-0 shadow-xs"
+          >
+            +
+          </button>
+        </div>
+
+        <!-- Đầy đủ các nút bấm nhanh từ 1 đến 10 ly ngay tầm ngón cái -->
+        <div class="grid grid-cols-5 sm:grid-cols-10 gap-1.5 sm:gap-2">
+          <button type="button" data-qty="1" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">1</button>
+          <button type="button" data-qty="2" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">2</button>
+          <button type="button" data-qty="3" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">3</button>
+          <button type="button" data-qty="4" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">4</button>
+          <button type="button" data-qty="5" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">5</button>
+          <button type="button" data-qty="6" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">6</button>
+          <button type="button" data-qty="7" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">7</button>
+          <button type="button" data-qty="8" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">8</button>
+          <button type="button" data-qty="9" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">9</button>
+          <button type="button" data-qty="10" class="quick-qty-btn py-2.5 rounded-xl text-xs sm:text-sm font-extrabold border transition">10</button>
+        </div>
+
+        <p id="qty-helper-text" class="text-xs font-semibold text-crimson-950/75">
+          Quét 1 lần sẽ cộng <strong class="text-crimson-900">+1 điểm</strong> rồi tự động trả về <strong>1</strong> cho khách tiếp theo. (Phím 1–9 hoặc 0 = 10 khi test máy tính)
+        </p>
+      </div>
+
+      <!-- Khu vực chạy thử nghiệm / mô phỏng khi không có camera hoặc chưa dán link Apps Script -->
+        <div id="sim-panel" class="bg-cream-200/65 border border-crimson-900/15 rounded-2xl p-3.5 sm:p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-sm font-extrabold text-crimson-900">🧪 Chạy thử nghiệm / Mô phỏng quét QR</span>
+            </div>
+            <span id="mode-indicator" class="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-crimson-900 text-cream-50">
+              Chế độ: Mô phỏng nội bộ
+            </span>
+          </div>
+
+          <p class="text-xs text-crimson-950/80 leading-relaxed">
+            Nhập mã key khách (ví dụ <code class="font-bold">DD001</code>) hoặc số điện thoại (ví dụ <code class="font-bold">0961418580</code>), rồi bấm <strong>Giả lập quét</strong> để kiểm tra tốc độ cộng điểm, tiếng bíp và chống quét trùng.
+          </p>
+
+          <form id="sim-form" class="flex flex-col sm:flex-row gap-2">
+            <input
+              id="sim-code-input"
+              type="text"
+              autocomplete="off"
+              placeholder="Nhập mã QR mẫu: DD001, DD002 hoặc 0961418580..."
+              class="flex-1 rounded-xl border border-crimson-900/20 bg-white px-3.5 py-2.5 text-sm font-medium text-crimson-950 focus:outline-none focus:ring-2 focus:ring-crimson-800"
+            />
+            <button
+              type="submit"
+              class="px-4 py-2.5 rounded-xl text-sm font-bold bg-crimson-900 text-cream-50 hover:bg-crimson-800 active:scale-[0.99] transition shrink-0"
+            >
+              ⚡ Giả lập quét
+            </button>
+          </form>
+
+          <!-- Các nút mã mẫu bấm 1 cái để test nhanh -->
+          <div class="flex flex-wrap items-center gap-1.5 pt-0.5">
+            <span class="text-[11px] font-semibold text-crimson-950/70 mr-1">Mã test nhanh:</span>
+            <button type="button" data-sample="DD001" class="sample-qr-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-crimson-900 border border-crimson-900/15 hover:bg-cream-100 transition">
+              DD001
+            </button>
+            <button type="button" data-sample="DD002" class="sample-qr-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-crimson-900 border border-crimson-900/15 hover:bg-cream-100 transition">
+              DD002
+            </button>
+            <button type="button" data-sample="0961418580" class="sample-qr-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-crimson-900 border border-crimson-900/15 hover:bg-cream-100 transition">
+              0961418580
+            </button>
+            <button type="button" data-sample="https://didicoffee.vn/diem?key=DD014" class="sample-qr-btn px-2.5 py-1 rounded-lg text-xs font-bold bg-white text-crimson-900 border border-crimson-900/15 hover:bg-cream-100 transition">
+              Link QR (DD014)
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Cột phải (5/12 trên desktop): Kết quả quét tức thì & Danh sách quét gần đây -->
+      <section class="lg:col-span-5 space-y-4">
+        <!-- Thẻ trạng thái quét gần nhất -->
+        <div id="result-card" class="bg-cream-50 border-2 border-crimson-900/15 rounded-2xl p-4 sm:p-5 shadow-sm transition-colors duration-200">
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-crimson-900/75">
+              Trạng thái xử lý
+            </span>
+            <span id="cooldown-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cream-200 text-crimson-900">
+              Sẵn sàng quét
+            </span>
+          </div>
+
+          <div id="result-headline" class="text-lg sm:text-xl font-extrabold text-crimson-900">
+            Đang chờ mã QR đầu tiên
+          </div>
+          <p id="result-subtext" class="text-xs sm:text-sm text-crimson-950/75 mt-1 leading-relaxed">
+            Khi quét trúng mã, hệ thống sẽ tự cộng điểm và báo số điểm tích lũy ngay tại đây.
+          </p>
+
+          <!-- Thanh tiến độ tích điểm theo luật 15 điểm = 1 ly hay dùng -->
+          <div class="mt-4 bg-white border border-crimson-900/10 rounded-xl p-3.5 space-y-2">
+            <div class="flex items-center justify-between text-xs sm:text-sm font-bold">
+              <span id="result-customer-label" class="text-crimson-950">Mã khách: —</span>
+              <span id="result-points-text" class="text-crimson-900">0 / 15 điểm</span>
+            </div>
+            <div class="w-full h-3 rounded-full bg-cream-200 overflow-hidden">
+              <div
+                id="result-progress-bar"
+                class="h-full bg-crimson-800 rounded-full transition-all duration-300"
+                style="width: 0%"
+              ></div>
+            </div>
+            <div id="result-reward-banner" class="hidden text-xs font-extrabold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
+              🎉 Khách đã đạt mốc đổi quà (15 điểm = 1 ly hay dùng)!
+            </div>
+          </div>
+        </div>
+
+        <!-- Lịch sử quét trong phiên tại quầy -->
+        <div class="bg-cream-50 border border-crimson-900/15 rounded-2xl p-4 sm:p-5 shadow-sm space-y-3">
+          <div class="flex items-center justify-between gap-2">
+            <h3 class="text-sm sm:text-base font-extrabold text-crimson-900">Lịch sử quét gần đây</h3>
+            <button
+              id="btn-clear-history"
+              type="button"
+              class="text-xs font-semibold text-crimson-900/75 hover:text-crimson-900 underline underline-offset-2"
+            >
+              Xóa nhật ký
+            </button>
+          </div>
+
+          <ul id="scan-history-list" class="divide-y divide-crimson-900/10 max-h-72 overflow-y-auto pr-1">
+            <li id="empty-history-item" class="py-6 text-center text-xs text-crimson-950/60">
+              Chưa có lượt quét nào trong phiên này.
+            </li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    /**
+     * =========================================================================
+     * ỨNG DỤNG QUÉT MÃ QR TÍCH ĐIỂM TẠI QUẦY — DI DI COFFEE
+     * File: quet-diem.html
+     *
+     * Kiến trúc & Luồng hoạt động:
+     * 1. Quản lý cấu hình (Apps Script URL, Secret Key, Điểm cộng/lần, Thời gian
+     *    chống quét trùng) thông qua localStorage với xử lý try/catch an toàn.
+     * 2. Bật/tắt camera trực tiếp bằng thư viện `html5-qrcode` qua CDN, tự động
+     *    trích xuất mã định danh khách (key / SĐT) từ chuỗi QR (hỗ trợ cả dạng
+     *    mã thuần như `DD001`, `0961418580` lẫn URL có tham số `key`/`phone`/`code`).
+     * 3. Chống quét trùng (cooldown) theo từng mã trong N giây để tránh cộng
+     *    dồn khi khách giữ mã trước ống kính quá lâu.
+     * 4. Gửi yêu cầu cộng điểm lên Google Apps Script (nếu đã cấu hình URL) hoặc
+     *    chạy mô phỏng nội bộ (khi chưa dán URL hoặc khi bật chế độ chạy thử).
+     * 5. Phát âm thanh bíp nhẹ nhàng bằng Web Audio API khi quét thành công và
+     *    tự động đưa hệ thống về trạng thái sẵn sàng cho khách tiếp theo.
+     * =========================================================================
+     */
+
+    const STORAGE_KEYS = {
+      CONFIG: 'didi_coffee_scan_config_v1',
+      SIM_POINTS: 'didi_coffee_sim_points_v1',
+      HISTORY: 'didi_coffee_scan_history_v1',
+      KEEP_QTY: 'didi_coffee_keep_qty_v1',
+    };
+
+    const REWARD_THRESHOLD = 15; // Luật cố định: 15 điểm = 1 ly hay dùng
+    const MIN_QTY = 1;
+    const MAX_QTY = 100;
+
+    const DEFAULT_CONFIG = {
+      appsScriptUrl: '',
+      secretKey: '',
+      pointsPerScan: 1,
+      cooldownSec: 5,
+    };
+
+    // Trạng thái runtime của ứng dụng
+    const state = {
+      config: { ...DEFAULT_CONFIG },
+      selectedQty: 1,            // Số ly/điểm chọn trước khi quét (mặc định = 1)
+      keepQtyForNext: false,     // Có giữ nguyên số lượng sau khi quét thành công hay không
+      html5QrCode: null,
+      isCameraRunning: false,
+      isProcessingScan: false,
+      lastScanByCode: new Map(), // Map<string, number> lưu timestamp ms lần quét gần nhất
+      simPoints: {},             // Lưu điểm mô phỏng khi chưa có Apps Script URL
+      history: [],
+      audioCtx: null,
+    };
+
+    // Tập hợp tham chiếu DOM
+    const dom = {
+      systemBanner: document.getElementById('system-banner'),
+      systemBannerText: document.getElementById('system-banner-text'),
+      btnCloseBanner: document.getElementById('btn-close-banner'),
+
+      scanQtyInput: document.getElementById('scan-qty-input'),
+      btnQtyMinus: document.getElementById('btn-qty-minus'),
+      btnQtyPlus: document.getElementById('btn-qty-plus'),
+      toggleKeepQty: document.getElementById('toggle-keep-qty'),
+      qtyHelperText: document.getElementById('qty-helper-text'),
+
+      configPanel: document.getElementById('config-panel'),
+      btnToggleConfig: document.getElementById('btn-toggle-config'),
+      btnSaveConfig: document.getElementById('btn-save-config'),
+      btnResetConfig: document.getElementById('btn-reset-config'),
+      cfgAppsScriptUrl: document.getElementById('cfg-apps-script-url'),
+      cfgSecretKey: document.getElementById('cfg-secret-key'),
+      cfgPointsPerScan: document.getElementById('cfg-points-per-scan'),
+      cfgCooldownSec: document.getElementById('cfg-cooldown-sec'),
+
+      btnToggleCamera: document.getElementById('btn-toggle-camera'),
+      btnStartFromPlaceholder: document.getElementById('btn-start-from-placeholder'),
+      cameraPlaceholder: document.getElementById('camera-placeholder'),
+      scannerStatePill: document.getElementById('scanner-state-pill'),
+
+      simPanel: document.getElementById('sim-panel'),
+      btnToggleSim: document.getElementById('btn-toggle-sim'),
+      simForm: document.getElementById('sim-form'),
+      simCodeInput: document.getElementById('sim-code-input'),
+      modeIndicator: document.getElementById('mode-indicator'),
+
+      resultCard: document.getElementById('result-card'),
+      cooldownBadge: document.getElementById('cooldown-badge'),
+      resultHeadline: document.getElementById('result-headline'),
+      resultSubtext: document.getElementById('result-subtext'),
+      resultCustomerLabel: document.getElementById('result-customer-label'),
+      resultPointsText: document.getElementById('result-points-text'),
+      resultProgressBar: document.getElementById('result-progress-bar'),
+      resultRewardBanner: document.getElementById('result-reward-banner'),
+
+      scanHistoryList: document.getElementById('scan-history-list'),
+      btnClearHistory: document.getElementById('btn-clear-history'),
+    };
+
+    /**
+     * Hiển thị thông báo hệ thống / lỗi thay cho alert()
+     */
+    function showBanner(message, type = 'info') {
+      if (!dom.systemBanner || !dom.systemBannerText) return;
+      dom.systemBanner.classList.remove(
+        'hidden',
+        'bg-red-50', 'border-red-300', 'text-red-900',
+        'bg-emerald-50', 'border-emerald-300', 'text-emerald-900',
+        'bg-amber-50', 'border-amber-300', 'text-amber-900'
+      );
+
+      if (type === 'error') {
+        dom.systemBanner.classList.add('bg-red-50', 'border-red-300', 'text-red-900');
+      } else if (type === 'success') {
+        dom.systemBanner.classList.add('bg-emerald-50', 'border-emerald-300', 'text-emerald-900');
+      } else {
+        dom.systemBanner.classList.add('bg-amber-50', 'border-amber-300', 'text-amber-900');
+      }
+
+      dom.systemBannerText.textContent = message;
+    }
+
+    function hideBanner() {
+      dom.systemBanner?.classList.add('hidden');
+    }
+
+    /**
+     * Đọc và lưu dữ liệu từ localStorage an toàn qua try/catch
+     */
+    function safeReadStorage(key, fallback) {
+      try {
+        const raw = window.localStorage.getItem(key);
+        if (!raw) return fallback;
+        return JSON.parse(raw);
+      } catch (err) {
+        console.warn('Không thể đọc localStorage cho key:', key, err);
+        return fallback;
+      }
+    }
+
+    function safeWriteStorage(key, value) {
+      try {
+        window.localStorage.setItem(key, JSON.stringify(value));
+        return true;
+      } catch (err) {
+        console.warn('Không thể ghi localStorage cho key:', key, err);
+        return false;
+      }
+    }
+
+    /**
+     * Chuẩn hóa số lượng ly / điểm trong khoảng hợp lệ [MIN_QTY, MAX_QTY]
+     */
+    function normalizeQuantity(rawValue, fallback = 1) {
+      const parsed = Number(rawValue);
+      if (!Number.isFinite(parsed)) return fallback;
+      const rounded = Math.floor(parsed);
+      return Math.max(MIN_QTY, Math.min(MAX_QTY, rounded));
+    }
+
+    /**
+     * Cập nhật số lượng được chọn trước khi quét & đồng bộ các nút chọn nhanh / dòng hướng dẫn
+     */
+    function setSelectedQuantity(nextQty, syncInput = true) {
+      const validQty = normalizeQuantity(nextQty, 1);
+      state.selectedQty = validQty;
+
+      if (syncInput && dom.scanQtyInput) {
+        dom.scanQtyInput.value = String(validQty);
+      }
+
+      document.querySelectorAll('.quick-qty-btn').forEach((btn) => {
+        const btnVal = Number(btn.getAttribute('data-qty'));
+        const isActive = btnVal === validQty;
+        if (isActive) {
+          btn.className = 'quick-qty-btn py-2 rounded-xl text-xs sm:text-sm font-extrabold border border-crimson-900 bg-crimson-900 text-cream-50 shadow-xs transition';
+        } else {
+          btn.className = 'quick-qty-btn py-2 rounded-xl text-xs sm:text-sm font-extrabold border border-crimson-900/20 bg-cream-50 text-crimson-900 hover:bg-cream-200 transition';
+        }
+      });
+
+      if (dom.qtyHelperText) {
+        dom.qtyHelperText.innerHTML = state.keepQtyForNext
+          ? `Quét 1 lần sẽ cộng <strong class="text-crimson-900">+${validQty} điểm</strong> và <strong>giữ nguyên ${validQty}</strong> cho đơn tiếp theo. (Phím 1–9 hoặc 0 = 10)`
+          : `Quét 1 lần sẽ cộng <strong class="text-crimson-900">+${validQty} điểm</strong> rồi tự động trả về <strong>1</strong> cho khách tiếp theo. (Phím 1–9 hoặc 0 = 10)`;
+      }
+    }
+
+    /**
+     * Khởi tạo cấu hình từ localStorage và đồng bộ lên giao diện
+     */
+    function loadConfig() {
+      const saved = safeReadStorage(STORAGE_KEYS.CONFIG, {});
+      const pointsNum = Number(saved.pointsPerScan);
+      const cooldownNum = Number(saved.cooldownSec);
+
+      state.config = {
+        appsScriptUrl: typeof saved.appsScriptUrl === 'string' ? saved.appsScriptUrl.trim() : '',
+        secretKey: typeof saved.secretKey === 'string' ? saved.secretKey.trim() : '',
+        pointsPerScan: Number.isFinite(pointsNum) && pointsNum >= 1 ? Math.floor(pointsNum) : 1,
+        cooldownSec: Number.isFinite(cooldownNum) && cooldownNum >= 1 ? Math.floor(cooldownNum) : 5,
+      };
+
+      dom.cfgAppsScriptUrl.value = state.config.appsScriptUrl;
+      dom.cfgSecretKey.value = state.config.secretKey;
+      dom.cfgPointsPerScan.value = state.config.pointsPerScan;
+      dom.cfgCooldownSec.value = state.config.cooldownSec;
+
+      updateModeIndicator();
+    }
+
+    function saveConfigFromForm() {
+      try {
+        const url = dom.cfgAppsScriptUrl.value.trim();
+        const secret = dom.cfgSecretKey.value.trim();
+        const pts = Math.max(1, Math.min(50, Math.floor(Number(dom.cfgPointsPerScan.value) || 1)));
+        const cd = Math.max(1, Math.min(60, Math.floor(Number(dom.cfgCooldownSec.value) || 5)));
+
+        if (url && !/^https?:\/\//i.test(url)) {
+          showBanner('URL Google Apps Script phải bắt đầu bằng https:// hoặc http://', 'error');
+          return;
+        }
+
+        state.config = {
+          appsScriptUrl: url,
+          secretKey: secret,
+          pointsPerScan: pts,
+          cooldownSec: cd,
+        };
+
+        dom.cfgPointsPerScan.value = pts;
+        dom.cfgCooldownSec.value = cd;
+
+        safeWriteStorage(STORAGE_KEYS.CONFIG, state.config);
+        updateModeIndicator();
+        showBanner('Đã lưu cấu hình vào trình duyệt thành công.', 'success');
+      } catch (err) {
+        showBanner('Có lỗi khi lưu cấu hình: ' + (err?.message || err), 'error');
+      }
+    }
+
+    function resetConfigToDefault() {
+      state.config = { ...DEFAULT_CONFIG };
+      dom.cfgAppsScriptUrl.value = '';
+      dom.cfgSecretKey.value = '';
+      dom.cfgPointsPerScan.value = DEFAULT_CONFIG.pointsPerScan;
+      dom.cfgCooldownSec.value = DEFAULT_CONFIG.cooldownSec;
+      safeWriteStorage(STORAGE_KEYS.CONFIG, state.config);
+      updateModeIndicator();
+      showBanner('Đã khôi phục cấu hình mặc định.', 'info');
+    }
+
+    function updateModeIndicator() {
+      if (state.config.appsScriptUrl) {
+        dom.modeIndicator.textContent = 'Chế độ: Kết nối Apps Script';
+        dom.modeIndicator.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-800 text-white';
+      } else {
+        dom.modeIndicator.textContent = 'Chế độ: Mô phỏng nội bộ';
+        dom.modeIndicator.className = 'text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-crimson-900 text-cream-50';
+      }
+    }
+
+    /**
+     * Phát tiếng bíp nhẹ bằng Web Audio API khi quét thành công
+     * (không phụ thuộc file âm thanh ngoài, tự mở AudioContext theo tương tác người dùng)
+     */
+    function playSuccessBeep() {
+      try {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) return;
+
+        if (!state.audioCtx) {
+          state.audioCtx = new AudioContextClass();
+        }
+        if (state.audioCtx.state === 'suspended') {
+          state.audioCtx.resume();
+        }
+
+        const now = state.audioCtx.currentTime;
+        const osc = state.audioCtx.createOscillator();
+        const gain = state.audioCtx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1046.5, now); // Nốt C6 dịu tai, rõ tiếng "tít"
+        osc.frequency.exponentialRampToValueAtTime(1318.5, now + 0.08);
+
+        gain.gain.setValueAtTime(0.001, now);
+        gain.gain.exponentialRampToValueAtTime(0.12, now + 0.015);
+        gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.14);
+
+        osc.connect(gain);
+        gain.connect(state.audioCtx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.15);
+      } catch (err) {
+        // Bỏ qua nếu trình duyệt chặn âm thanh trước khi tương tác
+        console.debug('Web Audio API beep skipped:', err);
+      }
+    }
+
+    /**
+     * Chuẩn hóa nội dung mã QR đọc được:
+     * - Nếu QR là URL có query như ?key=DD001 hoặc ?phone=0961418580 -> lấy giá trị tương ứng
+     * - Nếu QR là chuỗi thuần (ví dụ DD001 hoặc 0961418580) -> chuẩn hóa chữ hoa / trim
+     */
+    function extractCustomerCode(rawDecodedText) {
+      const text = String(rawDecodedText || '').trim();
+      if (!text) return '';
+
+      if (/^https?:\/\//i.test(text)) {
+        try {
+          const parsedUrl = new URL(text);
+          const candidate =
+            parsedUrl.searchParams.get('key') ||
+            parsedUrl.searchParams.get('id') ||
+            parsedUrl.searchParams.get('code') ||
+            parsedUrl.searchParams.get('phone') ||
+            parsedUrl.searchParams.get('sdt');
+          if (candidate && candidate.trim()) {
+            return candidate.trim().toUpperCase();
+          }
+        } catch (_) {
+          // Nếu không parse được URL thì dùng chuỗi gốc
+        }
+      }
+
+      return text.toUpperCase();
+    }
+
+    /**
+     * Kiểm tra chống quét trùng liên tục trong khoảng cooldownSec giây
+     */
+    function getRemainingCooldownSec(code) {
+      const lastTime = state.lastScanByCode.get(code);
+      if (!lastTime) return 0;
+      const elapsedSec = (Date.now() - lastTime) / 1000;
+      const remaining = state.config.cooldownSec - elapsedSec;
+      return remaining > 0 ? Math.ceil(remaining) : 0;
+    }
+
+    /**
+     * Gửi cộng điểm lên Google Apps Script (nếu có URL) hoặc tính điểm mô phỏng nội bộ
+     * Truyền rõ tham số số lượng (quantity / points) để cộng đúng số ly/điểm đã chọn trước khi quét.
+     */
+    async function submitPointToBackend(customerCode, rawText, quantityToAdd) {
+      const pointsToAdd = normalizeQuantity(quantityToAdd, state.config.pointsPerScan || 1);
+
+      if (!state.config.appsScriptUrl) {
+        // Mô phỏng cộng điểm lưu tạm trong localStorage để test ngay không cần backend
+        const current = Number(state.simPoints[customerCode] || 0);
+        const nextTotal = current + pointsToAdd;
+        state.simPoints[customerCode] = nextTotal;
+        safeWriteStorage(STORAGE_KEYS.SIM_POINTS, state.simPoints);
+
+        // Giả lập độ trễ mạng nhẹ 180ms cho cảm giác thực tế
+        await new Promise((resolve) => setTimeout(resolve, 180));
+
+        return {
+          ok: true,
+          simulated: true,
+          customerCode,
+          quantity: pointsToAdd,
+          addedPoints: pointsToAdd,
+          totalPoints: nextTotal,
+          message: `Đã cộng +${pointsToAdd} điểm (${pointsToAdd} ly • mô phỏng) cho ${customerCode}`,
+        };
+      }
+
+      // Gửi dữ liệu tới Google Apps Script Web App kèm số lượng (quantity & points) và secret_key
+      const payload = {
+        action: 'scan_add_point',
+        customer_code: customerCode,
+        raw_qr: rawText,
+        quantity: pointsToAdd,
+        points: pointsToAdd,
+        secret_key: state.config.secretKey,
+        source: 'didicoffee_quet_diem_html',
+        timestamp: new Date().toISOString(),
+      };
+
+      const response = await fetch(state.config.appsScriptUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Máy chủ phản hồi mã lỗi ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data && data.ok === false) {
+        throw new Error(data.message || 'Apps Script từ chối thao tác cộng điểm.');
+      }
+
+      const totalPoints = Number(
+        data?.total_points ?? data?.totalPoints ?? data?.points ?? NaN
+      );
+      const serverAdded = Number(data?.added_points ?? data?.quantity ?? pointsToAdd);
+
+      return {
+        ok: true,
+        simulated: false,
+        customerCode: String(data?.customer_code || data?.customerCode || customerCode),
+        quantity: Number.isFinite(serverAdded) && serverAdded > 0 ? serverAdded : pointsToAdd,
+        addedPoints: Number.isFinite(serverAdded) && serverAdded > 0 ? serverAdded : pointsToAdd,
+        totalPoints: Number.isFinite(totalPoints) ? totalPoints : null,
+        message: data?.message || `Đã cộng +${pointsToAdd} điểm cho ${customerCode}`,
+      };
+    }
+
+    /**
+     * Cập nhật thẻ hiển thị trạng thái quét tức thì & thanh 15 điểm
+     */
+    function renderScanSuccess(result) {
+      const code = result.customerCode;
+      const added = Number(result.addedPoints || result.quantity || 1);
+      const total = typeof result.totalPoints === 'number' && Number.isFinite(result.totalPoints)
+        ? result.totalPoints
+        : null;
+
+      dom.resultCard.classList.remove('border-crimson-900/15', 'border-red-400');
+      dom.resultCard.classList.add('border-emerald-500', 'bg-emerald-50/40');
+
+      dom.cooldownBadge.textContent = `Chống trùng ${state.config.cooldownSec}s`;
+      dom.cooldownBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-900';
+
+      dom.resultHeadline.textContent = `✅ Đã cộng +${added} điểm (${added} ly)`;
+      dom.resultSubtext.textContent = result.simulated
+        ? `${result.message}. Sẵn sàng quét khách tiếp theo.`
+        : `${result.message} (+${added} ly/điểm). Đã đồng bộ lên Google Sheets.`;
+
+      dom.resultCustomerLabel.textContent = `Khách: ${code}`;
+
+      if (total !== null) {
+        // Tính tiến độ theo chu kỳ 15 điểm hoặc hiển thị tổng điểm kèm số ly quy đổi
+        const freeCups = Math.floor(total / REWARD_THRESHOLD);
+        const remainder = total % REWARD_THRESHOLD;
+        const progressPercent = total > 0 && remainder === 0
+          ? 100
+          : Math.min(100, Math.round((remainder / REWARD_THRESHOLD) * 100));
+
+        dom.resultPointsText.textContent = freeCups > 0
+          ? `${total} điểm (${freeCups} ly quà)`
+          : `${total} / ${REWARD_THRESHOLD} điểm`;
+
+        dom.resultProgressBar.style.width = `${progressPercent}%`;
+
+        if (freeCups > 0 && remainder === 0) {
+          dom.resultRewardBanner.classList.remove('hidden');
+          dom.resultRewardBanner.textContent = `🎉 Đạt mốc ${total} điểm — Đủ điều kiện tặng ${freeCups} ly hay dùng!`;
+        } else if (freeCups > 0) {
+          dom.resultRewardBanner.classList.remove('hidden');
+          dom.resultRewardBanner.textContent = `☕ Đã quy đổi ${freeCups} ly • Đang tích tiếp chu kỳ mới (${remainder}/${REWARD_THRESHOLD} điểm).`;
+        } else {
+          dom.resultRewardBanner.classList.add('hidden');
+        }
+      } else {
+        dom.resultPointsText.textContent = `Đã cộng +${result.addedPoints} điểm`;
+        dom.resultProgressBar.style.width = '100%';
+        dom.resultRewardBanner.classList.add('hidden');
+      }
+
+      // Sau khoảng cooldown tự động đưa thẻ kết quả về trạng thái chờ khách tiếp theo
+      window.setTimeout(() => {
+        if (!state.isProcessingScan) {
+          dom.resultCard.classList.remove('border-emerald-500', 'bg-emerald-50/40', 'border-red-400', 'bg-red-50/40');
+          dom.resultCard.classList.add('border-crimson-900/15', 'bg-cream-50');
+          dom.cooldownBadge.textContent = 'Sẵn sàng quét';
+          dom.cooldownBadge.className = 'text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cream-200 text-crimson-900';
+        }
+      }, Math.max(2000, state.config.cooldownSec * 1000));
+    }
+
+    function renderScanError(headline, subtext, code = '—') {
+      dom.resultCard.classList.remove('border-crimson-900/15', 'border-emerald-500', 'bg-emerald-50/40');
+      dom.resultCard.classList.add('border-red-400', 'bg-red-50/40');
+
+      dom.cooldownBadge.textContent = 'Cần kiểm tra';
+      dom.cooldownBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-100 text-red-800';
+
+      dom.resultHeadline.textContent = headline;
+      dom.resultSubtext.textContent = subtext;
+      dom.resultCustomerLabel.textContent = `Khách: ${code}`;
+    }
+
+    /**
+     * Ghi và hiển thị lịch sử quét gần đây trong phiên
+     */
+    function addHistoryEntry(entry) {
+      state.history.unshift(entry);
+      if (state.history.length > 30) {
+        state.history = state.history.slice(0, 30);
+      }
+      safeWriteStorage(STORAGE_KEYS.HISTORY, state.history);
+      renderHistory();
+    }
+
+    function renderHistory() {
+      dom.scanHistoryList.innerHTML = '';
+
+      if (!state.history.length) {
+        const emptyLi = document.createElement('li');
+        emptyLi.id = 'empty-history-item';
+        emptyLi.className = 'py-6 text-center text-xs text-crimson-950/60';
+        emptyLi.textContent = 'Chưa có lượt quét nào trong phiên này.';
+        dom.scanHistoryList.appendChild(emptyLi);
+        return;
+      }
+
+      state.history.forEach((item) => {
+        const li = document.createElement('li');
+        li.className = 'py-2.5 flex items-center justify-between gap-3 text-xs sm:text-sm';
+
+        const leftDiv = document.createElement('div');
+        leftDiv.className = 'min-w-0';
+
+        const codeEl = document.createElement('div');
+        codeEl.className = 'font-bold text-crimson-950 truncate';
+        codeEl.textContent = item.code;
+
+        const metaEl = document.createElement('div');
+        metaEl.className = 'text-[11px] text-crimson-950/65 truncate';
+        metaEl.textContent = `${item.timeStr} • ${item.note}`;
+
+        leftDiv.appendChild(codeEl);
+        leftDiv.appendChild(metaEl);
+
+        const rightBadge = document.createElement('span');
+        rightBadge.className = 'shrink-0 font-bold text-xs px-2.5 py-1 rounded-full bg-cream-200 text-crimson-900';
+        const qtyText = item.quantity && item.quantity > 1 ? ` (${item.quantity} ly)` : '';
+        rightBadge.textContent = typeof item.totalPoints === 'number'
+          ? `+${item.addedPoints}${qtyText} • Tổng ${item.totalPoints}`
+          : `+${item.addedPoints} điểm${qtyText}`;
+
+        li.appendChild(leftDiv);
+        li.appendChild(rightBadge);
+        dom.scanHistoryList.appendChild(li);
+      });
+    }
+
+    /**
+     * Luồng xử lý chính khi nhận được nội dung mã QR (từ camera hoặc mô phỏng)
+     */
+    async function handleDecodedQr(rawDecodedText) {
+      if (state.isProcessingScan) return;
+
+      const customerCode = extractCustomerCode(rawDecodedText);
+      if (!customerCode) {
+        renderScanError('⚠️ Mã QR trống', 'Không đọc được nội dung bên trong mã QR.');
+        return;
+      }
+
+      const remainingSec = getRemainingCooldownSec(customerCode);
+      if (remainingSec > 0) {
+        dom.cooldownBadge.textContent = `Đợi ${remainingSec}s`;
+        dom.cooldownBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900';
+        dom.resultHeadline.textContent = `⏳ Bỏ qua quét trùng (${customerCode})`;
+        dom.resultSubtext.textContent = `Mã này vừa được cộng điểm. Vui lòng đợi thêm ${remainingSec} giây để quét lại.`;
+        return;
+      }
+
+      // Chốt số lượng tại thời điểm quét để tránh bị đổi khi đang gửi request
+      const quantityToAdd = normalizeQuantity(
+        dom.scanQtyInput ? dom.scanQtyInput.value : state.selectedQty,
+        state.selectedQty
+      );
+
+      state.isProcessingScan = true;
+      dom.cooldownBadge.textContent = `Đang cộng +${quantityToAdd}...`;
+      dom.cooldownBadge.className = 'text-xs font-bold px-2.5 py-0.5 rounded-full bg-crimson-900 text-cream-50';
+
+      try {
+        const result = await submitPointToBackend(customerCode, rawDecodedText, quantityToAdd);
+
+        // Ghi nhận thời điểm quét thành công để áp dụng chống quét trùng
+        state.lastScanByCode.set(customerCode, Date.now());
+        playSuccessBeep();
+        renderScanSuccess(result);
+
+        // Tự động trả số lượng về 1 sau khi quét thành công, trừ khi người dùng bật giữ số lượng
+        if (!state.keepQtyForNext) {
+          setSelectedQuantity(1, true);
+        } else {
+          setSelectedQuantity(quantityToAdd, true);
+        }
+
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        addHistoryEntry({
+          code: result.customerCode,
+          quantity: result.quantity || quantityToAdd,
+          addedPoints: result.addedPoints,
+          totalPoints: result.totalPoints,
+          timeStr,
+          note: result.simulated ? 'Mô phỏng' : 'Apps Script',
+        });
+      } catch (err) {
+        console.error('Lỗi xử lý cộng điểm:', err);
+        renderScanError(
+          '❌ Lỗi cộng điểm',
+          err?.message || 'Không thể kết nối tới hệ thống tích điểm.',
+          customerCode
+        );
+        showBanner('Không thể cộng điểm: ' + (err?.message || 'Lỗi không xác định'), 'error');
+      } finally {
+        state.isProcessingScan = false;
+      }
+    }
+
+    /**
+     * Bật / Tắt camera trực tiếp qua thư viện html5-qrcode
+     */
+    async function startCamera() {
+      if (state.isCameraRunning) return;
+
+      if (typeof window.Html5Qrcode === 'undefined') {
+        showBanner(
+          'Chưa tải được thư viện html5-qrcode qua CDN. Ông vẫn có thể dùng mục "Chạy thử nghiệm" bên dưới để test ngay.',
+          'error'
+        );
+        return;
+      }
+
+      try {
+        hideBanner();
+        dom.scannerStatePill.textContent = 'Đang mở camera...';
+        dom.scannerStatePill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 shrink-0';
+
+        if (!state.html5QrCode) {
+          state.html5QrCode = new window.Html5Qrcode('qr-reader');
+        }
+
+        // Ưu tiên camera sau (environment) trên điện thoại / máy tính bảng
+        const cameraConfig = {
+          fps: 10,
+          qrbox: (viewfinderWidth, viewfinderHeight) => {
+            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+            const boxSize = Math.max(160, Math.min(280, Math.floor(minEdge * 0.68)));
+            return { width: boxSize, height: boxSize };
+          },
+          aspectRatio: 1.333333,
+        };
+
+        await state.html5QrCode.start(
+          { facingMode: 'environment' },
+          cameraConfig,
+          (decodedText) => {
+            handleDecodedQr(decodedText);
+          },
+          () => {
+            // Bỏ qua lỗi từng khung hình khi chưa có mã QR nằm gọn trong khung
+          }
+        );
+
+        state.isCameraRunning = true;
+        dom.cameraPlaceholder.classList.add('hidden');
+        dom.btnToggleCamera.textContent = '⏹️ Tắt Camera';
+        dom.scannerStatePill.textContent = '● Đang quét tự động';
+        dom.scannerStatePill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 shrink-0';
+      } catch (err) {
+        console.error('Lỗi bật camera:', err);
+        state.isCameraRunning = false;
+        dom.cameraPlaceholder.classList.remove('hidden');
+        dom.btnToggleCamera.textContent = '📷 Bật Camera';
+        dom.scannerStatePill.textContent = 'Camera chưa sẵn sàng';
+        dom.scannerStatePill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-red-100 text-red-800 shrink-0';
+
+        showBanner(
+          'Không bật được camera (có thể do chưa cấp quyền camera, đang mở qua http thay vì https, hoặc thiết bị không có camera). Ông có thể dùng "Chạy thử nghiệm" để test ngay.',
+          'error'
+        );
+      }
+    }
+
+    async function stopCamera() {
+      if (!state.html5QrCode || !state.isCameraRunning) {
+        state.isCameraRunning = false;
+        dom.cameraPlaceholder.classList.remove('hidden');
+        dom.btnToggleCamera.textContent = '📷 Bật Camera';
+        dom.scannerStatePill.textContent = 'Chờ bật camera';
+        dom.scannerStatePill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-cream-200 text-crimson-900 shrink-0';
+        return;
+      }
+
+      try {
+        await state.html5QrCode.stop();
+      } catch (err) {
+        console.warn('Lỗi khi dừng camera:', err);
+      } finally {
+        state.isCameraRunning = false;
+        dom.cameraPlaceholder.classList.remove('hidden');
+        dom.btnToggleCamera.textContent = '📷 Bật Camera';
+        dom.scannerStatePill.textContent = 'Đã tắt camera';
+        dom.scannerStatePill.className = 'text-xs font-bold px-3 py-1 rounded-full bg-cream-200 text-crimson-900 shrink-0';
+      }
+    }
+
+    /**
+     * Gắn toàn bộ sự kiện giao diện
+     */
+    function bindEvents() {
+      dom.btnCloseBanner?.addEventListener('click', hideBanner);
+
+      // Điều khiển số lượng trước khi quét (- / + / nhập tay / nút chọn nhanh / giữ số lượng)
+      dom.btnQtyMinus?.addEventListener('click', () => {
+        setSelectedQuantity(state.selectedQty - 1, true);
+      });
+
+      dom.btnQtyPlus?.addEventListener('click', () => {
+        setSelectedQuantity(state.selectedQty + 1, true);
+      });
+
+      dom.scanQtyInput?.addEventListener('input', () => {
+        const raw = dom.scanQtyInput.value;
+        if (raw === '') return;
+        const parsed = Number(raw);
+        if (Number.isFinite(parsed) && parsed >= MIN_QTY) {
+          setSelectedQuantity(Math.min(MAX_QTY, Math.floor(parsed)), false);
+        }
+      });
+
+      dom.scanQtyInput?.addEventListener('blur', () => {
+        setSelectedQuantity(dom.scanQtyInput.value, true);
+      });
+
+      document.querySelectorAll('.quick-qty-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const val = Number(btn.getAttribute('data-qty'));
+          setSelectedQuantity(val, true);
+        });
+      });
+
+      // Hỗ trợ bấm nhanh số 1-10 bằng phím số trên bàn phím khi test trên máy tính
+      // (bỏ qua khi đang gõ trực tiếp vào ô input/textarea/select)
+      document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+        const activeTag = document.activeElement?.tagName?.toLowerCase();
+        if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
+
+        if (e.key >= '1' && e.key <= '9') {
+          e.preventDefault();
+          setSelectedQuantity(Number(e.key), true);
+        } else if (e.key === '0') {
+          e.preventDefault();
+          setSelectedQuantity(10, true);
+        }
+      });
+
+      dom.toggleKeepQty?.addEventListener('change', () => {
+        state.keepQtyForNext = Boolean(dom.toggleKeepQty.checked);
+        safeWriteStorage(STORAGE_KEYS.KEEP_QTY, state.keepQtyForNext);
+        setSelectedQuantity(state.selectedQty, true);
+      });
+
+      // Cấu hình
+      dom.btnToggleConfig?.addEventListener('click', () => {
+        dom.configPanel.classList.toggle('hidden');
+      });
+      dom.btnSaveConfig?.addEventListener('click', saveConfigFromForm);
+      dom.btnResetConfig?.addEventListener('click', resetConfigToDefault);
+
+      // Camera
+      dom.btnToggleCamera?.addEventListener('click', () => {
+        if (state.isCameraRunning) {
+          stopCamera();
+        } else {
+          startCamera();
+        }
+      });
+      dom.btnStartFromPlaceholder?.addEventListener('click', startCamera);
+
+      // Chạy thử nghiệm / Mô phỏng
+      dom.btnToggleSim?.addEventListener('click', () => {
+        dom.simPanel.classList.toggle('hidden');
+        if (!dom.simPanel.classList.contains('hidden')) {
+          dom.simCodeInput?.focus();
+        }
+      });
+
+      dom.simForm?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const val = dom.simCodeInput.value.trim();
+        if (!val) {
+          showBanner('Vui lòng nhập mã key khách hoặc số điện thoại để giả lập quét.', 'error');
+          dom.simCodeInput.focus();
+          return;
+        }
+        hideBanner();
+        handleDecodedQr(val);
+      });
+
+      document.querySelectorAll('.sample-qr-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const sample = btn.getAttribute('data-sample') || '';
+          dom.simCodeInput.value = sample;
+          hideBanner();
+          handleDecodedQr(sample);
+        });
+      });
+
+      // Lịch sử
+      dom.btnClearHistory?.addEventListener('click', () => {
+        state.history = [];
+        safeWriteStorage(STORAGE_KEYS.HISTORY, []);
+        renderHistory();
+      });
+
+      // Dọn dẹp camera khi rời trang
+      window.addEventListener('beforeunload', () => {
+        if (state.html5QrCode && state.isCameraRunning) {
+          state.html5QrCode.stop().catch(() => {});
+        }
+      });
+    }
+
+    // Khởi chạy ứng dụng
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        loadConfig();
+        state.keepQtyForNext = Boolean(safeReadStorage(STORAGE_KEYS.KEEP_QTY, false));
+        if (dom.toggleKeepQty) {
+          dom.toggleKeepQty.checked = state.keepQtyForNext;
+        }
+        setSelectedQuantity(1, true);
+        state.simPoints = safeReadStorage(STORAGE_KEYS.SIM_POINTS, {});
+        state.history = safeReadStorage(STORAGE_KEYS.HISTORY, []);
+        renderHistory();
+        bindEvents();
+      } catch (err) {
+        console.error('Lỗi khởi tạo trang quét điểm:', err);
+        showBanner('Có lỗi khởi tạo trang quét điểm: ' + (err?.message || err), 'error');
+      }
+    });
+  </script>
+</body>
+</html>
