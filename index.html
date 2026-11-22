@@ -225,12 +225,12 @@
         document.getElementById('form-input').style.display = 'block';
     }
 
-    // Gọi xem thông tin khi quét QR có ?code=... mà không có secret_key
+    // Bước 2 (khi link CÓ khóa bảo mật mà khách chưa có khóa): gọi xem thông tin VIEW, không chạy tích điểm cũ
     function fetchCustomerViewOnly(code) {
         const resultDiv = document.getElementById('result');
         document.getElementById('form-input').style.display = 'none';
         document.getElementById('viewInfoBox').style.display = 'none';
-        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>⌛ Đang tra thông tin thẻ " + code + "...</div>";
+        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>⌛ Đang tải thông tin thẻ " + code + "...</div>";
 
         const safetyTimeout = setTimeout(function() {
             resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, chưa nhận được phản hồi VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở form tích điểm</button>";
@@ -238,7 +238,6 @@
 
         window.googleCallback = function(resData) {
             clearTimeout(safetyTimeout);
-            console.log("VIEW resData:", resData);
             resultDiv.innerHTML = "";
 
             if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
@@ -246,7 +245,7 @@
             } else {
                 const msg = (resData && resData.message)
                     ? resData.message
-                    : "Máy chủ chưa trả về chế độ VIEW (kiểm tra lại bản Deploy Apps Script hoặc hàm doGet).";
+                    : "Link có khóa bảo mật nhưng chưa trả về dữ liệu VIEW.";
                 resultDiv.innerHTML = "<div class='error'>❌ " + msg + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
             }
             const oldScript = document.getElementById('api-call');
@@ -265,13 +264,71 @@
         document.body.appendChild(scriptTag);
     }
 
+    // Bước 1: Kiểm tra khi link được thực thi xem có khóa bảo mật không rồi mới làm việc tiếp theo
+    function checkLockAndProceed(code, secretFromURL, savedName, savedPhone) {
+        const resultDiv = document.getElementById('result');
+        document.getElementById('form-input').style.display = 'none';
+        document.getElementById('viewInfoBox').style.display = 'none';
+        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>🔒 Đang kiểm tra khóa bảo mật...</div>";
+
+        const safetyTimeout = setTimeout(function() {
+            // Nếu quá thời gian kiểm tra khóa mà không rõ trạng thái -> không tự chạy tích điểm cũ để tránh ghi nhầm
+            resultDiv.innerHTML = "<div class='error'>❌ Không kiểm tra được khóa bảo mật (quá thời gian). Đã tạm dừng để tránh tích điểm nhầm!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
+        }, 15000);
+
+        window.googleCallback = function(resData) {
+            clearTimeout(safetyTimeout);
+            resultDiv.innerHTML = "";
+            const oldScript = document.getElementById('api-call');
+            if (oldScript) oldScript.remove();
+
+            // Xác định xem link có đang bật khóa bảo mật hay không
+            const hasSecretLock = Boolean(
+                resData && (
+                    resData.require_secret === true ||
+                    resData.has_secret_key === true ||
+                    resData.secret_required === true
+                )
+            );
+
+            // Nếu link CÓ khóa bảo mật nhưng người mở chưa truyền khóa (hoặc backend trả thẳng mode VIEW)
+            if ((hasSecretLock && !secretFromURL) || (resData && resData.mode === "VIEW")) {
+                if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
+                    switchToViewMode(resData, code);
+                } else {
+                    fetchCustomerViewOnly(code);
+                }
+                return;
+            }
+
+            // Nếu link KHÔNG có khóa bảo mật -> lúc này mới làm việc tiếp theo (luồng tích điểm cũ nếu đủ tên & SĐT)
+            switchToFormMode();
+            if (savedName && savedPhone) {
+                setTimeout(handleVerify, 300);
+            }
+        };
+
+        const scriptTag = document.createElement("script");
+        scriptTag.id = "api-call";
+        const secretParam = secretFromURL ? `&secret_key=${encodeURIComponent(secretFromURL)}` : "";
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=check_secret&code=${encodeURIComponent(code)}${secretParam}&callback=googleCallback&t=${new Date().getTime()}`;
+        scriptTag.onerror = function() {
+            clearTimeout(safetyTimeout);
+            const oldScript = document.getElementById('api-call');
+            if (oldScript) oldScript.remove();
+            // Lỗi kết nối khi kiểm tra khóa -> không tự chạy tích điểm cũ
+            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối khi kiểm tra khóa bảo mật!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
+        };
+        document.body.appendChild(scriptTag);
+    }
+
     window.onload = function() {
         if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
             document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
         }
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
-        const secretFromURL = urlParams.get('secret_key') || urlParams.get('secret');
+        const secretFromURL = urlParams.get('secret_key') || urlParams.get('secret') || "";
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
         
@@ -279,14 +336,10 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
-        // Nếu có mã trên URL và không có secret_key -> chuyển sang chế độ xem thông tin khách
-        if (codeFromURL && !secretFromURL) {
-            fetchCustomerViewOnly(codeFromURL.trim().toUpperCase());
+        // Khi có mã trên URL: luôn kiểm tra khóa bảo mật của link trước rồi mới xử lý bước tiếp theo
+        if (codeFromURL) {
+            checkLockAndProceed(codeFromURL.trim().toUpperCase(), secretFromURL.trim(), savedName, savedPhone);
             return;
-        }
-        
-        if (codeFromURL && savedName && savedPhone) {
-            setTimeout(handleVerify, 500);
         }
     };
 
