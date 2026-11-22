@@ -157,7 +157,7 @@
                     <div class="view-points-num" id="viewCustPoints">0</div>
                 </div>
             </div>
-            <div class="view-history-title">3 lịch sử tích điểm gần nhất</div>
+            <div class="view-history-title">5 lịch sử tích điểm gần nhất</div>
             <ul class="view-history-list" id="viewHistoryList"></ul>
             <button type="button" class="btn-back-scan" onclick="switchToFormMode()">Quay lại giao diện tích điểm</button>
         </div>
@@ -189,7 +189,7 @@
         const phone = resData.phone || 'Chưa cập nhật';
         const code = resData.code || fallbackCode;
         const points = (resData.points !== undefined && resData.points !== null) ? resData.points : 0;
-        const history = Array.isArray(resData.history) ? resData.history.slice(0, 3) : [];
+        const history = Array.isArray(resData.history) ? resData.history.slice(0, 5) : [];
 
         document.getElementById('viewCustName').innerText = name;
         document.getElementById('viewCustMeta').innerText = "SĐT: " + phone + " • Mã KH: " + code;
