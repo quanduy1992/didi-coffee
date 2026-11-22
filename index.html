@@ -276,32 +276,23 @@
             resultDiv.innerHTML = "<div class='error'>❌ Không kiểm tra được khóa bảo mật (quá thời gian). Đã tạm dừng để tránh tích điểm nhầm!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
         }, 15000);
 
-        window.googleCallback = function(resData) {
+       window.googleCallback = function(resData) {
             clearTimeout(safetyTimeout);
             resultDiv.innerHTML = "";
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
 
-            // Xác định xem link có đang bật khóa bảo mật hay không
-            const hasSecretLock = Boolean(
-                resData && (
-                    resData.require_secret === true ||
-                    resData.has_secret_key === true ||
-                    resData.secret_required === true
-                )
-            );
-
-            // Nếu link CÓ khóa bảo mật nhưng người mở chưa truyền khóa (hoặc backend trả thẳng mode VIEW)
-            if ((hasSecretLock && !secretFromURL) || (resData && resData.mode === "VIEW")) {
-                if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
+            // Nếu kết quả trả về có dữ liệu lịch sử (history) hoặc mode VIEW -> hiển thị VIEW luôn, không chạy index cũ
+            if (resData && (Array.isArray(resData.history) || resData.mode === "VIEW")) {
+                if (resData.status === "SUCCESS") {
                     switchToViewMode(resData, code);
                 } else {
-                    fetchCustomerViewOnly(code);
+                    resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Không tìm thấy thông tin mã " + code) + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
                 }
                 return;
             }
 
-            // Nếu link KHÔNG có khóa bảo mật -> lúc này mới làm việc tiếp theo (luồng tích điểm cũ nếu đủ tên & SĐT)
+            // Nếu không có lịch sử và link không bắt khóa -> mới chạy tiếp luồng index cũ
             switchToFormMode();
             if (savedName && savedPhone) {
                 setTimeout(handleVerify, 300);
