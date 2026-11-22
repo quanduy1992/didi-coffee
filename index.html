@@ -230,23 +230,24 @@
         const resultDiv = document.getElementById('result');
         document.getElementById('form-input').style.display = 'none';
         document.getElementById('viewInfoBox').style.display = 'none';
-        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>⌛ Đang tải thông tin thẻ " + code + "...</div>";
+        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>⌛ Đang tra thông tin thẻ " + code + "...</div>";
 
         const safetyTimeout = setTimeout(function() {
-            resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, vui lòng thử lại!</div>";
-            switchToFormMode();
+            resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, chưa nhận được phản hồi VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở form tích điểm</button>";
         }, 20000);
 
         window.googleCallback = function(resData) {
             clearTimeout(safetyTimeout);
+            console.log("VIEW resData:", resData);
             resultDiv.innerHTML = "";
+
             if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
                 switchToViewMode(resData, code);
             } else {
-                switchToFormMode();
-                if (resData && resData.message) {
-                    resultDiv.innerHTML = "<div class='error'>❌ " + resData.message + "</div>";
-                }
+                const msg = (resData && resData.message)
+                    ? resData.message
+                    : "Máy chủ chưa trả về chế độ VIEW (kiểm tra lại bản Deploy Apps Script hoặc hàm doGet).";
+                resultDiv.innerHTML = "<div class='error'>❌ " + msg + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
             }
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
@@ -257,8 +258,7 @@
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&callback=googleCallback&t=${new Date().getTime()}`;
         scriptTag.onerror = function() {
             clearTimeout(safetyTimeout);
-            switchToFormMode();
-            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
+            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
         };
