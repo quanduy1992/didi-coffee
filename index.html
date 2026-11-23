@@ -231,7 +231,7 @@
             <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
             <a href="danhsach.html" class="nav-item"><i>📜</i> Danh sách</a>
             <a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
-            <a href="doi-qua.html" class="nav-item"><i>🎁</i> Đổi CF</a>
+            <a href="doi-qua.html" class="nav-item"><i>🎁</i> Đổi quà</a>
             <!-- <a href="doi-qua.html?from=webs" class="nav-item"><i>🎁</i> Xem quà</a>-->
         </div>
         <br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly hay dùng</span>
@@ -250,10 +250,16 @@
         const name = resData.name || ('Khách ' + fallbackCode);
         const phone = resData.phone || 'Chưa cập nhật';
         const code = resData.code || fallbackCode;
-        const points = (resData.points !== undefined && resData.points !== null) ? resData.points : 0;
-        const tetGift = (resData.tetGift !== undefined && resData.tetGift !== null && resData.tetGift !== "") 
+        const points = (resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
+        let tetGift = (resData.tetGift !== undefined && resData.tetGift !== null && resData.tetGift !== "") 
             ? resData.tetGift 
             : (resData.quaTet || 'Chưa có');
+
+        // Nếu quà trả về là cf và tổng điểm < 50 thì hiển thị "Chưa có quà"
+        if (String(tetGift).trim().toLowerCase().includes("cf") && points < 50) {
+            tetGift = "Chưa có quà";
+        }
+
         const history = Array.isArray(resData.history) ? resData.history.slice(0, 5) : [];
 
         document.getElementById('viewCustName').innerText = name;
@@ -263,7 +269,7 @@
 
         const giftBoxEl = document.querySelector('.view-tet-gift');
         if (giftBoxEl) {
-            const isVipGift = String(tetGift).trim().toUpperCase() !== "1 LY CF";
+            const isVipGift = String(tetGift).trim().toUpperCase() !== "1 LY CF" && String(tetGift).trim() !== "Chưa có quà";
             giftBoxEl.style.opacity = isVipGift ? "1" : "0.92";
         }
 
@@ -586,4 +592,3 @@
 </script>
 </body>
 </html>
-
