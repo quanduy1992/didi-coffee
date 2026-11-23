@@ -266,6 +266,46 @@
         document.body.appendChild(scriptTag);
     }
 
+    // Lấy tham số key trên URL (?key=... hoặc ?secret_key=... hoặc ?secret=...) để mở chế độ VIEW
+    function openViewByKey(keyValue, codeHint) {
+        const resultDiv = document.getElementById('result');
+        document.getElementById('form-input').style.display = 'none';
+        document.getElementById('viewInfoBox').style.display = 'none';
+        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>🔒 Đang tải thông tin khách hàng...</div>";
+
+        const safetyTimeout = setTimeout(function() {
+            resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm khi tải thông tin VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+        }, 20000);
+
+        window.googleCallback = function(resData) {
+            clearTimeout(safetyTimeout);
+            resultDiv.innerHTML = "";
+            const oldScript = document.getElementById('api-call');
+            if (oldScript) oldScript.remove();
+
+            if (resData && resData.status === "SUCCESS") {
+                switchToViewMode(resData, codeHint || resData.code || "");
+            } else {
+                const msg = (resData && resData.message)
+                    ? resData.message
+                    : "Key không hợp lệ hoặc không tìm thấy thông tin khách hàng.";
+                resultDiv.innerHTML = "<div class='error'>❌ " + msg + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+            }
+        };
+
+        const scriptTag = document.createElement("script");
+        scriptTag.id = "api-call";
+        const codeParam = codeHint ? `&code=${encodeURIComponent(codeHint)}` : "";
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=view&key=${encodeURIComponent(keyValue)}&secret_key=${encodeURIComponent(keyValue)}${codeParam}&callback=googleCallback&t=${new Date().getTime()}`;
+        scriptTag.onerror = function() {
+            clearTimeout(safetyTimeout);
+            const oldScript = document.getElementById('api-call');
+            if (oldScript) oldScript.remove();
+            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ khi tải VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+        };
+        document.body.appendChild(scriptTag);
+    }
+
     // Bước 1: Kiểm tra khi link được thực thi xem có khóa bảo mật không rồi mới làm việc tiếp theo
     function checkLockAndProceed(code, secretFromURL, savedName, savedPhone) {
         const resultDiv = document.getElementById('result');
@@ -321,7 +361,7 @@
         }
         const urlParams = new URLSearchParams(window.location.search);
         const codeFromURL = urlParams.get('code');
-        const secretFromURL = urlParams.get('secret_key') || urlParams.get('secret') || "";
+        const keyFromURL = (urlParams.get('key') || urlParams.get('secret_key') || urlParams.get('secret') || "").trim();
         const savedName = localStorage.getItem('didi_customer_name');
         const savedPhone = localStorage.getItem('didi_customer_phone');
         
@@ -329,9 +369,18 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
-        // Khi có mã trên URL: luôn kiểm tra khóa bảo mật của link trước rồi mới xử lý bước tiếp theo
+        // Ưu tiên 1: Nếu GET có key -> chuyển sang chế độ VIEW
+        if (keyFromURL) {
+            openViewByKey(keyFromURL, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
+            return;
+        }
+
+        // Ưu tiên 2: Nếu GET có code (và không có key) -> tích điểm bình thường
         if (codeFromURL) {
-            checkLockAndProceed(codeFromURL.trim().toUpperCase(), secretFromURL.trim(), savedName, savedPhone);
+            switchToFormMode();
+            if (savedName && savedPhone) {
+                setTimeout(handleVerify, 300);
+            }
             return;
         }
     };
