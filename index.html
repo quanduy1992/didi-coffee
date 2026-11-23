@@ -1,206 +1,403 @@
 <!DOCTYPE html>
+
 <html lang="vi">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Di Di Coffee</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        /* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
-        /* 1. Tạo lớp nền lấp lánh (phía trên body) */
-        body::after {
-            content: "";
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: -1;       
-            background-image: 
-                radial-gradient(5px 5px at 25px 35px, red, rgba(255, 255, 255, 0)),
-                radial-gradient(3.5px 3.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
-                radial-gradient(2px 2px at 125px 20px, yellow, rgba(255, 255, 255, 0)),
-                radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
-                radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
-            background-size: 200px 200px;
-            animation: twinkling 4s infinite alternate ease-in-out;
-        }
-        @keyframes twinkling {
-            0% { opacity: 0.3; transform: scale(1); }
-            50% { opacity: 0.8; transform: scale(1.02); }
-            100% { opacity: 0.3; transform: scale(1); }
-        }
-        #btnSubmit {
-            animation: pulse-button 1s infinite;
-        }
-        @keyframes pulse-button {
-            0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
-        }
-    </style>
+
+<meta charset="UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Di Di Coffee</title>
+
+<link rel="stylesheet" href="style.css">
+
+<style>
+
+/* PHẦN CẬP NHẬT GIAO DIỆN: THÊM NGÔI SAO LẤP LÁNH */
+
+/* 1. Tạo lớp nền lấp lánh (phía trên body) */
+
+body::after {
+
+content: "";
+
+position: fixed;
+
+top: 0;
+
+left: 0;
+
+width: 100%;
+
+height: 100%;
+
+pointer-events: none;
+
+z-index: -1;
+
+background-image:
+
+radial-gradient(5px 5px at 25px 35px, red, rgba(255, 255, 255, 0)),
+
+radial-gradient(3.5px 3.5px at 60px 80px, white, rgba(255, 255, 255, 0)),
+
+radial-gradient(2px 2px at 125px 20px, yellow, rgba(255, 255, 255, 0)),
+
+radial-gradient(1px 1px at 150px 150px, yellow, rgba(255, 255, 0, 0)),
+
+radial-gradient(1.5px 1.5px at 190px 70px, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0));
+
+background-size: 200px 200px;
+
+animation: twinkling 4s infinite alternate ease-in-out;
+
+}
+
+@keyframes twinkling {
+
+0% { opacity: 0.3; transform: scale(1); }
+
+50% { opacity: 0.8; transform: scale(1.02); }
+
+100% { opacity: 0.3; transform: scale(1); }
+
+}
+
+#btnSubmit {
+
+animation: pulse-button 1s infinite;
+
+}
+
+@keyframes pulse-button {
+
+0% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0.4); }
+
+70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
+
+100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
+
+}
+
+</style>
+
 </head>
+
 <body>
-    <div class="card">
-        <h2 id="shopTitle">⭐ Chào mừng Quốc Khánh: 02/09 ⭐</h2>
-        <div id="form-input">
-            <label>Tên khách hàng:</label>
-            <input type="text" id="cusName" placeholder="Nhập tên của bạn">
-            <label>Số điện thoại:</label>
-            <input type="tel" id="cusPhone" placeholder="Nhập số điện thoại">
-            <label>Mã tích điểm:</label>
-            <input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
-            <button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button><br><br>
-            <span style="color:#5d4037;font-weight:bold;">Zalo Đặt Trước: 0968.97.37.87</span>
-            <p style="margin: 3px; color: #007b16; font-weight: bold; font-size: 14px;">Vòng quay sẽ mở từ ngày</p>
-            <p style="margin: 0px;color: red; font-weight: bold; font-size: 15px;"> 27/11/2026 đến 27/01/2027.</p>
-            <p style="margin: 0px; color: #990900; font-weight: bold; font-size: 14px;">Lưu ý: Quý khách có thể quay thử để kiểm tra nhân phẩm sau đó có thể quyết định tham gia quay thật hay không (^_^  )</p>
-        </div>
-        <div id="pointBox" style="display:none;">
-            <span id="currentPoints">0</span>
-        </div> 
-        <div id="result"></div>        
-        <div class="nav-menu">
-            <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
-            <a href="danhsach.html" class="nav-item"><i>📜</i> Danh sách</a>
-            <a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
-            <!-- <a href="doi-qua.html?from=webs" class="nav-item"><i>🎁</i> Xem quà</a>-->
-        </div>
-        <br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly hay dùng</span>
-        <br><span style="color:#990900;font-weight:bold;">Quét mã đổi điểm tại quầy</span>
-    </div>
 
-<script src="config.js"></script> 
-<script src="hoadao.js"></script> 
+<div class="card">
+
+<h2 id="shopTitle">⭐ Chào mừng Quốc Khánh: 02/09 ⭐</h2>
+
+<div id="form-input">
+
+<label>Tên khách hàng:</label>
+
+<input type="text" id="cusName" placeholder="Nhập tên của bạn">
+
+<label>Số điện thoại:</label>
+
+<input type="tel" id="cusPhone" placeholder="Nhập số điện thoại">
+
+<label>Mã tích điểm:</label>
+
+<input type="text" id="inputCode" placeholder="Nhập mã tích điểm">
+
+<button id="btnSubmit" onclick="handleVerify()">TÍCH ĐIỂM NGAY</button><br><br>
+
+<span style="color:#5d4037;font-weight:bold;">Zalo Đặt Trước: 0968.97.37.87</span>
+
+<p style="margin: 3px; color: #007b16; font-weight: bold; font-size: 14px;">Vòng quay sẽ mở từ ngày</p>
+
+<p style="margin: 0px;color: red; font-weight: bold; font-size: 15px;"> 27/11/2026 đến 27/01/2027.</p>
+
+<p style="margin: 0px; color: #990900; font-weight: bold; font-size: 14px;">Lưu ý: Quý khách có thể quay thử để kiểm tra nhân phẩm sau đó có thể quyết định tham gia quay thật hay không (^_^ )</p>
+
+</div>
+
+<div id="pointBox" style="display:none;">
+
+<span id="currentPoints">0</span>
+
+</div>
+
+<div id="result"></div>
+
+<div class="nav-menu">
+
+<a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
+
+<a href="danhsach.html" class="nav-item"><i>📜</i> Danh sách</a>
+
+<a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
+
+<!-- <a href="doi-qua.html?from=webs" class="nav-item"><i>🎁</i> Xem quà</a>-->
+
+</div>
+
+<br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly hay dùng</span>
+
+<br><span style="color:#990900;font-weight:bold;">Quét mã đổi điểm tại quầy</span>
+
+</div>
+
+
+
+<script src="config.js"></script>
+
+<script src="hoadao.js"></script>
+
 <script>
-    window.onload = function() {
-        if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-            document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
-        }
-        const urlParams = new URLSearchParams(window.location.search);
-        const codeFromURL = urlParams.get('code');
-        const savedName = localStorage.getItem('didi_customer_name');
-        const savedPhone = localStorage.getItem('didi_customer_phone');
-        
-        if (savedName) document.getElementById('cusName').value = savedName;
-        if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
-        if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
-        
-        if (codeFromURL && savedName && savedPhone) {
-            setTimeout(handleVerify, 500);
-        }
-    };
 
-    function handleVerify() {
-        const name = document.getElementById('cusName').value.trim();
-        const phone = document.getElementById('cusPhone').value.trim();
-        const code = document.getElementById('inputCode').value.trim().toUpperCase();
-        const resultDiv = document.getElementById('result');
-        const btnSubmit = document.getElementById('btnSubmit');
+window.onload = function() {
 
-        if (!name || !phone || !code) {
-            resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đầy đủ thông tin!</div>";
-            return;
-        }
+if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
 
-        const shopPhone = "0968973787";
-        const cleanPhone = phone.replace(/\D/g, ""); 
-        if (cleanPhone === shopPhone) {
-            resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập lại SĐT của bạn, Đây là số cửa hàng không thể tích điểm!</div>";
-            return;
-        }
+document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
 
-        btnSubmit.disabled = true; 
-        btnSubmit.innerHTML = "⌛ Đang tích điểm..."; 
-        resultDiv.innerHTML = ""; 
-        
-        localStorage.setItem('didi_customer_name', name);
-        localStorage.setItem('didi_customer_phone', phone);
-        
-        // --- LOGIC CẬP NHẬT ĐIỂM THEO MÃ ---
-        let pointsToAdd = (CONFIG.POINTS_PER_CODE) ? parseFloat(CONFIG.POINTS_PER_CODE) : 1;
+}
 
-        if (code.startsWith("TA")) {
-            pointsToAdd = pointsToAdd - 0;
-        } else if (code.startsWith("SC")) {
-            pointsToAdd = pointsToAdd + 0.25;
-        }
-        // ------------------------------------
+const urlParams = new URLSearchParams(window.location.search);
 
-        const safetyTimeout = setTimeout(function() {
-            if (btnSubmit.disabled) {
-                btnSubmit.disabled = false;
-                btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-                resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, vui lòng thử lại!</div>";
-            }
-        }, 20000);
+const codeFromURL = urlParams.get('code');
 
-        window.googleCallback = function(resData) {
-            clearTimeout(safetyTimeout);
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+const savedName = localStorage.getItem('didi_customer_name');
 
-            if (resData.status === "SUCCESS") {
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                const now = new Date();
-                const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-                resultDiv.innerHTML = `
-                    <div class="success-box">
-                        <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
-                        <span class="time">Thời gian: ${timeStr}</span>
-                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
-                    </div>
-                `;  
-                document.getElementById('inputCode').value = ""; 
+const savedPhone = localStorage.getItem('didi_customer_phone');
 
-                // Kiểm tra kết quả VIP trả về từ cột VIP (resData.vip) thay vì check điểm
-                if (resData.vip && resData.vip.toUpperCase() === "VIP") {
-                    setTimeout(function() {
-                        alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 14 điểm để đổi 1 ly bất kỳ.");
-                    }, 400);
-                }
 
-                if (resData.isTop1 === true) {
-                    setTimeout(function() {
-                        alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm.");
-                    }, 800);
-                }
-            } 
-            else if (resData.status === "USED") {
-                resultDiv.innerHTML = `
-                    <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
-                        <div>⚠️ Mã này đã được sử dụng.</div>
-                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
-                    </div>
-                `;
-            } 
-            else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
-                resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
-            }
-            else {
-                resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
-            }
-            
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-        };
+if (savedName) document.getElementById('cusName').value = savedName;
 
-        const scriptTag = document.createElement("script");
-        scriptTag.id = "api-call";
-        scriptTag.src = `${CONFIG.SCRIPTURL}?action=tichdiem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${encodeURIComponent(pointsToAdd)}&callback=googleCallback&t=${new Date().getTime()}`;
-        scriptTag.onerror = function() {
-            clearTimeout(safetyTimeout);
-            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-        };
-        document.body.appendChild(scriptTag);
-    }
+if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
+
+if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
+
+
+if (codeFromURL && savedName && savedPhone) {
+
+setTimeout(handleVerify, 500);
+
+}
+
+};
+
+
+
+function handleVerify() {
+
+const name = document.getElementById('cusName').value.trim();
+
+const phone = document.getElementById('cusPhone').value.trim();
+
+const code = document.getElementById('inputCode').value.trim().toUpperCase();
+
+const resultDiv = document.getElementById('result');
+
+const btnSubmit = document.getElementById('btnSubmit');
+
+
+
+if (!name || !phone || !code) {
+
+resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đầy đủ thông tin!</div>";
+
+return;
+
+}
+
+
+
+const shopPhone = "0968973787";
+
+const cleanPhone = phone.replace(/\D/g, "");
+
+if (cleanPhone === shopPhone) {
+
+resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập lại SĐT của bạn, Đây là số cửa hàng không thể tích điểm!</div>";
+
+return;
+
+}
+
+
+
+btnSubmit.disabled = true;
+
+btnSubmit.innerHTML = "⌛ Đang tích điểm...";
+
+resultDiv.innerHTML = "";
+
+
+localStorage.setItem('didi_customer_name', name);
+
+localStorage.setItem('didi_customer_phone', phone);
+
+
+// --- LOGIC CẬP NHẬT ĐIỂM THEO MÃ ---
+
+let pointsToAdd = (CONFIG.POINTS_PER_CODE) ? parseFloat(CONFIG.POINTS_PER_CODE) : 1;
+
+
+
+if (code.startsWith("TA")) {
+
+pointsToAdd = pointsToAdd - 0;
+
+} else if (code.startsWith("SC")) {
+
+pointsToAdd = pointsToAdd + 0.25;
+
+}
+
+// ------------------------------------
+
+
+
+const safetyTimeout = setTimeout(function() {
+
+if (btnSubmit.disabled) {
+
+btnSubmit.disabled = false;
+
+btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+
+resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, vui lòng thử lại!</div>";
+
+}
+
+}, 20000);
+
+
+
+window.googleCallback = function(resData) {
+
+clearTimeout(safetyTimeout);
+
+btnSubmit.disabled = false;
+
+btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+
+
+
+if (resData.status === "SUCCESS") {
+
+if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+const now = new Date();
+
+const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+
+resultDiv.innerHTML = `
+
+<div class="success-box">
+
+<div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
+
+<span class="time">Thời gian: ${timeStr}</span>
+
+<span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
+
+</div>
+
+`;
+
+document.getElementById('inputCode').value = "";
+
+
+
+// Kiểm tra kết quả VIP trả về từ cột VIP (resData.vip) thay vì check điểm
+
+if (resData.vip && resData.vip.toUpperCase() === "VIP") {
+
+setTimeout(function() {
+
+alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 14 điểm để đổi 1 ly bất kỳ.");
+
+}, 400);
+
+}
+
+
+
+if (resData.isTop1 === true) {
+
+setTimeout(function() {
+
+alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm.");
+
+}, 800);
+
+}
+
+}
+
+else if (resData.status === "USED") {
+
+resultDiv.innerHTML = `
+
+<div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
+
+<div>⚠️ Mã này đã được sử dụng.</div>
+
+<span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
+
+</div>
+
+`;
+
+}
+
+else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
+
+resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
+
+}
+
+else {
+
+resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
+
+}
+
+
+const oldScript = document.getElementById('api-call');
+
+if (oldScript) oldScript.remove();
+
+};
+
+
+
+const scriptTag = document.createElement("script");
+
+scriptTag.id = "api-call";
+
+scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tich_diem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
+
+
+scriptTag.onerror = function() {
+
+clearTimeout(safetyTimeout);
+
+resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
+
+btnSubmit.disabled = false;
+
+btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+
+const oldScript = document.getElementById('api-call');
+
+if (oldScript) oldScript.remove();
+
+};
+
+document.body.appendChild(scriptTag);
+
+}
+
 </script>
+
 </body>
+
 </html>
-
-
