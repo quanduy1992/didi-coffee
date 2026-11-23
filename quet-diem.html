@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>DI DI COFFEE - Quầy Quét QR Tích Điểm</title>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="config.js"></script>
   <style>
     :root {
       --bg: #f6f1e9;
@@ -245,7 +246,7 @@
     </div>
     <div class="top-actions">
       <button class="btn-top" id="btnToggleCam">📷 Bật Camera</button>
-      <button class="btn-top" id="btnOpenConfig">⚙️ Cấu hình</button>
+      <button class="btn-top" id="btnOpenConfig">🔑 Nhập Key</button>
     </div>
   </header>
 
@@ -306,7 +307,7 @@
       <section class="card">
         <div class="card-header">
           <h2 class="card-title" style="font-size: 14.5px;">🧪 Nhập mã thủ công / Chạy thử</h2>
-          <span class="pill" id="modeBadge">Chưa gắn link Script</span>
+          <span class="pill" id="modeBadge">Đang kiểm tra config.js...</span>
         </div>
         <div class="test-row">
           <input type="text" id="manualCodeInput" class="text-input" placeholder="Nhập mã khách (VD: DI0001, DI0002)..." />
@@ -362,17 +363,13 @@
     </div>
   </main>
 
-  <!-- Modal Cấu Hình -->
+  <!-- Modal Nhập Key -->
   <div class="modal-backdrop" id="configModal">
     <div class="modal">
-      <h3 style="margin-top: 0;">⚙️ Cấu hình kết nối Google Sheet</h3>
-      <div class="form-group">
-        <label>Link Web App Google Apps Script (URL kết thúc bằng /exec)</label>
-        <input type="text" id="cfgScriptUrl" placeholder="https://script.google.com/macros/s/.../exec" />
-      </div>
+      <h3 style="margin-top: 0;">🔑 Nhập mã bảo mật quầy quét</h3>
       <div class="form-group">
         <label>Mã bảo mật (secret_key - khớp với MY_SECRET_KEY trong Script)</label>
-        <input type="text" id="cfgSecretKey" placeholder="VD: DIDI2026" />
+        <input type="text" id="cfgSecretKey" placeholder="Nhập mã bảo mật của quầy..." />
       </div>
       <div class="form-group">
         <label>Chống quét trùng cùng 1 mã (giây)</label>
@@ -380,23 +377,27 @@
       </div>
       <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
         <button class="btn-mini" id="btnCloseConfig" style="padding: 8px 14px;">Đóng</button>
-        <button class="btn-primary" id="btnSaveConfig">Lưu cấu hình</button>
+        <button class="btn-primary" id="btnSaveConfig">Lưu Key</button>
       </div>
     </div>
   </div>
 
   <script>
-    // --- CẤU HÌNH MẶC ĐỊNH ---
+    // --- LẤY URL TỪ CONFIG.JS & KEY TỪ LOCALSTORAGE ---
     const STORAGE_KEY = "didi_qr_scanner_cfg_v2";
+    const SCRIPT_URL_FROM_CONFIG = (typeof CONFIG !== "undefined" && CONFIG.SCRIPT_URL) ? CONFIG.SCRIPT_URL.trim() : "";
+
     let config = {
-      scriptUrl: "",
-      secretKey: "DIDI2026",
+      secretKey: "",
       cooldownSec: 4
     };
 
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
-      if (saved) config = { ...config, ...saved };
+      if (saved) {
+        if (typeof saved.secretKey === "string") config.secretKey = saved.secretKey;
+        if (saved.cooldownSec) config.cooldownSec = saved.cooldownSec;
+      }
     } catch (e) {}
 
     // --- BIẾN TRẠNG THÁI ---
@@ -471,7 +472,7 @@
       } catch (e) {}
     }
 
-    // --- TRÍCH XUẤT MÃ KHÁCH TỪ QR (HỖ TRỢ CẢ MÃ THUẦN "DI0001" VÀ LINK "?code=DI0001") ---
+    // --- TRÍCH XUẤT MÃ KHÁCH TỪ QR (HỖ TRỢ CẢ MÃ THUẦN "DI0001" VÀ LINK "?code=DI0001" / "?key=DI0001") ---
     function extractCustomerKey(rawText) {
       const text = (rawText || "").trim();
       if (!text) return "";
@@ -487,7 +488,7 @@
       return text.toUpperCase().trim();
     }
 
-    // --- GỬI DỮ LIỆU LÊN GOOGLE APPS SCRIPT BẰNG JSONP (KHÔNG LO LỖI CORS) ---
+    // --- GỬI DỮ LIỆU LÊN GOOGLE APPS SCRIPT BẰNG JSONP (LẤY URL TỪ CONFIG.JS) ---
     function sendPointsToSheet(rawQrText) {
       const keyKhach = extractCustomerKey(rawQrText);
       if (!keyKhach) return;
@@ -506,18 +507,13 @@
         setQuantity(1);
       }
 
-      updateStatus("loading", `Đang gửi +${qtyToSend} điểm cho ${keyKhach}...`, "Đang kết nối Google Sheet...", "Đang lưu...");
-
-      // Nếu chưa nhập URL Apps Script thì chạy chế độ mô phỏng tại chỗ
-      if (!config.scriptUrl) {
-        setTimeout(() => {
-          playBeep(true);
-          updateCustomerProgress(keyKhach, qtyToSend, qtyToSend);
-          updateStatus("success", `✅ [Mô phỏng] +${qtyToSend} điểm cho ${keyKhach}`, "Chưa gắn URL Apps Script nên chỉ test giao diện.", "Mô phỏng");
-          addHistory(keyKhach, qtyToSend, qtyToSend, true);
-        }, 250);
+      if (!SCRIPT_URL_FROM_CONFIG) {
+        playBeep(false);
+        updateStatus("error", "❌ Thiếu SCRIPT_URL trong config.js", "Kiểm tra lại file config.js đặt cùng thư mục.", "Lỗi config.js");
         return;
       }
+
+      updateStatus("loading", `Đang gửi +${qtyToSend} điểm cho ${keyKhach}...`, "Đang kết nối Google Sheet...", "Đang lưu...");
 
       const callbackName = "didiCallback_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
       const scriptTag = document.createElement("script");
@@ -533,7 +529,7 @@
         isDone = true;
         cleanup();
         playBeep(false);
-        updateStatus("error", `⚠️ Quá thời gian phản hồi (${keyKhach})`, "Kiểm tra lại mạng hoặc URL Apps Script.", "Lỗi mạng");
+        updateStatus("error", `⚠️ Quá thời gian phản hồi (${keyKhach})`, "Kiểm tra lại mạng hoặc SCRIPT_URL trong config.js.", "Lỗi mạng");
       }, 15000);
 
       window[callbackName] = function(res) {
@@ -542,7 +538,7 @@
         clearTimeout(timeoutId);
         cleanup();
 
-        if (res && res.status === "SUCCESS") {
+        if (res && res.status === "SUCCESS" && res.mode !== "VIEW") {
           playBeep(true);
           const totalPts = Number(res.points) || qtyToSend;
           updateCustomerProgress(keyKhach, totalPts, qtyToSend);
@@ -553,6 +549,9 @@
             "Đã lưu Sheet"
           );
           addHistory(keyKhach, qtyToSend, totalPts, false);
+        } else if (res && res.mode === "VIEW") {
+          playBeep(false);
+          updateStatus("error", `🔒 Sai hoặc thiếu Key (${keyKhach})`, "Bấm nút 'Nhập Key' ở góc trên để nhập đúng mã bảo mật của quầy.", "Chưa đúng Key");
         } else {
           playBeep(false);
           const errMsg = (res && res.message) ? res.message : "Không thể lưu điểm vào Sheet.";
@@ -568,14 +567,14 @@
         callback: callbackName
       });
 
-      scriptTag.src = config.scriptUrl + (config.scriptUrl.includes("?") ? "&" : "?") + params.toString();
+      scriptTag.src = SCRIPT_URL_FROM_CONFIG + (SCRIPT_URL_FROM_CONFIG.includes("?") ? "&" : "?") + params.toString();
       scriptTag.onerror = function() {
         if (isDone) return;
         isDone = true;
         clearTimeout(timeoutId);
         cleanup();
         playBeep(false);
-        updateStatus("error", "❌ Không kết nối được Apps Script", "Kiểm tra lại đường link /exec trong mục Cấu hình.", "Lỗi kết nối");
+        updateStatus("error", "❌ Không kết nối được Apps Script", "Kiểm tra lại SCRIPT_URL trong file config.js.", "Lỗi kết nối");
       };
       document.body.appendChild(scriptTag);
     }
@@ -687,20 +686,21 @@
       });
     });
 
-    // --- MODAL CẤU HÌNH ---
+    // --- MODAL NHẬP KEY ---
     function refreshModeBadge() {
-      if (config.scriptUrl) {
-        modeBadge.textContent = "Đã nối Google Sheet";
-        modeBadge.style.background = "#e7f6ec";
-        modeBadge.style.color = "#166534";
+      if (SCRIPT_URL_FROM_CONFIG) {
+        modeBadge.textContent = config.secretKey ? "Đã nối config.js • Có Key" : "Đã nối config.js • Chưa nhập Key";
+        modeBadge.style.background = config.secretKey ? "#e7f6ec" : "#fef9c3";
+        modeBadge.style.color = config.secretKey ? "#166534" : "#854d0e";
       } else {
-        modeBadge.textContent = "Chưa gắn link Script";
+        modeBadge.textContent = "Không tìm thấy config.js";
+        modeBadge.style.background = "#fde8e8";
+        modeBadge.style.color = "#991b1b";
       }
     }
     refreshModeBadge();
 
     document.getElementById("btnOpenConfig").addEventListener("click", () => {
-      document.getElementById("cfgScriptUrl").value = config.scriptUrl || "";
       document.getElementById("cfgSecretKey").value = config.secretKey || "";
       document.getElementById("cfgCooldown").value = config.cooldownSec || 4;
       document.getElementById("configModal").classList.add("open");
@@ -711,13 +711,12 @@
     });
 
     document.getElementById("btnSaveConfig").addEventListener("click", () => {
-      config.scriptUrl = document.getElementById("cfgScriptUrl").value.trim();
       config.secretKey = document.getElementById("cfgSecretKey").value.trim();
       config.cooldownSec = Math.max(1, parseInt(document.getElementById("cfgCooldown").value, 10) || 4);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
       refreshModeBadge();
       document.getElementById("configModal").classList.remove("open");
-      updateStatus("success", "✅ Đã lưu cấu hình kết nối", "Sẵn sàng quét và lưu điểm thẳng vào Google Sheet.", "Sẵn sàng");
+      updateStatus("success", "✅ Đã lưu mã bảo mật", "Sẵn sàng quét và lưu điểm thẳng vào Google Sheet.", "Sẵn sàng");
     });
   </script>
 </body>
