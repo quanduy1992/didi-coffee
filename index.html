@@ -77,6 +77,14 @@
             font-weight: 900;
             color: #990900;
         }
+        .view-tet-gift {
+            margin-top: 6px;
+            padding-top: 6px;
+            border-top: 1px dashed #ecd9be;
+            font-size: 13.5px;
+            font-weight: 700;
+            color: #007b16;
+        }
         .view-history-title {
             font-size: 14px;
             font-weight: 700;
@@ -156,6 +164,7 @@
                 <div class="view-points-banner">
                     <div style="font-size: 12px; color: #5d4037; font-weight: 700;">SỐ ĐIỂM HIỆN TẠI</div>
                     <div class="view-points-num" id="viewCustPoints">0</div>
+                    <div class="view-tet-gift">Quà tết hiện tại: <span id="viewTetGiftValue">---</span></div>
                 </div>
             </div>
             <div class="view-history-title">5 lịch sử tích điểm gần nhất</div>
@@ -191,11 +200,15 @@
         const phone = resData.phone || 'Chưa cập nhật';
         const code = resData.code || fallbackCode;
         const points = (resData.points !== undefined && resData.points !== null) ? resData.points : 0;
+        const tetGift = (resData.tetGift !== undefined && resData.tetGift !== null && resData.tetGift !== "") 
+            ? resData.tetGift 
+            : (resData.quaTet || 'Chưa có');
         const history = Array.isArray(resData.history) ? resData.history.slice(0, 5) : [];
 
         document.getElementById('viewCustName').innerText = name;
         document.getElementById('viewCustMeta').innerText = "SĐT: " + phone + " • Mã KH: " + code;
         document.getElementById('viewCustPoints').innerText = points + " điểm";
+        document.getElementById('viewTetGiftValue').innerText = tetGift;
 
         const listEl = document.getElementById('viewHistoryList');
         listEl.innerHTML = '';
