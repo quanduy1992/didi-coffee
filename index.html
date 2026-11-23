@@ -251,12 +251,13 @@
         const phone = resData.phone || 'Chưa cập nhật';
         const code = resData.code || fallbackCode;
         const points = (resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
+        const totalPoints = (resData.all_time !== undefined && resData.all_time !== null) ? Number(resData.all_time) : points;
         let tetGift = (resData.tetGift !== undefined && resData.tetGift !== null && resData.tetGift !== "") 
             ? resData.tetGift 
             : (resData.quaTet || 'Chưa có');
 
         // Nếu quà trả về là cf và tổng điểm < 50 thì hiển thị "Chưa có quà"
-        if (String(tetGift).trim().toLowerCase().includes("cf") && points < 50) {
+        if (String(tetGift).trim().toLowerCase().includes("cf") && totalPoints < 50) {
             tetGift = "Chưa có quà";
         }
 
@@ -592,4 +593,3 @@
 </script>
 </body>
 </html>
-
