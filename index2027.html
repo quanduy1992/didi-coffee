@@ -385,6 +385,22 @@
         }
     };
 
+    function sendVerifyScript(actionName, code, name, phone, pointsToAdd, onSuccess, onFinalFail) {
+        const oldScript = document.getElementById('api-call');
+        if (oldScript) oldScript.remove();
+
+        const scriptTag = document.createElement("script");
+        scriptTag.id = "api-call";
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=${encodeURIComponent(actionName)}&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
+
+        scriptTag.onerror = function() {
+            const el = document.getElementById('api-call');
+            if (el) el.remove();
+            if (typeof onFinalFail === "function") onFinalFail();
+        };
+        document.body.appendChild(scriptTag);
+    }
+
     function handleVerify() {
         const name = document.getElementById('cusName').value.trim();
         const phone = document.getElementById('cusPhone').value.trim();
@@ -420,6 +436,8 @@
             pointsToAdd = pointsToAdd + 0.25;
         }
         // ------------------------------------
+
+        let triedFallbackAction = false;
 
         const safetyTimeout = setTimeout(function() {
             if (btnSubmit.disabled) {
@@ -483,19 +501,17 @@
             if (oldScript) oldScript.remove();
         };
 
-        const scriptTag = document.createElement("script");
-        scriptTag.id = "api-call";
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tichdiem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;        
-        
-        scriptTag.onerror = function() {
-            clearTimeout(safetyTimeout);
-            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-        };
-        document.body.appendChild(scriptTag);
+        sendVerifyScript("tichdiem", code, name, phone, pointsToAdd, null, function() {
+            if (!triedFallbackAction) {
+                triedFallbackAction = true;
+                sendVerifyScript("tich_diem", code, name, phone, pointsToAdd, null, function() {
+                    clearTimeout(safetyTimeout);
+                    resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+                });
+            }
+        });
     }
 </script>
 </body>
