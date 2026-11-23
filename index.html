@@ -188,8 +188,7 @@
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        scriptTag.src = `CONFIG.SCRIPTURL?action=tichdiem&code={encodeURIComponent(code)}&name=encodeURIComponent(name)&phone={encodeURIComponent(phone)}&add_points=pointsToAdd&callback=googleCallback&t={new Date().getTime()}`;        
-        
+        scriptTag.src = `${CONFIG.SCRIPTURL}?action=tichdiem&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${encodeURIComponent(pointsToAdd)}&callback=googleCallback&t=${new Date().getTime()}`;
         scriptTag.onerror = function() {
             clearTimeout(safetyTimeout);
             resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
