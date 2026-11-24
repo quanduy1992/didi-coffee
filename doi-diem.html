@@ -644,15 +644,16 @@
         // Trường hợp 2: Đổi điểm (trừ điểm)
         if (res.status === "SUCCESS" && res.mode !== "VIEW") {
           playBeep(true);
+          const actualDeducted = Number(res.deducted) || ptsToDeduct;
           const remainingPts = Number(res.points) || 0;
           updateCustomerProgress(keyKhach, remainingPts);
           updateStatus(
             "success",
-            `🎁 Đổi thành công -${ptsToDeduct} điểm (${keyKhach})`,
+            `🎁 Đổi thành công -${actualDeducted} điểm (${keyKhach})`,
             `Khách: ${res.name || keyKhach} • Điểm còn lại: ${remainingPts} điểm`,
             "Đã trừ điểm"
           );
-          addHistory(keyKhach, ptsToDeduct, remainingPts, "Đổi quà");
+          addHistory(keyKhach, actualDeducted, remainingPts, "Đổi quà");
         } else if (res.mode === "VIEW") {
           playBeep(false);
           updateStatus("error", `🔒 Sai hoặc thiếu Key (${keyKhach})`, "Bấm nút 'Nhập Key' ở góc trên để nhập đúng mã bảo mật của quầy.", "Chưa đúng Key");
