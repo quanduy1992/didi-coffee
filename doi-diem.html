@@ -257,8 +257,8 @@
     <div class="brand">
       <div class="brand-icon">🎁</div>
       <div>
-        <div class="brand-title">DI DI COFFEE <span class="badge">Quầy Đổi Điểm</span></div>
-        <div class="brand-sub">Quét thẻ khách để trừ điểm &amp; nhận ly miễn phí</div>
+        <div class="brand-title"><span id="shopNameTitle">DI DI COFFEE</span> <span class="badge">Quầy Đổi Điểm</span></div>
+        <div class="brand-sub" id="redeemRuleSub">Luật đổi điểm: 15 điểm = 1 ly (từ config.js)</div>
       </div>
     </div>
     <div class="top-actions">
@@ -314,14 +314,8 @@
           <button class="btn-step plus" id="btnPlus">+</button>
         </div>
 
-        <!-- Các mốc chọn nhanh -->
-        <div class="quick-grid" id="quickRedeemGrid">
-          <button type="button" class="btn-qty active" data-pts="15">1 ly<span>-15 điểm</span></button>
-          <button type="button" class="btn-qty" data-pts="30">2 ly<span>-30 điểm</span></button>
-          <button type="button" class="btn-qty" data-pts="45">3 ly<span>-45 điểm</span></button>
-          <button type="button" class="btn-qty" data-pts="60">4 ly<span>-60 điểm</span></button>
-          <button type="button" class="btn-qty" data-pts="75">5 ly<span>-75 điểm</span></button>
-        </div>
+        <!-- Các mốc chọn nhanh tự dựng theo REDEEM_POINTS từ config.js -->
+        <div class="quick-grid" id="quickRedeemGrid"></div>
 
         <div class="mode-switch-bar">
           <label class="check-only-label">
@@ -371,7 +365,7 @@
         <div class="progress-box">
           <div class="progress-top">
             <span>Mã thẻ: <strong id="displayCode">—</strong></span>
-            <span>Còn lại: <strong id="displayPoints">0</strong> điểm</span>
+            <span>Còn lại: <strong id="displayPoints">0</strong> / <strong id="displayTargetPts">15</strong> điểm</span>
           </div>
           <div class="progress-bar">
             <div class="progress-fill" id="progressFill"></div>
@@ -418,10 +412,12 @@
   </div>
 
   <script>
-    // --- DÙNG CHUNG CONFIG.JS & LOCALSTORAGE KEY VỚI TRANG TÍCH ĐIỂM ---
+    // --- LẤY CẤU HÌNH TỪ CONFIG.JS & LOCALSTORAGE ---
     const STORAGE_KEY = "didi_qr_scanner_cfg_v2";
-    const SCRIPT_URL_FROM_CONFIG = (typeof CONFIG !== "undefined" && CONFIG.SCRIPT_URL) ? CONFIG.SCRIPT_URL.trim() : "";
-    const DEFAULT_REDEEM_POINTS = 15; // 15 điểm = 1 ly
+    const CFG = (typeof CONFIG !== "undefined" && CONFIG) ? CONFIG : {};
+    const SCRIPT_URL_FROM_CONFIG = (CFG.SCRIPT_URL || "").trim();
+    const REDEEM_UNIT_POINTS = Math.max(1, parseInt(CFG.REDEEM_POINTS, 10) || 15);
+    const SHOP_NAME = (CFG.SHOP_NAME || "DI DI COFFEE").toString().trim();
 
     let config = {
       secretKey: "",
@@ -437,7 +433,9 @@
     } catch (e) {}
 
     // --- BIẾN TRẠNG THÁI ---
-    let currentRedeemPts = DEFAULT_REDEEM_POINTS;
+    let currentRedeemPts = REDEEM_UNIT_POINTS;
+    let lastKnownPoints = null;
+    let lastKnownCode = "";
     let html5QrCode = null;
     let isScanning = false;
     let lastScanCode = "";
@@ -445,6 +443,9 @@
     let historyLogs = [];
 
     // --- DOM ELEMENTS ---
+    const shopNameTitle = document.getElementById("shopNameTitle");
+    const redeemRuleSub = document.getElementById("redeemRuleSub");
+    const quickRedeemGrid = document.getElementById("quickRedeemGrid");
     const qtyInput = document.getElementById("qtyInput");
     const redeemSummaryText = document.getElementById("redeemSummaryText");
     const keepQtyCheckbox = document.getElementById("keepQtyCheckbox");
@@ -456,14 +457,36 @@
     const syncBadge = document.getElementById("syncBadge");
     const displayCode = document.getElementById("displayCode");
     const displayPoints = document.getElementById("displayPoints");
+    const displayTargetPts = document.getElementById("displayTargetPts");
     const progressFill = document.getElementById("progressFill");
     const rewardHint = document.getElementById("rewardHint");
     const historyList = document.getElementById("historyList");
     const modeBadge = document.getElementById("modeBadge");
 
-    // --- CHỌN SỐ ĐIỂM CẦN ĐỔI ---
+    // --- ÁP DỤNG MỐC ĐIỂM TỪ CONFIG.JS ---
+    document.title = `${SHOP_NAME.toUpperCase()} - Quầy Quét QR Đổi Điểm`;
+    shopNameTitle.textContent = SHOP_NAME.toUpperCase();
+    redeemRuleSub.textContent = `Luật đổi điểm: ${REDEEM_UNIT_POINTS} điểm = 1 ly (config.js)`;
+    displayTargetPts.textContent = REDEEM_UNIT_POINTS;
+    qtyInput.value = REDEEM_UNIT_POINTS;
+    rewardHint.textContent = `Mỗi ${REDEEM_UNIT_POINTS} điểm đổi được 1 ly miễn phí.`;
+
+    for (let cup = 1; cup <= 5; cup++) {
+      const pts = cup * REDEEM_UNIT_POINTS;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "btn-qty" + (cup === 1 ? " active" : "");
+      btn.dataset.pts = pts;
+      btn.innerHTML = `${cup} ly<span>-${pts} điểm</span>`;
+      btn.addEventListener("click", () => {
+        checkOnlyCheckbox.checked = false;
+        setRedeemPoints(pts);
+      });
+      quickRedeemGrid.appendChild(btn);
+    }
+
     function setRedeemPoints(pts) {
-      const num = Math.max(1, Math.min(999, parseInt(pts, 10) || DEFAULT_REDEEM_POINTS));
+      const num = Math.max(1, Math.min(9999, parseInt(pts, 10) || REDEEM_UNIT_POINTS));
       currentRedeemPts = num;
       qtyInput.value = num;
 
@@ -471,6 +494,9 @@
         btn.classList.toggle("active", parseInt(btn.dataset.pts, 10) === num);
       });
 
+      if (lastKnownPoints !== null && lastKnownCode) {
+        updateCustomerProgress(lastKnownCode, lastKnownPoints);
+      }
       refreshRedeemInstruction();
     }
 
@@ -480,29 +506,23 @@
         redeemSummaryText.innerHTML = `Đang ở chế độ <strong>Soi điểm khách</strong> — quét thẻ chỉ xem điểm hiện có, <strong>không trừ điểm</strong>.`;
       } else {
         btnManualSubmit.textContent = `🎁 Trừ ${currentRedeemPts}đ`;
-        const cups = (currentRedeemPts % 15 === 0) ? ` (${currentRedeemPts / 15} ly)` : "";
-        redeemSummaryText.innerHTML = `Quét 1 lần sẽ trừ <strong style="color: var(--redeem);">-${currentRedeemPts} điểm${cups}</strong> rồi tự động trả về <strong>${DEFAULT_REDEEM_POINTS} điểm</strong> cho khách tiếp theo.`;
+        const cups = (currentRedeemPts % REDEEM_UNIT_POINTS === 0) ? ` (${currentRedeemPts / REDEEM_UNIT_POINTS} ly)` : "";
+        redeemSummaryText.innerHTML = `Quét 1 lần sẽ trừ <strong style="color: var(--redeem);">-${currentRedeemPts} điểm${cups}</strong> rồi tự động trả về <strong>${REDEEM_UNIT_POINTS} điểm</strong> cho khách tiếp theo.`;
       }
     }
 
-    document.querySelectorAll("#quickRedeemGrid .btn-qty").forEach(btn => {
-      btn.addEventListener("click", () => {
-        checkOnlyCheckbox.checked = false;
-        setRedeemPoints(btn.dataset.pts);
-      });
-    });
-
-    document.getElementById("btnMinus").addEventListener("click", () => setRedeemPoints(currentRedeemPts - 15));
-    document.getElementById("btnPlus").addEventListener("click", () => setRedeemPoints(currentRedeemPts + 15));
+    document.getElementById("btnMinus").addEventListener("click", () => setRedeemPoints(currentRedeemPts - REDEEM_UNIT_POINTS));
+    document.getElementById("btnPlus").addEventListener("click", () => setRedeemPoints(currentRedeemPts + REDEEM_UNIT_POINTS));
     qtyInput.addEventListener("input", () => setRedeemPoints(qtyInput.value));
     checkOnlyCheckbox.addEventListener("change", refreshRedeemInstruction);
+    refreshRedeemInstruction();
 
-    // Phím tắt 1-5 (= 15, 30, 45, 60, 75 điểm)
+    // Phím tắt 1-5 (= 1x đến 5x REDEEM_UNIT_POINTS)
     document.addEventListener("keydown", (e) => {
       if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
       if (e.key >= "1" && e.key <= "5") {
         checkOnlyCheckbox.checked = false;
-        setRedeemPoints(parseInt(e.key, 10) * 15);
+        setRedeemPoints(parseInt(e.key, 10) * REDEEM_UNIT_POINTS);
       }
     });
 
@@ -557,7 +577,7 @@
       const ptsToDeduct = currentRedeemPts;
 
       if (!isCheckOnly && !keepQtyCheckbox.checked) {
-        setRedeemPoints(DEFAULT_REDEEM_POINTS);
+        setRedeemPoints(REDEEM_UNIT_POINTS);
       }
 
       if (!SCRIPT_URL_FROM_CONFIG) {
@@ -601,7 +621,7 @@
           return;
         }
 
-        // Trường hợp 1: Chỉ soi điểm (hoặc Script trả về thông tin xem điểm)
+        // Trường hợp 1: Chỉ soi điểm
         if (isCheckOnly) {
           if (res.status === "SUCCESS" || typeof res.points !== "undefined") {
             playBeep(true);
@@ -610,7 +630,7 @@
             updateStatus(
               "success",
               `👁️ Thẻ ${keyKhach} hiện có ${curPts} điểm`,
-              `Khách: ${res.name || keyKhach} • ${curPts >= 15 ? "Đủ đổi " + Math.floor(curPts / 15) + " ly miễn phí!" : "Chưa đủ 15 điểm để đổi."}`,
+              `Khách: ${res.name || keyKhach} • ${curPts >= REDEEM_UNIT_POINTS ? "Đủ đổi " + Math.floor(curPts / REDEEM_UNIT_POINTS) + " ly miễn phí!" : "Chưa đủ " + REDEEM_UNIT_POINTS + " điểm để đổi."}`,
               "Đã kiểm tra"
             );
             addHistory(keyKhach, 0, curPts, "Soi điểm");
@@ -638,7 +658,6 @@
           updateStatus("error", `🔒 Sai hoặc thiếu Key (${keyKhach})`, "Bấm nút 'Nhập Key' ở góc trên để nhập đúng mã bảo mật của quầy.", "Chưa đúng Key");
         } else {
           playBeep(false);
-          // Nếu Script trả về kèm số điểm hiện tại của khách (khi không đủ điểm)
           if (typeof res.points !== "undefined") {
             updateCustomerProgress(keyKhach, Number(res.points) || 0);
           }
@@ -652,6 +671,7 @@
         code: keyKhach,
         points: ptsToDeduct,
         quantity: ptsToDeduct,
+        redeem_unit: REDEEM_UNIT_POINTS,
         secret_key: config.secretKey || "",
         callback: callbackName
       });
@@ -676,17 +696,23 @@
     }
 
     function updateCustomerProgress(code, remainingPts) {
+      lastKnownCode = code;
+      lastKnownPoints = remainingPts;
       displayCode.textContent = code;
       displayPoints.textContent = remainingPts;
-      const modPts = remainingPts % 15;
-      const pct = remainingPts >= 15 && modPts === 0 ? 100 : Math.min(100, Math.round((modPts / 15) * 100));
+      displayTargetPts.textContent = REDEEM_UNIT_POINTS;
+
+      const modPts = remainingPts % REDEEM_UNIT_POINTS;
+      const pct = remainingPts >= REDEEM_UNIT_POINTS && modPts === 0
+        ? 100
+        : Math.min(100, Math.round((modPts / REDEEM_UNIT_POINTS) * 100));
       progressFill.style.width = pct + "%";
 
-      if (remainingPts >= 15) {
-        const freeCups = Math.floor(remainingPts / 15);
-        rewardHint.innerHTML = `🎉 Khách vẫn còn đủ điểm đổi thêm <strong>${freeCups} ly miễn phí</strong>! (Dư ${modPts}/15 điểm)`;
+      if (remainingPts >= REDEEM_UNIT_POINTS) {
+        const freeCups = Math.floor(remainingPts / REDEEM_UNIT_POINTS);
+        rewardHint.innerHTML = `🎉 Khách vẫn còn đủ điểm đổi thêm <strong>${freeCups} ly miễn phí</strong>! (Dư ${modPts}/${REDEEM_UNIT_POINTS} điểm)`;
       } else {
-        rewardHint.textContent = `Còn ${remainingPts} điểm (cần thêm ${15 - remainingPts} điểm cho ly miễn phí tiếp theo).`;
+        rewardHint.textContent = `Còn ${remainingPts} điểm (cần thêm ${REDEEM_UNIT_POINTS - remainingPts} điểm cho ly miễn phí tiếp theo).`;
       }
     }
 
@@ -790,7 +816,9 @@
     // --- MODAL NHẬP KEY ---
     function refreshModeBadge() {
       if (SCRIPT_URL_FROM_CONFIG) {
-        modeBadge.textContent = config.secretKey ? "Đã nối config.js • Có Key" : "Đã nối config.js • Chưa nhập Key";
+        modeBadge.textContent = config.secretKey
+          ? `Đã nối config.js (${REDEEM_UNIT_POINTS}đ/ly) • Có Key`
+          : `Đã nối config.js (${REDEEM_UNIT_POINTS}đ/ly) • Chưa nhập Key`;
         modeBadge.style.background = config.secretKey ? "#e7f6ec" : "#fef9c3";
         modeBadge.style.color = config.secretKey ? "#166534" : "#854d0e";
       } else {
