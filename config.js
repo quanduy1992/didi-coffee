@@ -4,7 +4,7 @@ const CONFIG = {
     SCRIPT_URL: 'https://script.google.com/macros/s/AKfycby2F8aU6pxp7I-4mpoFB1QYqnU_UhgqsiRBqcTb1xXuR14ES_NoXejPDNG6NRShRAY5pg/exec',
     
     // Bạn có thể thêm các cấu hình khác sau này tại đây
-    REDEEM_POINTS: 20,
+    REDEEM_POINTS: 15,
     SPIN_POINTS: 200,
     POINTS_PER_CODE: 1,
     LEVEL_1: 15,
