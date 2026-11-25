@@ -23,7 +23,7 @@
       --error-text: #991b1b;
     }
 
-    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    *, *::before, *::after { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -257,7 +257,7 @@
     <div class="brand">
       <div class="brand-icon">🎁</div>
       <div>
-        <div class="brand-title"><span id="shopNameTitle">DI DI COFFEE</span></div>
+        <div class="brand-title"><span id="shopNameTitle">DI DI COFFEE</span> <span class="pill" id="camBadge">Chờ bật camera</span></div>
       </div>
     </div>
     <div class="top-actions">
@@ -285,6 +285,7 @@
       <!-- Chọn số điểm trừ -->
       <section class="card">
         <div class="card-header">
+          <span class="step-label" id="redeemRuleSub">Luật đổi điểm</span>
           <label class="sticky-label">
             <input type="checkbox" id="keepQtyCheckbox" />
             Giữ mức trừ
@@ -448,14 +449,19 @@
     const rewardHint = document.getElementById("rewardHint");
     const historyList = document.getElementById("historyList");
     const modeBadge = document.getElementById("modeBadge");
+    const camBadge = document.getElementById("camBadge");
+
+    function setTextSafe(el, text) {
+      if (el) el.textContent = text;
+    }
 
     // --- ÁP DỤNG MỐC ĐIỂM TỪ CONFIG.JS ---
     document.title = `${SHOP_NAME.toUpperCase()} - Quầy Quét QR Đổi Điểm`;
-    shopNameTitle.textContent = SHOP_NAME.toUpperCase();
-    redeemRuleSub.textContent = `Luật đổi điểm: ${REDEEM_UNIT_POINTS} điểm = 1 ly (config.js)`;
-    displayTargetPts.textContent = REDEEM_UNIT_POINTS;
+    setTextSafe(shopNameTitle, SHOP_NAME.toUpperCase());
+    setTextSafe(redeemRuleSub, `Luật đổi điểm: ${REDEEM_UNIT_POINTS} điểm = 1 ly (config.js)`);
+    setTextSafe(displayTargetPts, REDEEM_UNIT_POINTS);
     qtyInput.value = REDEEM_UNIT_POINTS;
-    rewardHint.textContent = `Mỗi ${REDEEM_UNIT_POINTS} điểm đổi được 1 ly miễn phí.`;
+    setTextSafe(rewardHint, `Mỗi ${REDEEM_UNIT_POINTS} điểm đổi được 1 ly miễn phí.`);
 
     for (let cup = 1; cup <= 5; cup++) {
       const pts = cup * REDEEM_UNIT_POINTS;
@@ -677,17 +683,17 @@
 
     function updateStatus(type, main, sub, badge) {
       statusBox.className = "status-box " + type;
-      statusMain.textContent = main;
-      statusSub.textContent = sub;
-      syncBadge.textContent = badge;
+      setTextSafe(statusMain, main);
+      setTextSafe(statusSub, sub);
+      setTextSafe(syncBadge, badge);
     }
 
     function updateCustomerProgress(code, remainingPts) {
       lastKnownCode = code;
       lastKnownPoints = remainingPts;
-      displayCode.textContent = code;
-      displayPoints.textContent = remainingPts;
-      displayTargetPts.textContent = REDEEM_UNIT_POINTS;
+      setTextSafe(displayCode, code);
+      setTextSafe(displayPoints, remainingPts);
+      setTextSafe(displayTargetPts, REDEEM_UNIT_POINTS);
 
       const modPts = remainingPts % REDEEM_UNIT_POINTS;
       const pct = remainingPts >= REDEEM_UNIT_POINTS && modPts === 0
@@ -699,7 +705,7 @@
         const freeCups = Math.floor(remainingPts / REDEEM_UNIT_POINTS);
         rewardHint.innerHTML = `🎉 Khách vẫn còn đủ điểm đổi thêm <strong>${freeCups} ly miễn phí</strong>! (Dư ${modPts}/${REDEEM_UNIT_POINTS} điểm)`;
       } else {
-        rewardHint.textContent = `Còn ${remainingPts} điểm (cần thêm ${REDEEM_UNIT_POINTS - remainingPts} điểm cho ly miễn phí tiếp theo).`;
+        setTextSafe(rewardHint, `Còn ${remainingPts} điểm (cần thêm ${REDEEM_UNIT_POINTS - remainingPts} điểm cho ly miễn phí tiếp theo).`);
       }
     }
 
@@ -750,7 +756,7 @@
         isScanning = true;
         document.getElementById("btnToggleCam").textContent = "⏹ Tắt Camera";
         document.getElementById("btnToggleCam").classList.add("active");
-        document.getElementById("camBadge").textContent = "Camera đang quét";
+        setTextSafe(camBadge, "Camera đang quét");
       } catch (err) {
         document.getElementById("camPlaceholder").style.display = "block";
         alert("Không mở được camera. Ông kiểm tra quyền Camera trên trình duyệt nhé!");
@@ -766,7 +772,7 @@
       document.getElementById("camPlaceholder").style.display = "block";
       document.getElementById("btnToggleCam").textContent = "📷 Bật Camera";
       document.getElementById("btnToggleCam").classList.remove("active");
-      document.getElementById("camBadge").textContent = "Chờ bật camera";
+      setTextSafe(camBadge, "Chờ bật camera");
     }
 
     document.getElementById("btnToggleCam").addEventListener("click", () => {
@@ -802,6 +808,7 @@
 
     // --- MODAL NHẬP KEY ---
     function refreshModeBadge() {
+      if (!modeBadge) return;
       if (SCRIPT_URL_FROM_CONFIG) {
         modeBadge.textContent = config.secretKey
           ? `Đã nối config.js (${REDEEM_UNIT_POINTS}đ/ly) • Có Key`
