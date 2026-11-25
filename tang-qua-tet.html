@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>DI DI COFFEE - Quét Tặng Quà Tết</title>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="config.js"></script>
+  <style>
+    :root {
+      --bg: #fdf6ec;
+      --card: #fffdf9;
+      --primary: #8b1e1e;
+      --accent: #c2410c;
+      --gold: #b45309;
+      --text: #2c1810;
+      --muted: #7a6558;
+      --border: #eddcc4;
+      --success-bg: #e7f6ec;
+      --success-text: #166534;
+      --warn-bg: #fef3c7;
+      --warn-text: #92400e;
+      --error-bg: #fde8e8;
+      --error-text: #991b1b;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 24px;
+    }
+    .topbar {
+      background: linear-gradient(135deg, #8b1e1e, #b91c1c);
+      color: #fff;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.14);
+    }
+    .brand { display: flex; align-items: center; gap: 10px; }
+    .brand-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #fde68a; color: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px; font-weight: bold; flex-shrink: 0;
+    }
+    .brand-title { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .badge {
+      background: #fde68a; color: #78350f;
+      font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 800;
+    }
+    .brand-sub { font-size: 11.5px; opacity: 0.92; margin-top: 2px; }
+    .top-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .btn-top {
+      border: 1px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.14);
+      color: #fff; padding: 7px 11px; border-radius: 10px;
+      font-size: 12.5px; font-weight: 600; cursor: pointer;
+    }
+    .btn-top.active { background: #fff; color: var(--primary); }
+
+    .container {
+      max-width: 1020px;
+      margin: 14px auto 0;
+      padding: 0 12px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.9fr;
+      gap: 14px;
+    }
+    @media (max-width: 820px) { .container { grid-template-columns: 1fr; } }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px;
+      box-shadow: 0 2px 8px rgba(44,24,16,0.04);
+      margin-bottom: 14px;
+    }
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .step-label {
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      color: var(--accent); letter-spacing: 0.5px;
+    }
+    .card-title { font-size: 16px; font-weight: 800; margin: 2px 0 0; }
+    .card-desc { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
+    .pill {
+      font-size: 11.5px; font-weight: 600; padding: 4px 10px;
+      border-radius: 999px; background: #fef3c7; color: var(--gold);
+    }
+
+    .camera-box {
+      background: #450a0a;
+      border-radius: 14px;
+      min-height: 240px;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: #fff; text-align: center; padding: 16px;
+    }
+    #reader { width: 100%; border-radius: 10px; overflow: hidden; }
+    .cam-placeholder h3 { margin: 8px 0 6px; font-size: 16px; }
+    .cam-placeholder p { margin: 0 0 14px; font-size: 12.5px; opacity: 0.88; max-width: 320px; }
+    .btn-light {
+      background: #fde68a; color: var(--primary); border: none;
+      padding: 10px 18px; border-radius: 10px; font-weight: 800; font-size: 13.5px; cursor: pointer;
+    }
+
+    .status-box {
+      padding: 14px; border-radius: 12px; background: #fbf5ea;
+      border: 1px solid var(--border); margin-bottom: 12px;
+    }
+    .status-box.success { background: var(--success-bg); border-color: #bbf7d0; color: var(--success-text); }
+    .status-box.already { background: var(--warn-bg); border-color: #fde68a; color: var(--warn-text); }
+    .status-box.error { background: var(--error-bg); border-color: #fecaca; color: var(--error-text); }
+    .status-box.loading { background: #fef9c3; border-color: #fde047; color: #854d0e; }
+    .status-main { font-size: 17px; font-weight: 800; margin: 0 0 5px; }
+    .status-sub { font-size: 13px; margin: 0; opacity: 0.95; }
+
+    .gift-highlight {
+      background: #fff8eb;
+      border: 1.5px dashed #d97706;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+    .gift-label { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
+    .gift-value { font-size: 20px; font-weight: 900; color: var(--primary); margin: 4px 0; }
+    .gift-meta { font-size: 12.5px; color: var(--text); }
+
+    .test-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .text-input {
+      flex: 1; height: 42px; border-radius: 10px; border: 1px solid var(--border);
+      padding: 0 12px; font-size: 14px; outline: none;
+    }
+    .btn-primary {
+      background: var(--primary); color: #fff; border: none;
+      padding: 0 16px; height: 42px; border-radius: 10px;
+      font-weight: 700; font-size: 13.5px; cursor: pointer; white-space: nowrap;
+    }
+    .btn-mini {
+      border: 1px solid var(--border); background: #fff; border-radius: 8px;
+      padding: 5px 10px; font-size: 12px; font-weight: 700; color: var(--primary); cursor: pointer;
+    }
+
+    .history-list { list-style: none; padding: 0; margin: 0; max-height: 280px; overflow-y: auto; }
+    .history-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 13px;
+    }
+    .history-item:last-child { border-bottom: none; }
+    .link-clear { font-size: 12px; color: var(--accent); text-decoration: underline; cursor: pointer; background: none; border: none; }
+
+    .modal-backdrop {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal {
+      background: #fff; border-radius: 16px; padding: 18px; width: 100%; max-width: 420px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 5px; }
+    .form-group input { width: 100%; height: 40px; border: 1px solid #ccc; border-radius: 10px; padding: 0 10px; font-size: 13.5px; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">🧧</div>
+      <div>
+        <div class="brand-title"><span id="shopNameTitle">DI DI COFFEE</span> <span class="badge">Quét Tặng Quà Tết</span></div>
+        <div class="brand-sub">Đọc &amp; cập nhật trạng thái trực tiếp trên sheet KHACH</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn-top" id="btnToggleCam">📷 Bật Camera</button>
+      <button class="btn-top" id="btnOpenConfig">🔑 Nhập Key</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div>
+      <section class="card">
+        <div class="card-header">
+          <div>
+            <div class="step-label">BƯỚC 1 — QUÉT THẺ KHÁCH NHẬN QUÀ TẾT</div>
+            <h2 class="card-title">Khung quét mã QR khách hàng</h2>
+          </div>
+          <span class="pill" id="camBadge">Chờ bật camera</span>
+        </div>
+        <p class="card-desc">Quét thẻ khách: nếu cột TRẠNG THÁI trống sẽ báo phần quà và tự đánh dấu ĐÃ NHẬN; nếu đã nhận sẽ báo ngay.</p>
+
+        <div class="camera-box">
+          <div id="reader"></div>
+          <div class="cam-placeholder" id="camPlaceholder">
+            <div style="font-size: 32px;">🧧</div>
+            <h3>Camera tặng quà Tết đang nghỉ</h3>
+            <p>Bấm "Bật Camera" để quét mã thẻ khách hàng.</p>
+            <button class="btn-light" id="btnStartCamCenter">Bật camera ngay</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title" style="font-size: 14.5px;">⌨️ Nhập KEY / SĐT thủ công</h2>
+          <span class="pill" id="modeBadge">Đang kiểm tra config.js...</span>
+        </div>
+        <div class="test-row">
+          <input type="text" id="manualCodeInput" class="text-input" placeholder="Nhập KEY (VD: DI-100MT) hoặc SĐT..." />
+          <button class="btn-primary" id="btnManualSubmit">🧧 Tặng quà</button>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted);">
+          <span>Kiểm tra nhanh:</span>
+          <button class="btn-mini" id="btnCheckStatusManual">👁️ Chỉ xem trạng thái</button>
+          <button class="btn-mini" data-test="DI-100MT">Test DI-100MT</button>
+        </div>
+      </section>
+    </div>
+
+    <div>
+      <section class="card">
+        <div class="card-header">
+          <div class="step-label">KẾT QUẢ KIỂM TRA &amp; TẶNG QUÀ</div>
+          <span class="pill" id="syncBadge">Sẵn sàng</span>
+        </div>
+
+        <div class="status-box" id="statusBox">
+          <p class="status-main" id="statusMain">Đang chờ quét thẻ khách</p>
+          <p class="status-sub" id="statusSub">Hệ thống kiểm tra cột TRẠNG THÁI trên sheet KHACH trước khi tặng.</p>
+        </div>
+
+        <div class="gift-highlight">
+          <div class="gift-label">Phần quà của khách</div>
+          <div class="gift-value" id="displayGift">—</div>
+          <div class="gift-meta" id="displayCustomerInfo">Chưa có khách được chọn</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-header">
+          <h2 class="card-title" style="font-size: 15px;">Lịch sử tặng quà trong ca</h2>
+          <button class="link-clear" id="btnClearHistory">Xóa nhật ký</button>
+        </div>
+        <ul class="history-list" id="historyList">
+          <li style="font-size: 12.5px; color: var(--muted);">Chưa có lượt nào trong phiên này.</li>
+        </ul>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="configModal">
+    <div class="modal">
+      <h3 style="margin-top: 0;">🔑 Mã bảo mật quầy quét</h3>
+      <p style="font-size: 12.5px; color: var(--muted); margin-top: -6px;">
+        Dùng chung mã bảo mật với các trang quét khác của quán.
+      </p>
+      <div class="form-group">
+        <label>Mã bảo mật (secret_key)</label>
+        <input type="text" id="cfgSecretKey" placeholder="Nhập mã bảo mật..." />
+      </div>
+      <div class="form-group">
+        <label>Chống quét trùng cùng 1 thẻ (giây)</label>
+        <input type="number" id="cfgCooldown" value="4" min="1" max="30" />
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
+        <button class="btn-mini" id="btnCloseConfig" style="padding: 8px 14px;">Đóng</button>
+        <button class="btn-primary" id="btnSaveConfig">Lưu Key</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = "didi_qr_scanner_cfg_v2";
+    const CFG = (typeof CONFIG !== "undefined" && CONFIG) ? CONFIG : {};
+    const SCRIPT_URL = (CFG.SCRIPT_URL || "").trim();
+    const SHOP_NAME = (CFG.SHOP_NAME || "DI DI COFFEE").toString().trim();
+
+    let config = { secretKey: "", cooldownSec: 4 };
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (saved) {
+        if (typeof saved.secretKey === "string") config.secretKey = saved.secretKey;
+        if (saved.cooldownSec) config.cooldownSec = saved.cooldownSec;
+      }
+    } catch (e) {}
+
+    let html5QrCode = null;
+    let isScanning = false;
+    let lastScanCode = "";
+    let lastScanTime = 0;
+    let historyLogs = [];
+
+    const shopNameTitle = document.getElementById("shopNameTitle");
+    const statusBox = document.getElementById("statusBox");
+    const statusMain = document.getElementById("statusMain");
+    const statusSub = document.getElementById("statusSub");
+    const syncBadge = document.getElementById("syncBadge");
+    const displayGift = document.getElementById("displayGift");
+    const displayCustomerInfo = document.getElementById("displayCustomerInfo");
+    const historyList = document.getElementById("historyList");
+    const modeBadge = document.getElementById("modeBadge");
+
+    document.title = `${SHOP_NAME.toUpperCase()} - Quét Tặng Quà Tết`;
+    shopNameTitle.textContent = SHOP_NAME.toUpperCase();
+
+    function playSound(type) {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = type === "ok" ? "triangle" : "sawtooth";
+        osc.frequency.setValueAtTime(type === "ok" ? 820 : (type === "warn" ? 440 : 210), ctx.currentTime);
+        gain.gain.setValueAtTime(0.16, ctx.currentTime);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        if (type === "ok") osc.frequency.setValueAtTime(1040, ctx.currentTime + 0.09);
+        osc.stop(ctx.currentTime + 0.25);
+      } catch (e) {}
+    }
+
+    function extractCustomerKey(rawText) {
+      const text = (rawText || "").trim();
+      if (!text) return "";
+      try {
+        if (text.startsWith("http://") || text.startsWith("https://")) {
+          const url = new URL(text);
+          const p = url.searchParams.get("code") || url.searchParams.get("key") || url.searchParams.get("ma_khach");
+          if (p) return p.toUpperCase().trim();
+          const parts = url.pathname.split("/").filter(Boolean);
+          if (parts.length) return parts[parts.length - 1].toUpperCase().trim();
+        }
+      } catch (e) {}
+      return text.toUpperCase().trim();
+    }
+
+    function setStatus(cls, main, sub, badge) {
+      statusBox.className = "status-box " + cls;
+      statusMain.textContent = main;
+      statusSub.textContent = sub;
+      syncBadge.textContent = badge;
+    }
+
+    function processGiftScan(rawText, onlyCheck = false) {
+      const code = extractCustomerKey(rawText);
+      if (!code) return;
+
+      const now = Date.now();
+      if (code === lastScanCode && (now - lastScanTime) < (config.cooldownSec * 1000)) return;
+      lastScanCode = code;
+      lastScanTime = now;
+
+      if (!SCRIPT_URL) {
+        playSound("err");
+        setStatus("error", "❌ Thiếu SCRIPT_URL trong config.js", "Kiểm tra lại file config.js.", "Lỗi cấu hình");
+        return;
+      }
+
+      setStatus("loading", `Đang kiểm tra ${code}...`, "Đang đối chiếu cột QUÀ & TRẠNG THÁI trên sheet KHACH...", "Đang xử lý...");
+
+      const cbName = "didiTetCb_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
+      const scriptEl = document.createElement("script");
+      let done = false;
+
+      const cleanup = () => {
+        if (scriptEl.parentNode) scriptEl.parentNode.removeChild(scriptEl);
+        delete window[cbName];
+      };
+
+      const timer = setTimeout(() => {
+        if (done) return;
+        done = true;
+        cleanup();
+        playSound("err");
+        setStatus("error", `⚠️ Quá thời gian phản hồi (${code})`, "Kiểm tra kết nối mạng hoặc Apps Script.", "Lỗi mạng");
+      }, 15000);
+
+      window[cbName] = function(res) {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        cleanup();
+
+        if (!res) {
+          playSound("err");
+          setStatus("error", `❌ Không nhận được dữ liệu (${code})`, "Thử quét lại thẻ.", "Lỗi dữ liệu");
+          return;
+        }
+
+        const cCode = res.code || code;
+        const cName = res.name || cCode;
+        const cGift = res.gift || "Chưa đủ điều kiện";
+        const cPhone = res.phone ? ` • SĐT: ${res.phone}` : "";
+
+        displayGift.textContent = cGift;
+        displayCustomerInfo.textContent = `${cName} (${cCode})${cPhone}`;
+
+        if (res.status === "SUCCESS" && !res.already_received) {
+          playSound("ok");
+          const mainMsg = onlyCheck ? `👁️ ${cName} (${cCode}) — CHƯA NHẬN QUÀ` : `🎁 TẶNG QUÀ: ${cGift}`;
+          const subMsg = onlyCheck
+            ? `Phần quà: ${cGift} • Trạng thái hiện tại: Chưa nhận.`
+            : `Khách: ${cName} (${cCode}) • Đã cập nhật "ĐÃ NHẬN" trên sheet KHACH.`;
+          setStatus("success", mainMsg, subMsg, onlyCheck ? "Chưa nhận" : "Đã cập nhật");
+          if (!onlyCheck) addHistory(cCode, cName, cGift, "ĐÃ NHẬN", "ok");
+        } else if (res.status === "ALREADY_RECEIVED" || res.already_received) {
+          playSound("warn");
+          setStatus(
+            "already",
+            `⚠️ ĐÃ NHẬN QUÀ (${cName} • ${cCode})`,
+            `Phần quà: ${cGift} • Trạng thái trên sheet KHACH: ${res.gift_status || "ĐÃ NHẬN"}.`,
+            "Đã nhận quà"
+          );
+          addHistory(cCode, cName, cGift, "ĐÃ NHẬN TRƯỚC ĐÓ", "warn");
+        } else {
+          playSound("err");
+          setStatus("error", `❌ ${res.message || "Không xử lý được mã " + cCode}`, "Kiểm tra lại KEY hoặc SĐT trên sheet KHACH.", "Lỗi");
+        }
+      };
+
+      const params = new URLSearchParams({
+        action: onlyCheck ? "xem_qua_tet" : "tang_qua_tet",
+        code: code,
+        secret_key: config.secretKey || "",
+        callback: cbName
+      });
+
+      scriptEl.src = SCRIPT_URL + (SCRIPT_URL.includes("?") ? "&" : "?") + params.toString();
+      scriptEl.onerror = function() {
+        if (done) return;
+        done = true;
+        clearTimeout(timer);
+        cleanup();
+        playSound("err");
+        setStatus("error", "❌ Không kết nối được Apps Script", "Kiểm tra lại SCRIPT_URL trong config.js.", "Lỗi kết nối");
+      };
+      document.body.appendChild(scriptEl);
+    }
+
+    function addHistory(code, name, gift, tag, kind) {
+      const timeStr = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+      historyLogs.unshift({ code, name, gift, tag, kind, timeStr });
+      if (historyLogs.length > 30) historyLogs.pop();
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (!historyLogs.length) {
+        historyList.innerHTML = `<li style="font-size: 12.5px; color: var(--muted);">Chưa có lượt nào trong phiên này.</li>`;
+        return;
+      }
+      historyList.innerHTML = historyLogs.map(item => `
+        <li class="history-item">
+          <div>
+            <strong>${item.name}</strong> <span style="color: var(--muted);">(${item.code})</span>
+            <div style="font-size: 12px; font-weight: 700; color: ${item.kind === "warn" ? "var(--gold)" : "var(--success-text)"};">
+              ${item.gift} — ${item.tag}
+            </div>
+          </div>
+          <div style="font-size: 12px; color: var(--muted);">${item.timeStr}</div>
+        </li>
+      `).join("");
+    }
+
+    document.getElementById("btnClearHistory").addEventListener("click", () => {
+      historyLogs = [];
+      renderHistory();
+    });
+
+    async function startCamera() {
+      if (isScanning) return;
+      try {
+        document.getElementById("camPlaceholder").style.display = "none";
+        if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
+        await html5QrCode.start(
+          { facingMode: "environment" },
+          { fps: 12, qrbox: { width: 220, height: 220 } },
+          (decodedText) => processGiftScan(decodedText, false),
+          () => {}
+        );
+        isScanning = true;
+        document.getElementById("btnToggleCam").textContent = "⏹ Tắt Camera";
+        document.getElementById("btnToggleCam").classList.add("active");
+        document.getElementById("camBadge").textContent = "Camera đang quét";
+      } catch (err) {
+        document.getElementById("camPlaceholder").style.display = "block";
+        alert("Không mở được camera. Kiểm tra quyền Camera trên trình duyệt nhé!");
+      }
+    }
+
+    async function stopCamera() {
+      if (!isScanning || !html5QrCode) return;
+      try { await html5QrCode.stop(); } catch (e) {}
+      isScanning = false;
+      document.getElementById("camPlaceholder").style.display = "block";
+      document.getElementById("btnToggleCam").textContent = "📷 Bật Camera";
+      document.getElementById("btnToggleCam").classList.remove("active");
+      document.getElementById("camBadge").textContent = "Chờ bật camera";
+    }
+
+    document.getElementById("btnToggleCam").addEventListener("click", () => isScanning ? stopCamera() : startCamera());
+    document.getElementById("btnStartCamCenter").addEventListener("click", startCamera);
+
+    document.getElementById("btnManualSubmit").addEventListener("click", () => {
+      const val = document.getElementById("manualCodeInput").value.trim();
+      if (!val) return;
+      lastScanCode = "";
+      processGiftScan(val, false);
+      document.getElementById("manualCodeInput").value = "";
+    });
+
+    document.getElementById("btnCheckStatusManual").addEventListener("click", () => {
+      const val = document.getElementById("manualCodeInput").value.trim();
+      if (!val) {
+        alert("Nhập KEY hoặc SĐT khách trước nhé!");
+        return;
+      }
+      lastScanCode = "";
+      processGiftScan(val, true);
+    });
+
+    document.querySelectorAll("[data-test]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        lastScanCode = "";
+        processGiftScan(btn.dataset.test, false);
+      });
+    });
+
+    function refreshModeBadge() {
+      if (SCRIPT_URL) {
+        modeBadge.textContent = config.secretKey ? "Đã nối config.js • Có Key" : "Đã nối config.js • Chưa có Key";
+        modeBadge.style.background = config.secretKey ? "#e7f6ec" : "#fef9c3";
+        modeBadge.style.color = config.secretKey ? "#166534" : "#854d0e";
+      } else {
+        modeBadge.textContent = "Thiếu config.js";
+        modeBadge.style.background = "#fde8e8";
+        modeBadge.style.color = "#991b1b";
+      }
+    }
+    refreshModeBadge();
+
+    document.getElementById("btnOpenConfig").addEventListener("click", () => {
+      document.getElementById("cfgSecretKey").value = config.secretKey || "";
+      document.getElementById("cfgCooldown").value = config.cooldownSec || 4;
+      document.getElementById("configModal").classList.add("open");
+    });
+    document.getElementById("btnCloseConfig").addEventListener("click", () => document.getElementById("configModal").classList.remove("open"));
+    document.getElementById("btnSaveConfig").addEventListener("click", () => {
+      config.secretKey = document.getElementById("cfgSecretKey").value.trim();
+      config.cooldownSec = Math.max(1, parseInt(document.getElementById("cfgCooldown").value, 10) || 4);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+      refreshModeBadge();
+      document.getElementById("configModal").classList.remove("open");
+      setStatus("success", "✅ Đã lưu mã bảo mật", "Sẵn sàng quét tặng quà Tết.", "Sẵn sàng");
+    });
+  </script>
+</body>
+</html>
