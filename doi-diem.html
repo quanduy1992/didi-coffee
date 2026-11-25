@@ -181,6 +181,25 @@
       background: #fbf6ef; border: 1px dashed var(--border);
       padding: 8px 10px; border-radius: 10px; margin-bottom: 8px;
     }
+    .vip-box {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between;
+      background: #fff8e6; border: 1px solid #f3d27a;
+      padding: 8px 10px; border-radius: 10px; margin-bottom: 8px;
+    }
+    .vip-toggle-label {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12.5px; font-weight: 800; color: #78350f;
+      cursor: pointer;
+    }
+    .vip-discount-ctrl {
+      display: flex; align-items: center; gap: 6px;
+      font-size: 12px; font-weight: 700; color: #78350f;
+    }
+    .vip-discount-input {
+      width: 62px; height: 32px; border: 1px solid #d9b65c; border-radius: 8px;
+      padding: 0 6px; font-size: 13px; font-weight: 800; text-align: center;
+      color: #78350f; background: #fff; outline: none;
+    }
     .sticky-label {
       display: flex; align-items: center; gap: 6px;
       font-size: 12px; font-weight: 600; color: var(--text);
@@ -304,6 +323,19 @@
         <!-- Các mốc chọn nhanh tự dựng theo REDEEM_POINTS từ config.js -->
         <div class="quick-grid" id="quickRedeemGrid"></div>
 
+        <!-- Điều chỉnh ưu đãi VIP ngay trên trình duyệt -->
+        <div class="vip-box">
+          <label class="vip-toggle-label">
+            <input type="checkbox" id="vipModeCheckbox" />
+            👑 Khách VIP
+          </label>
+          <div class="vip-discount-ctrl">
+            <span>Giảm trừ:</span>
+            <input type="number" id="vipDiscountInput" class="vip-discount-input" value="2" min="0" max="999" />
+            <span>điểm</span>
+          </div>
+        </div>
+
         <div class="mode-switch-bar">
           <label class="check-only-label">
             <input type="checkbox" id="checkOnlyCheckbox" />
@@ -401,6 +433,7 @@
   <script>
     // --- LẤY CẤU HÌNH TỪ CONFIG.JS & LOCALSTORAGE ---
     const STORAGE_KEY = "didi_qr_scanner_cfg_v2";
+    const VIP_STORAGE_KEY = "didi_qr_vip_redeem_v1";
     const CFG = (typeof CONFIG !== "undefined" && CONFIG) ? CONFIG : {};
     const SCRIPT_URL_FROM_CONFIG = (CFG.SCRIPT_URL || "").trim();
     const REDEEM_UNIT_POINTS = Math.max(1, parseInt(CFG.REDEEM_POINTS, 10) || 15);
@@ -411,11 +444,26 @@
       cooldownSec: 4
     };
 
+    let vipConfig = {
+      isVip: false,
+      discountPts: 2
+    };
+
     try {
       const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
       if (saved) {
         if (typeof saved.secretKey === "string") config.secretKey = saved.secretKey;
         if (saved.cooldownSec) config.cooldownSec = saved.cooldownSec;
+      }
+    } catch (e) {}
+
+    try {
+      const savedVip = JSON.parse(localStorage.getItem(VIP_STORAGE_KEY));
+      if (savedVip) {
+        vipConfig.isVip = Boolean(savedVip.isVip);
+        if (typeof savedVip.discountPts !== "undefined") {
+          vipConfig.discountPts = Math.max(0, parseInt(savedVip.discountPts, 10) || 0);
+        }
       }
     } catch (e) {}
 
@@ -434,6 +482,8 @@
     const redeemRuleSub = document.getElementById("redeemRuleSub");
     const quickRedeemGrid = document.getElementById("quickRedeemGrid");
     const qtyInput = document.getElementById("qtyInput");
+    const vipModeCheckbox = document.getElementById("vipModeCheckbox");
+    const vipDiscountInput = document.getElementById("vipDiscountInput");
     const redeemSummaryText = document.getElementById("redeemSummaryText");
     const keepQtyCheckbox = document.getElementById("keepQtyCheckbox");
     const checkOnlyCheckbox = document.getElementById("checkOnlyCheckbox");
@@ -455,12 +505,35 @@
       if (el) el.textContent = text;
     }
 
+    function saveVipState() {
+      try {
+        localStorage.setItem(VIP_STORAGE_KEY, JSON.stringify({
+          isVip: vipConfig.isVip,
+          discountPts: vipConfig.discountPts
+        }));
+      } catch (e) {}
+    }
+
+    function getVipDiscountPoints() {
+      const val = Math.max(0, Math.min(999, parseInt(vipDiscountInput.value, 10) || 0));
+      vipConfig.discountPts = val;
+      return val;
+    }
+
+    function getEffectiveDeductPoints(basePts = currentRedeemPts) {
+      if (!vipConfig.isVip) return basePts;
+      const discount = getVipDiscountPoints();
+      return Math.max(1, basePts - discount);
+    }
+
     // --- ÁP DỤNG MỐC ĐIỂM TỪ CONFIG.JS ---
     document.title = `${SHOP_NAME.toUpperCase()} - Quầy Quét QR Đổi Điểm`;
     setTextSafe(shopNameTitle, SHOP_NAME.toUpperCase());
     setTextSafe(redeemRuleSub, `Luật đổi điểm: ${REDEEM_UNIT_POINTS} điểm = 1 ly (config.js)`);
     setTextSafe(displayTargetPts, REDEEM_UNIT_POINTS);
     qtyInput.value = REDEEM_UNIT_POINTS;
+    vipModeCheckbox.checked = vipConfig.isVip;
+    vipDiscountInput.value = vipConfig.discountPts;
     setTextSafe(rewardHint, `Mỗi ${REDEEM_UNIT_POINTS} điểm đổi được 1 ly miễn phí.`);
 
     for (let cup = 1; cup <= 5; cup++) {
@@ -493,15 +566,33 @@
     }
 
     function refreshRedeemInstruction() {
+      const vipDiscount = getVipDiscountPoints();
+      const effectivePts = getEffectiveDeductPoints(currentRedeemPts);
+      const cups = (currentRedeemPts % REDEEM_UNIT_POINTS === 0) ? ` (${currentRedeemPts / REDEEM_UNIT_POINTS} ly)` : "";
+
       if (checkOnlyCheckbox.checked) {
         btnManualSubmit.textContent = "🔍 Soi điểm";
         redeemSummaryText.innerHTML = `Đang ở chế độ <strong>Soi điểm khách</strong> — quét thẻ chỉ xem điểm hiện có, <strong>không trừ điểm</strong>.`;
+      } else if (vipConfig.isVip) {
+        btnManualSubmit.textContent = `👑 Trừ ${effectivePts}đ`;
+        redeemSummaryText.innerHTML = `Chế độ <strong>VIP (giảm ${vipDiscount}đ)</strong>: mốc ${currentRedeemPts}đ${cups} sẽ trừ <strong style="color: var(--redeem);">-${effectivePts} điểm</strong> rồi tự động trả về <strong>${REDEEM_UNIT_POINTS} điểm</strong> cho khách tiếp theo.`;
       } else {
         btnManualSubmit.textContent = `🎁 Trừ ${currentRedeemPts}đ`;
-        const cups = (currentRedeemPts % REDEEM_UNIT_POINTS === 0) ? ` (${currentRedeemPts / REDEEM_UNIT_POINTS} ly)` : "";
         redeemSummaryText.innerHTML = `Quét 1 lần sẽ trừ <strong style="color: var(--redeem);">-${currentRedeemPts} điểm${cups}</strong> rồi tự động trả về <strong>${REDEEM_UNIT_POINTS} điểm</strong> cho khách tiếp theo.`;
       }
     }
+
+    vipModeCheckbox.addEventListener("change", () => {
+      vipConfig.isVip = vipModeCheckbox.checked;
+      saveVipState();
+      refreshRedeemInstruction();
+    });
+
+    vipDiscountInput.addEventListener("input", () => {
+      getVipDiscountPoints();
+      saveVipState();
+      refreshRedeemInstruction();
+    });
 
     document.getElementById("btnMinus").addEventListener("click", () => setRedeemPoints(currentRedeemPts - REDEEM_UNIT_POINTS));
     document.getElementById("btnPlus").addEventListener("click", () => setRedeemPoints(currentRedeemPts + REDEEM_UNIT_POINTS));
@@ -566,7 +657,10 @@
       lastScanTime = now;
 
       const isCheckOnly = forceCheckOnly || checkOnlyCheckbox.checked;
-      const ptsToDeduct = currentRedeemPts;
+      const basePts = currentRedeemPts;
+      const vipDiscount = getVipDiscountPoints();
+      const isVip = vipConfig.isVip;
+      const ptsToDeduct = getEffectiveDeductPoints(basePts);
 
       if (!isCheckOnly && !keepQtyCheckbox.checked) {
         setRedeemPoints(REDEEM_UNIT_POINTS);
@@ -581,7 +675,8 @@
       if (isCheckOnly) {
         updateStatus("loading", `Đang kiểm tra điểm thẻ ${keyKhach}...`, "Đang đọc số dư từ Google Sheet...", "Đang soi...");
       } else {
-        updateStatus("loading", `Đang đổi -${ptsToDeduct} điểm cho ${keyKhach}...`, "Đang kiểm tra số dư & trừ điểm trên Google Sheet...", "Đang xử lý...");
+        const vipNote = isVip ? ` [VIP giảm ${vipDiscount}đ]` : "";
+        updateStatus("loading", `Đang đổi -${ptsToDeduct} điểm cho ${keyKhach}${vipNote}...`, "Đang kiểm tra số dư & trừ điểm trên Google Sheet...", "Đang xử lý...");
       }
 
       const callbackName = "didiRedeemCb_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
@@ -639,13 +734,14 @@
           const actualDeducted = Number(res.deducted) || ptsToDeduct;
           const remainingPts = Number(res.points) || 0;
           updateCustomerProgress(keyKhach, remainingPts);
+          const vipLabel = isVip ? ` • VIP (-${vipDiscount}đ)` : "";
           updateStatus(
             "success",
             `🎁 Đổi thành công -${actualDeducted} điểm (${keyKhach})`,
-            `Khách: ${res.name || keyKhach} • Điểm còn lại: ${remainingPts} điểm`,
+            `Khách: ${res.name || keyKhach}${vipLabel} • Điểm còn lại: ${remainingPts} điểm`,
             "Đã trừ điểm"
           );
-          addHistory(keyKhach, actualDeducted, remainingPts, "Đổi quà");
+          addHistory(keyKhach, actualDeducted, remainingPts, isVip ? `VIP -${vipDiscount}đ` : "Đổi quà");
         } else if (res.mode === "VIEW") {
           playBeep(false);
           updateStatus("error", `🔒 Sai hoặc thiếu Key (${keyKhach})`, "Bấm nút 'Nhập Key' ở góc trên để nhập đúng mã bảo mật của quầy.", "Chưa đúng Key");
@@ -664,6 +760,9 @@
         code: keyKhach,
         points: ptsToDeduct,
         quantity: ptsToDeduct,
+        base_points: basePts,
+        is_vip: isVip ? "1" : "0",
+        vip_discount: isVip ? vipDiscount : 0,
         redeem_unit: REDEEM_UNIT_POINTS,
         secret_key: config.secretKey || "",
         callback: callbackName
@@ -726,7 +825,7 @@
           <div>
             <strong>${item.code}</strong>
             ${item.deducted > 0
-              ? `<span style="color: var(--redeem); font-weight: 800;">-${item.deducted}đ</span>`
+              ? `<span style="color: var(--redeem); font-weight: 800;">-${item.deducted}đ</span> <span style="font-size: 11px; color: var(--accent); font-weight: 700;">(${item.note})</span>`
               : `<span style="color: var(--accent); font-weight: 700;">(${item.note})</span>`
             }
             <div style="font-size: 11.5px; color: var(--muted);">Số dư sau quét: <strong>${item.remaining} điểm</strong></div>
