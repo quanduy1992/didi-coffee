@@ -8,275 +8,267 @@
   <script src="config.js"></script>
   <style>
     :root {
-      --bg: #fdf6ec;
+      --bg: #1a0b0b;
       --card: #fffdf9;
       --primary: #8b1e1e;
-      --accent: #c2410c;
       --gold: #b45309;
       --text: #2c1810;
       --muted: #7a6558;
       --border: #eddcc4;
-      --success-bg: #e7f6ec;
-      --success-text: #166534;
+      --ok-bg: #dcfce7;
+      --ok-text: #14532d;
+      --ok-border: #22c55e;
       --warn-bg: #fef3c7;
-      --warn-text: #92400e;
-      --error-bg: #fde8e8;
-      --error-text: #991b1b;
+      --warn-text: #78350f;
+      --warn-border: #f59e0b;
+      --err-bg: #fee2e2;
+      --err-text: #7f1d1d;
+      --err-border: #ef4444;
     }
     * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     body {
       margin: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
+      background: #f6efe4;
       color: var(--text);
-      padding-bottom: 24px;
+      padding-bottom: 16px;
     }
+
+    /* Thanh trên gọn 1 hàng */
     .topbar {
       background: linear-gradient(135deg, #8b1e1e, #b91c1c);
       color: #fff;
-      padding: 12px 16px;
+      padding: 8px 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       position: sticky;
       top: 0;
       z-index: 50;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.14);
     }
-    .brand { display: flex; align-items: center; gap: 10px; }
-    .brand-icon {
-      width: 36px; height: 36px; border-radius: 50%;
-      background: #fde68a; color: var(--primary);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 18px; font-weight: bold; flex-shrink: 0;
-    }
-    .brand-title { font-weight: 800; font-size: 15px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
-    .badge {
-      background: #fde68a; color: #78350f;
-      font-size: 11px; padding: 2px 8px; border-radius: 999px; font-weight: 800;
-    }
-    .brand-sub { font-size: 11.5px; opacity: 0.92; margin-top: 2px; }
-    .top-actions { display: flex; gap: 6px; flex-shrink: 0; }
+    .brand-title { font-weight: 800; font-size: 14px; }
+    .top-actions { display: flex; gap: 6px; }
     .btn-top {
-      border: 1px solid rgba(255,255,255,0.3);
-      background: rgba(255,255,255,0.14);
-      color: #fff; padding: 7px 11px; border-radius: 10px;
-      font-size: 12.5px; font-weight: 600; cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.35);
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
     }
-    .btn-top.active { background: #fff; color: var(--primary); }
+    .btn-top.active { background: #fde68a; color: var(--primary); border-color: #fde68a; }
 
-    .container {
-      max-width: 1020px;
-      margin: 14px auto 0;
-      padding: 0 12px;
-      display: grid;
-      grid-template-columns: 1.2fr 0.9fr;
-      gap: 14px;
+    /* Khung chính: 1 màn hình đt thấy đủ Cam + Kết quả */
+    .screen {
+      max-width: 480px;
+      margin: 8px auto 0;
+      padding: 0 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    @media (max-width: 820px) { .container { grid-template-columns: 1fr; } }
 
-    .card {
+    /* Camera gọn vừa tầm nhìn */
+    .cam-wrap {
+      background: #2b0909;
+      border-radius: 14px;
+      overflow: hidden;
+      min-height: 205px;
+      max-height: 250px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #reader { width: 100%; }
+    #reader video { max-height: 245px; object-fit: cover; border-radius: 14px; }
+    .cam-idle {
+      text-align: center;
+      color: #fff;
+      padding: 14px;
+    }
+    .cam-idle p { margin: 4px 0 10px; font-size: 12px; opacity: 0.85; }
+    .btn-cam-big {
+      background: #fde68a;
+      color: var(--primary);
+      border: none;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-weight: 800;
+      font-size: 13.5px;
+      cursor: pointer;
+    }
+
+    /* Kết quả nổi bật ngay dưới cam */
+    .result-box {
+      background: var(--card);
+      border: 2px solid var(--border);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.06);
+      transition: all 0.15s ease;
+    }
+    .result-box.ok { background: var(--ok-bg); border-color: var(--ok-border); color: var(--ok-text); }
+    .result-box.warn { background: var(--warn-bg); border-color: var(--warn-border); color: var(--warn-text); }
+    .result-box.err { background: var(--err-bg); border-color: var(--err-border); color: var(--err-text); }
+    .result-box.load { background: #fef9c3; border-color: #eab308; color: #713f12; }
+
+    .res-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 700;
+      opacity: 0.9;
+      margin-bottom: 4px;
+    }
+    .res-gift {
+      font-size: 22px;
+      font-weight: 900;
+      line-height: 1.2;
+      margin: 2px 0 4px;
+    }
+    .res-sub {
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.35;
+      margin: 0;
+    }
+
+    /* Thanh thao tác phụ gọn 1 dòng */
+    .mini-bar {
+      display: flex;
+      gap: 6px;
+    }
+    .mini-input {
+      flex: 1;
+      height: 36px;
+      border-radius: 9px;
+      border: 1px solid var(--border);
+      background: #fff;
+      padding: 0 10px;
+      font-size: 13px;
+      outline: none;
+    }
+    .btn-sm {
+      height: 36px;
+      padding: 0 11px;
+      border-radius: 9px;
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-sm.ghost {
+      background: #fff;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    /* Ngăn phụ ẩn mặc định (chỉ mở khi cần xem lịch sử / soi mã) */
+    .drawer {
+      display: none;
       background: var(--card);
       border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 14px;
-      box-shadow: 0 2px 8px rgba(44,24,16,0.04);
-      margin-bottom: 14px;
-    }
-    .card-header {
-      display: flex; align-items: center; justify-content: space-between; gap: 8px;
-      margin-bottom: 8px;
-    }
-    .step-label {
-      font-size: 11px; font-weight: 700; text-transform: uppercase;
-      color: var(--accent); letter-spacing: 0.5px;
-    }
-    .card-title { font-size: 16px; font-weight: 800; margin: 2px 0 0; }
-    .card-desc { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
-    .pill {
-      font-size: 11.5px; font-weight: 600; padding: 4px 10px;
-      border-radius: 999px; background: #fef3c7; color: var(--gold);
-    }
-
-    .camera-box {
-      background: #450a0a;
-      border-radius: 14px;
-      min-height: 240px;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      color: #fff; text-align: center; padding: 16px;
-    }
-    #reader { width: 100%; border-radius: 10px; overflow: hidden; }
-    .cam-placeholder h3 { margin: 8px 0 6px; font-size: 16px; }
-    .cam-placeholder p { margin: 0 0 14px; font-size: 12.5px; opacity: 0.88; max-width: 320px; }
-    .btn-light {
-      background: #fde68a; color: var(--primary); border: none;
-      padding: 10px 18px; border-radius: 10px; font-weight: 800; font-size: 13.5px; cursor: pointer;
-    }
-
-    .status-box {
-      padding: 14px; border-radius: 12px; background: #fbf5ea;
-      border: 1px solid var(--border); margin-bottom: 12px;
-    }
-    .status-box.success { background: var(--success-bg); border-color: #bbf7d0; color: var(--success-text); }
-    .status-box.already { background: var(--warn-bg); border-color: #fde68a; color: var(--warn-text); }
-    .status-box.error { background: var(--error-bg); border-color: #fecaca; color: var(--error-text); }
-    .status-box.loading { background: #fef9c3; border-color: #fde047; color: #854d0e; }
-    .status-main { font-size: 17px; font-weight: 800; margin: 0 0 5px; }
-    .status-sub { font-size: 13px; margin: 0; opacity: 0.95; }
-
-    .gift-highlight {
-      background: #fff8eb;
-      border: 1.5px dashed #d97706;
       border-radius: 12px;
-      padding: 12px;
-      text-align: center;
+      padding: 10px 12px;
+      font-size: 12px;
     }
-    .gift-label { font-size: 11.5px; font-weight: 700; color: var(--muted); text-transform: uppercase; }
-    .gift-value { font-size: 20px; font-weight: 900; color: var(--primary); margin: 4px 0; }
-    .gift-meta { font-size: 12.5px; color: var(--text); }
+    .drawer.open { display: block; }
+    .log-list { list-style: none; padding: 0; margin: 6px 0 0; max-height: 160px; overflow-y: auto; }
+    .log-item {
+      display: flex; justify-content: space-between; gap: 8px;
+      padding: 6px 0; border-bottom: 1px dashed var(--border);
+    }
+    .log-item:last-child { border-bottom: none; }
 
-    .test-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .text-input {
-      flex: 1; height: 42px; border-radius: 10px; border: 1px solid var(--border);
-      padding: 0 12px; font-size: 14px; outline: none;
-    }
-    .btn-primary {
-      background: var(--primary); color: #fff; border: none;
-      padding: 0 16px; height: 42px; border-radius: 10px;
-      font-weight: 700; font-size: 13.5px; cursor: pointer; white-space: nowrap;
-    }
-    .btn-mini {
-      border: 1px solid var(--border); background: #fff; border-radius: 8px;
-      padding: 5px 10px; font-size: 12px; font-weight: 700; color: var(--primary); cursor: pointer;
-    }
-
-    .history-list { list-style: none; padding: 0; margin: 0; max-height: 280px; overflow-y: auto; }
-    .history-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 13px;
-    }
-    .history-item:last-child { border-bottom: none; }
-    .link-clear { font-size: 12px; color: var(--accent); text-decoration: underline; cursor: pointer; background: none; border: none; }
-
+    /* Modal Key */
     .modal-backdrop {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
-      display: none; align-items: center; justify-content: center; padding: 16px; z-index: 100;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+      display: none; align-items: center; justify-content: center; padding: 14px; z-index: 100;
     }
     .modal-backdrop.open { display: flex; }
     .modal {
-      background: #fff; border-radius: 16px; padding: 18px; width: 100%; max-width: 420px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      background: #fff; border-radius: 14px; padding: 16px; width: 100%; max-width: 380px;
     }
-    .form-group { margin-bottom: 12px; }
-    .form-group label { display: block; font-size: 12.5px; font-weight: 700; margin-bottom: 5px; }
-    .form-group input { width: 100%; height: 40px; border: 1px solid #ccc; border-radius: 10px; padding: 0 10px; font-size: 13.5px; }
+    .form-group { margin-bottom: 10px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 700; margin-bottom: 4px; }
+    .form-group input { width: 100%; height: 38px; border: 1px solid #ccc; border-radius: 9px; padding: 0 10px; font-size: 13px; }
   </style>
 </head>
 <body>
   <header class="topbar">
-    <div class="brand">
-      <div class="brand-icon">🧧</div>
-      <div>
-        <div class="brand-title"><span id="shopNameTitle">DI DI COFFEE</span> <span class="badge">Quét Tặng Quà Tết</span></div>
-        <div class="brand-sub">Đọc &amp; cập nhật trạng thái trực tiếp trên sheet KHACH</div>
-      </div>
-    </div>
+    <div class="brand-title">🧧 <span id="shopNameTitle">DI DI COFFEE</span> • QUÀ TẾT</div>
     <div class="top-actions">
-      <button class="btn-top" id="btnToggleCam">📷 Bật Camera</button>
-      <button class="btn-top" id="btnOpenConfig">🔑 Nhập Key</button>
+      <button class="btn-top" id="btnToggleCam">📷 Cam</button>
+      <button class="btn-top" id="btnOpenConfig">🔑 Key</button>
     </div>
   </header>
 
-  <main class="container">
-    <div>
-      <section class="card">
-        <div class="card-header">
-          <div>
-            <div class="step-label">BƯỚC 1 — QUÉT THẺ KHÁCH NHẬN QUÀ TẾT</div>
-            <h2 class="card-title">Khung quét mã QR khách hàng</h2>
-          </div>
-          <span class="pill" id="camBadge">Chờ bật camera</span>
-        </div>
-        <p class="card-desc">Quét thẻ khách: nếu cột TRẠNG THÁI trống sẽ báo phần quà và tự đánh dấu ĐÃ NHẬN; nếu đã nhận sẽ báo ngay.</p>
-
-        <div class="camera-box">
-          <div id="reader"></div>
-          <div class="cam-placeholder" id="camPlaceholder">
-            <div style="font-size: 32px;">🧧</div>
-            <h3>Camera tặng quà Tết đang nghỉ</h3>
-            <p>Bấm "Bật Camera" để quét mã thẻ khách hàng.</p>
-            <button class="btn-light" id="btnStartCamCenter">Bật camera ngay</button>
-          </div>
-        </div>
-      </section>
-
-      <section class="card">
-        <div class="card-header">
-          <h2 class="card-title" style="font-size: 14.5px;">⌨️ Nhập KEY / SĐT thủ công</h2>
-          <span class="pill" id="modeBadge">Đang kiểm tra config.js...</span>
-        </div>
-        <div class="test-row">
-          <input type="text" id="manualCodeInput" class="text-input" placeholder="Nhập KEY (VD: DI-100MT) hoặc SĐT..." />
-          <button class="btn-primary" id="btnManualSubmit">🧧 Tặng quà</button>
-        </div>
-        <div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 12px; color: var(--muted);">
-          <span>Kiểm tra nhanh:</span>
-          <button class="btn-mini" id="btnCheckStatusManual">👁️ Chỉ xem trạng thái</button>
-          <button class="btn-mini" data-test="DI-100MT">Test DI-100MT</button>
-        </div>
-      </section>
+  <main class="screen">
+    <!-- 1. Camera -->
+    <div class="cam-wrap">
+      <div id="reader"></div>
+      <div class="cam-idle" id="camPlaceholder">
+        <div style="font-size: 28px;">🧧</div>
+        <p>Bấm bật camera để quét thẻ nhận quà</p>
+        <button class="btn-cam-big" id="btnStartCamCenter">Bật camera</button>
+      </div>
     </div>
 
-    <div>
-      <section class="card">
-        <div class="card-header">
-          <div class="step-label">KẾT QUẢ KIỂM TRA &amp; TẶNG QUÀ</div>
-          <span class="pill" id="syncBadge">Sẵn sàng</span>
-        </div>
+    <!-- 2. Kết quả hiện ngay dưới camera -->
+    <div class="result-box" id="resultBox">
+      <div class="res-top">
+        <span id="resTag">CHỜ QUÉT</span>
+        <span id="resTime">--:--:--</span>
+      </div>
+      <div class="res-gift" id="resGift">Đưa mã QR vào khung quét</div>
+      <p class="res-sub" id="resSub">Tự kiểm tra trạng thái &amp; báo phần quà trên sheet KHACH.</p>
+    </div>
 
-        <div class="status-box" id="statusBox">
-          <p class="status-main" id="statusMain">Đang chờ quét thẻ khách</p>
-          <p class="status-sub" id="statusSub">Hệ thống kiểm tra cột TRẠNG THÁI trên sheet KHACH trước khi tặng.</p>
-        </div>
+    <!-- 3. Nhập tay nhỏ gọn 1 hàng + nút mở nhật ký -->
+    <div class="mini-bar">
+      <input type="text" id="manualCodeInput" class="mini-input" placeholder="Nhập KEY / SĐT..." />
+      <button class="btn-sm" id="btnManualSubmit">Tặng</button>
+      <button class="btn-sm ghost" id="btnToggleDrawer">📋 Nhật ký</button>
+    </div>
 
-        <div class="gift-highlight">
-          <div class="gift-label">Phần quà của khách</div>
-          <div class="gift-value" id="displayGift">—</div>
-          <div class="gift-meta" id="displayCustomerInfo">Chưa có khách được chọn</div>
+    <!-- Nhật ký & soi trạng thái (ẩn sẵn cho gọn màn hình) -->
+    <div class="drawer" id="drawerBox">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:6px;">
+        <strong>Lịch sử tặng trong ca</strong>
+        <div style="display:flex; gap:6px;">
+          <button class="btn-sm ghost" id="btnCheckStatusManual" style="height:28px; padding:0 8px; font-size:11px;">👁️ Chỉ soi mã trên</button>
+          <button class="btn-sm ghost" id="btnClearHistory" style="height:28px; padding:0 8px; font-size:11px;">Xóa</button>
         </div>
-      </section>
-
-      <section class="card">
-        <div class="card-header">
-          <h2 class="card-title" style="font-size: 15px;">Lịch sử tặng quà trong ca</h2>
-          <button class="link-clear" id="btnClearHistory">Xóa nhật ký</button>
-        </div>
-        <ul class="history-list" id="historyList">
-          <li style="font-size: 12.5px; color: var(--muted);">Chưa có lượt nào trong phiên này.</li>
-        </ul>
-      </section>
+      </div>
+      <ul class="log-list" id="historyList">
+        <li style="color: var(--muted);">Chưa có lượt nào.</li>
+      </ul>
     </div>
   </main>
 
   <div class="modal-backdrop" id="configModal">
     <div class="modal">
-      <h3 style="margin-top: 0;">🔑 Mã bảo mật quầy quét</h3>
-      <p style="font-size: 12.5px; color: var(--muted); margin-top: -6px;">
-        Dùng chung mã bảo mật với các trang quét khác của quán.
-      </p>
+      <h3 style="margin:0 0 10px;">🔑 Mã bảo mật quầy</h3>
       <div class="form-group">
         <label>Mã bảo mật (secret_key)</label>
         <input type="text" id="cfgSecretKey" placeholder="Nhập mã bảo mật..." />
       </div>
       <div class="form-group">
-        <label>Chống quét trùng cùng 1 thẻ (giây)</label>
+        <label>Chống quét trùng cùng thẻ (giây)</label>
         <input type="number" id="cfgCooldown" value="4" min="1" max="30" />
       </div>
-      <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 14px;">
-        <button class="btn-mini" id="btnCloseConfig" style="padding: 8px 14px;">Đóng</button>
-        <button class="btn-primary" id="btnSaveConfig">Lưu Key</button>
+      <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:12px;">
+        <button class="btn-sm ghost" id="btnCloseConfig">Đóng</button>
+        <button class="btn-sm" id="btnSaveConfig">Lưu</button>
       </div>
     </div>
   </div>
@@ -303,14 +295,12 @@
     let historyLogs = [];
 
     const shopNameTitle = document.getElementById("shopNameTitle");
-    const statusBox = document.getElementById("statusBox");
-    const statusMain = document.getElementById("statusMain");
-    const statusSub = document.getElementById("statusSub");
-    const syncBadge = document.getElementById("syncBadge");
-    const displayGift = document.getElementById("displayGift");
-    const displayCustomerInfo = document.getElementById("displayCustomerInfo");
+    const resultBox = document.getElementById("resultBox");
+    const resTag = document.getElementById("resTag");
+    const resTime = document.getElementById("resTime");
+    const resGift = document.getElementById("resGift");
+    const resSub = document.getElementById("resSub");
     const historyList = document.getElementById("historyList");
-    const modeBadge = document.getElementById("modeBadge");
 
     document.title = `${SHOP_NAME.toUpperCase()} - Quét Tặng Quà Tết`;
     shopNameTitle.textContent = SHOP_NAME.toUpperCase();
@@ -346,11 +336,16 @@
       return text.toUpperCase().trim();
     }
 
-    function setStatus(cls, main, sub, badge) {
-      statusBox.className = "status-box " + cls;
-      statusMain.textContent = main;
-      statusSub.textContent = sub;
-      syncBadge.textContent = badge;
+    function nowClock() {
+      return new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    }
+
+    function setResult(cls, tag, giftText, subText) {
+      resultBox.className = "result-box " + cls;
+      resTag.textContent = tag;
+      resTime.textContent = nowClock();
+      resGift.textContent = giftText;
+      resSub.textContent = subText;
     }
 
     function processGiftScan(rawText, onlyCheck = false) {
@@ -364,11 +359,11 @@
 
       if (!SCRIPT_URL) {
         playSound("err");
-        setStatus("error", "❌ Thiếu SCRIPT_URL trong config.js", "Kiểm tra lại file config.js.", "Lỗi cấu hình");
+        setResult("err", "LỖI CONFIG", "Thiếu SCRIPT_URL", "Kiểm tra lại file config.js.");
         return;
       }
 
-      setStatus("loading", `Đang kiểm tra ${code}...`, "Đang đối chiếu cột QUÀ & TRẠNG THÁI trên sheet KHACH...", "Đang xử lý...");
+      setResult("load", "ĐANG KIỂM TRA", code, "Đang đọc cột QUÀ & TRẠNG THÁI trên sheet KHACH...");
 
       const cbName = "didiTetCb_" + Date.now() + "_" + Math.floor(Math.random() * 1000);
       const scriptEl = document.createElement("script");
@@ -384,7 +379,7 @@
         done = true;
         cleanup();
         playSound("err");
-        setStatus("error", `⚠️ Quá thời gian phản hồi (${code})`, "Kiểm tra kết nối mạng hoặc Apps Script.", "Lỗi mạng");
+        setResult("err", "QUÁ GIỜ MẠNG", code, "Không thấy phản hồi từ Apps Script.");
       }, 15000);
 
       window[cbName] = function(res) {
@@ -395,38 +390,36 @@
 
         if (!res) {
           playSound("err");
-          setStatus("error", `❌ Không nhận được dữ liệu (${code})`, "Thử quét lại thẻ.", "Lỗi dữ liệu");
+          setResult("err", "LỖI DỮ LIỆU", code, "Thử quét lại thẻ.");
           return;
         }
 
         const cCode = res.code || code;
         const cName = res.name || cCode;
         const cGift = res.gift || "Chưa đủ điều kiện";
-        const cPhone = res.phone ? ` • SĐT: ${res.phone}` : "";
-
-        displayGift.textContent = cGift;
-        displayCustomerInfo.textContent = `${cName} (${cCode})${cPhone}`;
+        const cPhone = res.phone ? ` • ${res.phone}` : "";
 
         if (res.status === "SUCCESS" && !res.already_received) {
           playSound("ok");
-          const mainMsg = onlyCheck ? `👁️ ${cName} (${cCode}) — CHƯA NHẬN QUÀ` : `🎁 TẶNG QUÀ: ${cGift}`;
-          const subMsg = onlyCheck
-            ? `Phần quà: ${cGift} • Trạng thái hiện tại: Chưa nhận.`
-            : `Khách: ${cName} (${cCode}) • Đã cập nhật "ĐÃ NHẬN" trên sheet KHACH.`;
-          setStatus("success", mainMsg, subMsg, onlyCheck ? "Chưa nhận" : "Đã cập nhật");
+          setResult(
+            "ok",
+            onlyCheck ? "CHƯA NHẬN QUÀ" : "ĐÃ CẬP NHẬT: ĐÃ NHẬN",
+            cGift,
+            `${cName} (${cCode})${cPhone}`
+          );
           if (!onlyCheck) addHistory(cCode, cName, cGift, "ĐÃ NHẬN", "ok");
         } else if (res.status === "ALREADY_RECEIVED" || res.already_received) {
           playSound("warn");
-          setStatus(
-            "already",
-            `⚠️ ĐÃ NHẬN QUÀ (${cName} • ${cCode})`,
-            `Phần quà: ${cGift} • Trạng thái trên sheet KHACH: ${res.gift_status || "ĐÃ NHẬN"}.`,
-            "Đã nhận quà"
+          setResult(
+            "warn",
+            "⚠️ ĐÃ NHẬN QUÀ",
+            cGift,
+            `${cName} (${cCode})${cPhone} — Trạng thái: ${res.gift_status || "ĐÃ NHẬN"}`
           );
-          addHistory(cCode, cName, cGift, "ĐÃ NHẬN TRƯỚC ĐÓ", "warn");
+          addHistory(cCode, cName, cGift, "ĐÃ NHẬN", "warn");
         } else {
           playSound("err");
-          setStatus("error", `❌ ${res.message || "Không xử lý được mã " + cCode}`, "Kiểm tra lại KEY hoặc SĐT trên sheet KHACH.", "Lỗi");
+          setResult("err", "KHÔNG THÀNH CÔNG", res.message || cCode, "Kiểm tra KEY/SĐT trên sheet KHACH hoặc Key quầy.");
         }
       };
 
@@ -444,32 +437,29 @@
         clearTimeout(timer);
         cleanup();
         playSound("err");
-        setStatus("error", "❌ Không kết nối được Apps Script", "Kiểm tra lại SCRIPT_URL trong config.js.", "Lỗi kết nối");
+        setResult("err", "LỖI KẾT NỐI", code, "Kiểm tra SCRIPT_URL trong config.js.");
       };
       document.body.appendChild(scriptEl);
     }
 
     function addHistory(code, name, gift, tag, kind) {
-      const timeStr = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-      historyLogs.unshift({ code, name, gift, tag, kind, timeStr });
+      historyLogs.unshift({ code, name, gift, tag, kind, timeStr: nowClock() });
       if (historyLogs.length > 30) historyLogs.pop();
       renderHistory();
     }
 
     function renderHistory() {
       if (!historyLogs.length) {
-        historyList.innerHTML = `<li style="font-size: 12.5px; color: var(--muted);">Chưa có lượt nào trong phiên này.</li>`;
+        historyList.innerHTML = `<li style="color: var(--muted);">Chưa có lượt nào.</li>`;
         return;
       }
       historyList.innerHTML = historyLogs.map(item => `
-        <li class="history-item">
+        <li class="log-item">
           <div>
-            <strong>${item.name}</strong> <span style="color: var(--muted);">(${item.code})</span>
-            <div style="font-size: 12px; font-weight: 700; color: ${item.kind === "warn" ? "var(--gold)" : "var(--success-text)"};">
-              ${item.gift} — ${item.tag}
-            </div>
+            <strong>${item.name}</strong> (${item.code}) —
+            <span style="font-weight:800; color:${item.kind === "warn" ? "var(--gold)" : "var(--ok-text)"};">${item.gift} [${item.tag}]</span>
           </div>
-          <div style="font-size: 12px; color: var(--muted);">${item.timeStr}</div>
+          <span style="color: var(--muted);">${item.timeStr}</span>
         </li>
       `).join("");
     }
@@ -479,6 +469,10 @@
       renderHistory();
     });
 
+    document.getElementById("btnToggleDrawer").addEventListener("click", () => {
+      document.getElementById("drawerBox").classList.toggle("open");
+    });
+
     async function startCamera() {
       if (isScanning) return;
       try {
@@ -486,14 +480,13 @@
         if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
         await html5QrCode.start(
           { facingMode: "environment" },
-          { fps: 12, qrbox: { width: 220, height: 220 } },
+          { fps: 12, qrbox: { width: 200, height: 200 } },
           (decodedText) => processGiftScan(decodedText, false),
           () => {}
         );
         isScanning = true;
-        document.getElementById("btnToggleCam").textContent = "⏹ Tắt Camera";
+        document.getElementById("btnToggleCam").textContent = "⏹ Tắt";
         document.getElementById("btnToggleCam").classList.add("active");
-        document.getElementById("camBadge").textContent = "Camera đang quét";
       } catch (err) {
         document.getElementById("camPlaceholder").style.display = "block";
         alert("Không mở được camera. Kiểm tra quyền Camera trên trình duyệt nhé!");
@@ -505,9 +498,8 @@
       try { await html5QrCode.stop(); } catch (e) {}
       isScanning = false;
       document.getElementById("camPlaceholder").style.display = "block";
-      document.getElementById("btnToggleCam").textContent = "📷 Bật Camera";
+      document.getElementById("btnToggleCam").textContent = "📷 Cam";
       document.getElementById("btnToggleCam").classList.remove("active");
-      document.getElementById("camBadge").textContent = "Chờ bật camera";
     }
 
     document.getElementById("btnToggleCam").addEventListener("click", () => isScanning ? stopCamera() : startCamera());
@@ -524,32 +516,12 @@
     document.getElementById("btnCheckStatusManual").addEventListener("click", () => {
       const val = document.getElementById("manualCodeInput").value.trim();
       if (!val) {
-        alert("Nhập KEY hoặc SĐT khách trước nhé!");
+        alert("Nhập KEY hoặc SĐT vào ô trước nhé!");
         return;
       }
       lastScanCode = "";
       processGiftScan(val, true);
     });
-
-    document.querySelectorAll("[data-test]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        lastScanCode = "";
-        processGiftScan(btn.dataset.test, false);
-      });
-    });
-
-    function refreshModeBadge() {
-      if (SCRIPT_URL) {
-        modeBadge.textContent = config.secretKey ? "Đã nối config.js • Có Key" : "Đã nối config.js • Chưa có Key";
-        modeBadge.style.background = config.secretKey ? "#e7f6ec" : "#fef9c3";
-        modeBadge.style.color = config.secretKey ? "#166534" : "#854d0e";
-      } else {
-        modeBadge.textContent = "Thiếu config.js";
-        modeBadge.style.background = "#fde8e8";
-        modeBadge.style.color = "#991b1b";
-      }
-    }
-    refreshModeBadge();
 
     document.getElementById("btnOpenConfig").addEventListener("click", () => {
       document.getElementById("cfgSecretKey").value = config.secretKey || "";
@@ -561,9 +533,8 @@
       config.secretKey = document.getElementById("cfgSecretKey").value.trim();
       config.cooldownSec = Math.max(1, parseInt(document.getElementById("cfgCooldown").value, 10) || 4);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-      refreshModeBadge();
       document.getElementById("configModal").classList.remove("open");
-      setStatus("success", "✅ Đã lưu mã bảo mật", "Sẵn sàng quét tặng quà Tết.", "Sẵn sàng");
+      setResult("ok", "ĐÃ LƯU KEY", "Sẵn sàng quét", "Đã lưu mã bảo mật quầy.");
     });
   </script>
 </body>
