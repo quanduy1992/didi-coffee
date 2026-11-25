@@ -28,7 +28,7 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding-bottom: 24px;
+      padding-bottom: 28px;
     }
 
     /* Header */
@@ -70,17 +70,14 @@
     }
     .btn-top.active { background: #fff; color: var(--primary); }
 
-    /* Layout */
+    /* Layout gọn 1 cột ở giữa */
     .container {
-      max-width: 1040px;
-      margin: 14px auto 0;
+      max-width: 560px;
+      margin: 16px auto 0;
       padding: 0 12px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
+      display: flex;
+      flex-direction: column;
       gap: 14px;
-    }
-    @media (max-width: 820px) {
-      .container { grid-template-columns: 1fr; }
     }
 
     .card {
@@ -89,7 +86,6 @@
       border-radius: 16px;
       padding: 14px;
       box-shadow: 0 2px 8px rgba(44,24,16,0.04);
-      margin-bottom: 14px;
     }
     .card-header {
       display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -99,10 +95,45 @@
       font-size: 11px; font-weight: 700; text-transform: uppercase;
       color: var(--accent); letter-spacing: 0.5px;
     }
-    .card-title { font-size: 16px; font-weight: 800; margin: 2px 0 0; }
+    .card-title { font-size: 15.5px; font-weight: 800; margin: 2px 0 0; }
     .pill {
       font-size: 11.5px; font-weight: 600; padding: 4px 10px;
       border-radius: 999px; background: #f1e7da; color: var(--primary);
+    }
+
+    /* Camera Box */
+    .camera-box {
+      background: #3d0d0b;
+      border-radius: 14px;
+      min-height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      text-align: center;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+    }
+    #reader { width: 100%; border-radius: 10px; overflow: hidden; }
+    .cam-placeholder { padding: 12px 8px; }
+    .cam-placeholder h3 { margin: 8px 0 6px; font-size: 16px; }
+    .cam-placeholder p { margin: 0 0 14px; font-size: 12.5px; opacity: 0.85; max-width: 300px; }
+    .btn-light {
+      background: #f5c84c; color: #2c1810; border: none;
+      padding: 10px 18px; border-radius: 10px; font-weight: 800; font-size: 13.5px; cursor: pointer;
+    }
+    .btn-stop-cam {
+      margin-top: 10px;
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.3);
+      padding: 7px 14px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 12.5px;
+      cursor: pointer;
     }
 
     /* Quantity Selector (Thumb zone 1-10) */
@@ -110,7 +141,7 @@
       display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
     }
     .btn-step {
-      width: 48px; height: 48px; border-radius: 12px;
+      width: 46px; height: 46px; border-radius: 12px;
       border: 1px solid var(--border); background: #f5ede2;
       color: var(--primary); font-size: 22px; font-weight: 800; cursor: pointer;
       flex-shrink: 0;
@@ -119,11 +150,11 @@
     .qty-input-wrap {
       flex: 1; display: flex; align-items: center; justify-content: center;
       border: 1.5px solid var(--border); border-radius: 12px; background: #fff;
-      height: 48px; padding: 0 12px;
+      height: 46px; padding: 0 12px;
     }
     .qty-input {
       width: 100%; border: none; outline: none; text-align: center;
-      font-size: 22px; font-weight: 800; color: var(--primary); background: transparent;
+      font-size: 21px; font-weight: 800; color: var(--primary); background: transparent;
     }
     .qty-unit { font-size: 12px; color: var(--muted); white-space: nowrap; }
 
@@ -134,9 +165,9 @@
       margin-bottom: 8px;
     }
     .btn-qty {
-      height: 42px; border-radius: 10px;
+      height: 40px; border-radius: 10px;
       border: 1px solid var(--border); background: #fff;
-      color: var(--text); font-size: 15px; font-weight: 700; cursor: pointer;
+      color: var(--text); font-size: 14.5px; font-weight: 700; cursor: pointer;
       transition: all 0.12s ease;
     }
     .btn-qty.active {
@@ -157,7 +188,7 @@
     .status-box.success { background: var(--success-bg); border-color: #bbf7d0; color: var(--success-text); }
     .status-box.error { background: var(--error-bg); border-color: #fecaca; color: var(--error-text); }
     .status-box.loading { background: #fef9c3; border-color: #fde047; color: #854d0e; }
-    .status-main { font-size: 16px; font-weight: 800; margin: 0 0 4px; }
+    .status-main { font-size: 15.5px; font-weight: 800; margin: 0 0 4px; }
     .status-sub { font-size: 12.5px; margin: 0; opacity: 0.92; }
 
     .test-row { display: flex; gap: 8px; }
@@ -175,7 +206,7 @@
       padding: 5px 10px; font-size: 12px; font-weight: 700; color: var(--primary); cursor: pointer;
     }
 
-    .history-list { list-style: none; padding: 0; margin: 0; max-height: 360px; overflow-y: auto; }
+    .history-list { list-style: none; padding: 0; margin: 0; max-height: 280px; overflow-y: auto; }
     .history-item {
       display: flex; justify-content: space-between; align-items: center;
       padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 13px;
@@ -204,7 +235,7 @@
     <div class="brand">
       <div class="brand-icon">☕</div>
       <div>
-        <div class="brand-title">DI DI COFFEE <span class="badge"></span></div>
+        <div class="brand-title">DI DI COFFEE </div>
       </div>
     </div>
     <div class="top-actions">
@@ -212,71 +243,77 @@
     </div>
   </header>
 
-  <div id="reader" style="display:none;"></div>
-
   <main class="container">
-    <!-- Cột trái -->
-    <div>
-      <!-- Chọn số ly (1-10) -->
-      <section class="card">
-        <div class="card-header">
-          <div>
-            <div class="step-label">NHẬP TRƯỚC KHI QUÉT</div>
-            <h2 class="card-title">Số ly / điểm cộng</h2>
-          </div>
-          <label class="sticky-label">
-            <input type="checkbox" id="keepQtyCheckbox" />
-            Giữ số lượng
-          </label>
+    <!-- Khung Camera gọn 1 cột -->
+    <section class="card">
+      <div class="camera-box">
+        <div id="reader"></div>
+        <div class="cam-placeholder" id="camPlaceholder">
+          <div style="font-size: 30px;">📷</div>
+          <h3>Camera đang nghỉ</h3>
+          <p>Bấm "Bật camera ngay" để quét trực tiếp mã thẻ khách hàng.</p>
+          <button class="btn-light" id="btnStartCamCenter">Bật camera ngay</button>
         </div>
+        <button class="btn-stop-cam" id="btnStopCam" style="display:none;">⏹ Tắt camera</button>
+      </div>
+    </section>
 
-        <div class="qty-row">
-          <button class="btn-step" id="btnMinus">−</button>
-          <div class="qty-input-wrap">
-            <input type="number" id="qtyInput" class="qty-input" value="1" min="1" max="99" />
-            <span class="qty-unit">ly / điểm</span>
-          </div>
-          <button class="btn-step plus" id="btnPlus">+</button>
-        </div>
+    <!-- Trạng thái xử lý & Nhập tay -->
+    <section class="card">
+      <div class="card-header">
+        <div class="step-label">TRẠNG THÁI XỬ LÝ</div>
+        <span class="pill" id="syncBadge">Sẵn sàng quét</span>
+      </div>
 
-        <div class="quick-grid" id="quickQtyGrid"></div>
-        <div style="font-size: 12px; color: var(--muted);">
-          Quét 1 lần sẽ cộng <strong id="qtyPreviewText">+1 điểm</strong> rồi tự động trả về <strong>1</strong> cho khách tiếp theo.
-        </div>
-      </section>
+      <div class="status-box" id="statusBox">
+        <p class="status-main" id="statusMain">Đang chờ mã QR đầu tiên</p>
+        <p class="status-sub" id="statusSub">Khi quét trúng mã, hệ thống sẽ tự gửi lên Google Sheet và báo điểm ngay tại đây.</p>
+      </div>
 
-      <!-- Trạng thái xử lý & Nhập tay -->
-      <section class="card">
-        <div class="card-header">
-          <div class="step-label">TRẠNG THÁI XỬ LÝ</div>
-          <span class="pill" id="syncBadge">Sẵn sàng quét</span>
-        </div>
+      <div class="test-row">
+        <input type="text" id="manualCodeInput" class="text-input" placeholder="Nhập mã / SĐT khách thủ công..." />
+        <button class="btn-primary" id="btnManualSubmit">⚡ Cộng điểm</button>
+      </div>
+    </section>
 
-        <div class="status-box" id="statusBox">
-          <p class="status-main" id="statusMain">Đang chờ mã QR đầu tiên</p>
-          <p class="status-sub" id="statusSub">Khi quét trúng mã, hệ thống sẽ tự gửi lên Google Sheet và báo điểm ngay tại đây.</p>
+    <!-- Chọn số ly (1-10) -->
+    <section class="card">
+      <div class="card-header">
+        <div>
+          <div class="step-label">NHẬP TRƯỚC KHI QUÉT</div>
+          <h2 class="card-title">Số ly / điểm cộng</h2>
         </div>
+        <label class="sticky-label">
+          <input type="checkbox" id="keepQtyCheckbox" />
+          Giữ số lượng
+        </label>
+      </div>
 
-        <div class="test-row">
-          <input type="text" id="manualCodeInput" class="text-input" placeholder="Nhập mã / SĐT khách thủ công..." />
-          <button class="btn-primary" id="btnManualSubmit">⚡ Cộng điểm</button>
+      <div class="qty-row">
+        <button class="btn-step" id="btnMinus">−</button>
+        <div class="qty-input-wrap">
+          <input type="number" id="qtyInput" class="qty-input" value="1" min="1" max="99" />
+          <span class="qty-unit">ly / điểm</span>
         </div>
-      </section>
-    </div>
+        <button class="btn-step plus" id="btnPlus">+</button>
+      </div>
 
-    <!-- Cột phải -->
-    <div>
-      <!-- Lịch sử quét -->
-      <section class="card">
-        <div class="card-header">
-          <h2 class="card-title" style="font-size: 15px;">Lịch sử quét gần đây</h2>
-          <button class="link-clear" id="btnClearHistory">Xóa nhật ký</button>
-        </div>
-        <ul class="history-list" id="historyList">
-          <li style="font-size: 12.5px; color: var(--muted);">Chưa có lượt quét nào trong phiên này.</li>
-        </ul>
-      </section>
-    </div>
+      <div class="quick-grid" id="quickQtyGrid"></div>
+      <div style="font-size: 12px; color: var(--muted);">
+        Quét 1 lần sẽ cộng <strong id="qtyPreviewText">+1 điểm</strong> rồi tự động trả về <strong>1</strong> cho khách tiếp theo.
+      </div>
+    </section>
+
+    <!-- Lịch sử quét -->
+    <section class="card">
+      <div class="card-header">
+        <h2 class="card-title" style="font-size: 15px;">Lịch sử quét gần đây</h2>
+        <button class="link-clear" id="btnClearHistory">Xóa nhật ký</button>
+      </div>
+      <ul class="history-list" id="historyList">
+        <li style="font-size: 12.5px; color: var(--muted);">Chưa có lượt quét nào trong phiên này.</li>
+      </ul>
+    </section>
   </main>
 
   <!-- Modal Nhập Key -->
@@ -334,6 +371,7 @@
     const statusSub = document.getElementById("statusSub");
     const syncBadge = document.getElementById("syncBadge");
     const historyList = document.getElementById("historyList");
+    const btnStopCam = document.getElementById("btnStopCam");
 
     // --- KHỞI TẠO CÁC NÚT SỐ 1-10 ---
     for (let i = 1; i <= 10; i++) {
@@ -528,7 +566,7 @@
     async function startCamera() {
       if (isScanning) return;
       try {
-        document.getElementById("reader").style.display = "block";
+        document.getElementById("camPlaceholder").style.display = "none";
         if (!html5QrCode) html5QrCode = new Html5Qrcode("reader");
         await html5QrCode.start(
           { facingMode: "environment" },
@@ -537,10 +575,10 @@
           () => {}
         );
         isScanning = true;
-        document.getElementById("btnToggleCam").textContent = "⏹ Tắt Camera";
-        document.getElementById("btnToggleCam").classList.add("active");
+        btnStopCam.style.display = "inline-block";
       } catch (err) {
-        document.getElementById("reader").style.display = "none";
+        document.getElementById("camPlaceholder").style.display = "block";
+        btnStopCam.style.display = "none";
         alert("Không mở được camera. Ông kiểm tra quyền Camera trên trình duyệt nhé!");
       }
     }
@@ -551,14 +589,12 @@
         await html5QrCode.stop();
       } catch (e) {}
       isScanning = false;
-      document.getElementById("reader").style.display = "none";
-      document.getElementById("btnToggleCam").textContent = "📷 Bật Camera";
-      document.getElementById("btnToggleCam").classList.remove("active");
+      btnStopCam.style.display = "none";
+      document.getElementById("camPlaceholder").style.display = "block";
     }
 
-    document.getElementById("btnToggleCam").addEventListener("click", () => {
-      isScanning ? stopCamera() : startCamera();
-    });
+    document.getElementById("btnStartCamCenter").addEventListener("click", startCamera);
+    btnStopCam.addEventListener("click", stopCamera);
 
     // --- NHẬP TAY ---
     function submitManualCode() {
