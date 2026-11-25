@@ -357,7 +357,8 @@
 
         const cCode = res.code || code;
         const cName = res.name || cCode;
-        const cGift = res.gift || "Chưa đủ điều kiện";
+        const rawGift = (res.quaTet || res.gift || "").toString().trim();
+        const cGift = rawGift || "Chưa đủ điều kiện";
         const cPhone = res.phone ? ` • ${res.phone}` : "";
 
         if (res.status === "SUCCESS" && !res.already_received) {
