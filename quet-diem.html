@@ -101,7 +101,6 @@
       color: var(--accent); letter-spacing: 0.5px;
     }
     .card-title { font-size: 16px; font-weight: 800; margin: 2px 0 0; }
-    .card-desc { font-size: 12.5px; color: var(--muted); margin: 0 0 12px; }
     .pill {
       font-size: 11.5px; font-weight: 600; padding: 4px 10px;
       border-radius: 999px; background: #f1e7da; color: var(--primary);
@@ -245,15 +244,6 @@
     <div>
       <!-- Khung Camera -->
       <section class="card">
-        <div class="card-header">
-          <div>
-            <div class="step-label">BƯỚC 1 — GIƠ MÃ QR VÀO KHUNG</div>
-            <h2 class="card-title">Khung quét mã QR tự động</h2>
-          </div>
-          <span class="pill" id="camBadge">Chờ bật camera</span>
-        </div>
-        <p class="card-desc">Đưa thẻ hoặc ảnh mã QR của khách vào khung — tự cộng điểm, không cần bấm nút.</p>
-
         <div class="camera-box">
           <div id="reader"></div>
           <div class="cam-placeholder" id="camPlaceholder">
@@ -587,7 +577,6 @@
         isScanning = true;
         document.getElementById("btnToggleCam").textContent = "⏹ Tắt Camera";
         document.getElementById("btnToggleCam").classList.add("active");
-        document.getElementById("camBadge").textContent = "Camera đang quét";
       } catch (err) {
         document.getElementById("camPlaceholder").style.display = "block";
         alert("Không mở được camera. Ông kiểm tra quyền Camera trên trình duyệt nhé!");
@@ -603,7 +592,6 @@
       document.getElementById("camPlaceholder").style.display = "block";
       document.getElementById("btnToggleCam").textContent = "📷 Bật Camera";
       document.getElementById("btnToggleCam").classList.remove("active");
-      document.getElementById("camBadge").textContent = "Chờ bật camera";
     }
 
     document.getElementById("btnToggleCam").addEventListener("click", () => {
