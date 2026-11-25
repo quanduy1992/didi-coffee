@@ -175,7 +175,7 @@
       background: #f5ede2; padding: 5px 10px; border-radius: 999px; cursor: pointer;
     }
 
-    /* Status & Progress */
+    /* Status & Manual Input */
     .status-box {
       padding: 12px; border-radius: 12px; background: #f8f2ea;
       border: 1px solid var(--border); margin-bottom: 12px;
@@ -186,16 +186,7 @@
     .status-main { font-size: 16px; font-weight: 800; margin: 0 0 4px; }
     .status-sub { font-size: 12.5px; margin: 0; opacity: 0.92; }
 
-    .progress-box {
-      background: #f8f2ea; border: 1px solid var(--border);
-      border-radius: 12px; padding: 12px;
-    }
-    .progress-top { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 8px; }
-    .progress-bar { height: 10px; background: #e6d8c7; border-radius: 999px; overflow: hidden; }
-    .progress-fill { height: 100%; width: 0%; background: var(--primary); transition: width 0.3s ease; }
-
-    /* Test & History */
-    .test-row { display: flex; gap: 8px; margin-bottom: 8px; }
+    .test-row { display: flex; gap: 8px; }
     .text-input {
       flex: 1; height: 42px; border-radius: 10px; border: 1px solid var(--border);
       padding: 0 12px; font-size: 14px; outline: none;
@@ -205,13 +196,12 @@
       padding: 0 16px; height: 42px; border-radius: 10px;
       font-weight: 700; font-size: 13.5px; cursor: pointer; white-space: nowrap;
     }
-    .quick-test-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
     .btn-mini {
       border: 1px solid var(--border); background: #fff; border-radius: 8px;
       padding: 5px 10px; font-size: 12px; font-weight: 700; color: var(--primary); cursor: pointer;
     }
 
-    .history-list { list-style: none; padding: 0; margin: 0; max-height: 280px; overflow-y: auto; }
+    .history-list { list-style: none; padding: 0; margin: 0; max-height: 320px; overflow-y: auto; }
     .history-item {
       display: flex; justify-content: space-between; align-items: center;
       padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: 13px;
@@ -241,7 +231,7 @@
       <div class="brand-icon">☕</div>
       <div>
         <div class="brand-title">DI DI COFFEE <span class="badge">Quầy Quét QR</span></div>
-        <div class="brand-sub">Luật tích điểm: 15 điểm = 1 ly hay dùng</div>
+        <div class="brand-sub">Tích điểm thẻ khách hàng</div>
       </div>
     </div>
     <div class="top-actions">
@@ -279,8 +269,8 @@
       <section class="card">
         <div class="card-header">
           <div>
-            <div class="step-label">NHẬP TRƯỚC KHI QUÉT • TẦM NGÓN CÁI</div>
-            <h2 class="card-title">Số ly / điểm cộng cho lần quét tới</h2>
+            <div class="step-label">NHẬP TRƯỚC KHI QUÉT</div>
+            <h2 class="card-title">Số ly / điểm cộng</h2>
           </div>
           <label class="sticky-label">
             <input type="checkbox" id="keepQtyCheckbox" />
@@ -299,32 +289,14 @@
 
         <div class="quick-grid" id="quickQtyGrid"></div>
         <div style="font-size: 12px; color: var(--muted);">
-          Quét 1 lần sẽ cộng <strong id="qtyPreviewText">+1 điểm</strong> rồi tự động trả về <strong>1</strong> cho khách tiếp theo. (Phím tắt: 1–9 hoặc 0 = 10)
-        </div>
-      </section>
-
-      <!-- Chạy thử / Nhập tay -->
-      <section class="card">
-        <div class="card-header">
-          <h2 class="card-title" style="font-size: 14.5px;">🧪 Nhập mã thủ công / Chạy thử</h2>
-          <span class="pill" id="modeBadge">Đang kiểm tra config.js...</span>
-        </div>
-        <div class="test-row">
-          <input type="text" id="manualCodeInput" class="text-input" placeholder="Nhập mã khách (VD: DI0001, DI0002)..." />
-          <button class="btn-primary" id="btnManualSubmit">⚡ Cộng điểm</button>
-        </div>
-        <div class="quick-test-row">
-          <span>Test nhanh:</span>
-          <button class="btn-mini" data-test="DI0001">DI0001</button>
-          <button class="btn-mini" data-test="DI0002">DI0002</button>
-          <button class="btn-mini" data-test="https://quanduy1992.github.io/didi-coffee/?code=DI0003">Link QR (DI0003)</button>
+          Quét 1 lần sẽ cộng <strong id="qtyPreviewText">+1 điểm</strong> rồi tự động trả về <strong>1</strong> cho khách tiếp theo.
         </div>
       </section>
     </div>
 
     <!-- Cột phải -->
     <div>
-      <!-- Trạng thái xử lý -->
+      <!-- Trạng thái xử lý & Nhập tay -->
       <section class="card">
         <div class="card-header">
           <div class="step-label">TRẠNG THÁI XỬ LÝ</div>
@@ -336,17 +308,9 @@
           <p class="status-sub" id="statusSub">Khi quét trúng mã, hệ thống sẽ tự gửi lên Google Sheet và báo điểm ngay tại đây.</p>
         </div>
 
-        <div class="progress-box">
-          <div class="progress-top">
-            <span>Mã khách: <strong id="displayCode">—</strong></span>
-            <span><strong id="displayPoints">0</strong> / 15 điểm</span>
-          </div>
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <div style="font-size: 12px; color: var(--muted); margin-top: 6px;" id="rewardHint">
-            Tích đủ 15 điểm sẽ được tặng 1 ly miễn phí.
-          </div>
+        <div class="test-row">
+          <input type="text" id="manualCodeInput" class="text-input" placeholder="Nhập mã / SĐT khách thủ công..." />
+          <button class="btn-primary" id="btnManualSubmit">⚡ Cộng điểm</button>
         </div>
       </section>
 
@@ -368,7 +332,7 @@
     <div class="modal">
       <h3 style="margin-top: 0;">🔑 Nhập mã bảo mật quầy quét</h3>
       <div class="form-group">
-        <label>Mã bảo mật (secret_key - khớp với MY_SECRET_KEY trong Script)</label>
+        <label>Mã bảo mật (secret_key)</label>
         <input type="text" id="cfgSecretKey" placeholder="Nhập mã bảo mật của quầy..." />
       </div>
       <div class="form-group">
@@ -417,12 +381,7 @@
     const statusMain = document.getElementById("statusMain");
     const statusSub = document.getElementById("statusSub");
     const syncBadge = document.getElementById("syncBadge");
-    const displayCode = document.getElementById("displayCode");
-    const displayPoints = document.getElementById("displayPoints");
-    const progressFill = document.getElementById("progressFill");
-    const rewardHint = document.getElementById("rewardHint");
     const historyList = document.getElementById("historyList");
-    const modeBadge = document.getElementById("modeBadge");
 
     // --- KHỞI TẠO CÁC NÚT SỐ 1-10 ---
     for (let i = 1; i <= 10; i++) {
@@ -449,7 +408,6 @@
     document.getElementById("btnPlus").addEventListener("click", () => setQuantity(currentQty + 1));
     qtyInput.addEventListener("input", () => setQuantity(qtyInput.value));
 
-    // Phím tắt 1-9, 0 (=10) khi không gõ trong ô input
     document.addEventListener("keydown", (e) => {
       if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
       if (e.key >= "1" && e.key <= "9") setQuantity(parseInt(e.key, 10));
@@ -472,7 +430,7 @@
       } catch (e) {}
     }
 
-    // --- TRÍCH XUẤT MÃ KHÁCH TỪ QR (HỖ TRỢ CẢ MÃ THUẦN "DI0001" VÀ LINK "?code=DI0001" / "?key=DI0001") ---
+    // --- TRÍCH XUẤT MÃ KHÁCH TỪ QR ---
     function extractCustomerKey(rawText) {
       const text = (rawText || "").trim();
       if (!text) return "";
@@ -488,21 +446,20 @@
       return text.toUpperCase().trim();
     }
 
-    // --- GỬI DỮ LIỆU LÊN GOOGLE APPS SCRIPT BẰNG JSONP (LẤY URL TỪ CONFIG.JS) ---
+    // --- GỬI DỮ LIỆU LÊN GOOGLE APPS SCRIPT BẰNG JSONP ---
     function sendPointsToSheet(rawQrText) {
       const keyKhach = extractCustomerKey(rawQrText);
       if (!keyKhach) return;
 
       const now = Date.now();
       if (keyKhach === lastScanCode && (now - lastScanTime) < (config.cooldownSec * 1000)) {
-        return; // Chặn quét đúp liên tiếp
+        return;
       }
       lastScanCode = keyKhach;
       lastScanTime = now;
 
       const qtyToSend = currentQty;
 
-      // Trả về 1 ngay lập tức nếu không bật giữ số lượng
       if (!keepQtyCheckbox.checked) {
         setQuantity(1);
       }
@@ -541,14 +498,13 @@
         if (res && res.status === "SUCCESS" && res.mode !== "VIEW") {
           playBeep(true);
           const totalPts = Number(res.points) || qtyToSend;
-          updateCustomerProgress(keyKhach, totalPts, qtyToSend);
           updateStatus(
             "success",
             `✅ Đã cộng +${qtyToSend} điểm cho ${keyKhach}`,
             `Khách: ${res.name || keyKhach} • Hiện có: ${totalPts} điểm`,
             "Đã lưu Sheet"
           );
-          addHistory(keyKhach, qtyToSend, totalPts, false);
+          addHistory(keyKhach, res.name || "", qtyToSend, totalPts);
         } else if (res && res.mode === "VIEW") {
           playBeep(false);
           updateStatus("error", `🔒 Sai hoặc thiếu Key (${keyKhach})`, "Bấm nút 'Nhập Key' ở góc trên để nhập đúng mã bảo mật của quầy.", "Chưa đúng Key");
@@ -562,6 +518,7 @@
       const params = new URLSearchParams({
         action: "tich_diem_qr",
         code: keyKhach,
+        key: keyKhach,
         quantity: qtyToSend,
         secret_key: config.secretKey || "",
         callback: callbackName
@@ -586,25 +543,10 @@
       syncBadge.textContent = badge;
     }
 
-    function updateCustomerProgress(code, totalPts, added) {
-      displayCode.textContent = code;
-      displayPoints.textContent = totalPts;
-      const modPts = totalPts % 15;
-      const pct = totalPts >= 15 && modPts === 0 ? 100 : Math.min(100, Math.round((modPts / 15) * 100));
-      progressFill.style.width = pct + "%";
-
-      if (totalPts >= 15) {
-        const freeCups = Math.floor(totalPts / 15);
-        rewardHint.innerHTML = `🎉 Đã đủ mốc đổi <strong>${freeCups} ly miễn phí</strong>! (Dư ${modPts}/15 điểm)`;
-      } else {
-        rewardHint.textContent = `Còn thiếu ${15 - totalPts} điểm nữa để đổi 1 ly miễn phí.`;
-      }
-    }
-
-    function addHistory(code, added, total, isMock) {
+    function addHistory(code, name, added, total) {
       const timeStr = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-      historyLogs.unshift({ code, added, total, timeStr, isMock });
-      if (historyLogs.length > 20) historyLogs.pop();
+      historyLogs.unshift({ code, name, added, total, timeStr });
+      if (historyLogs.length > 30) historyLogs.pop();
       renderHistory();
     }
 
@@ -616,9 +558,8 @@
       historyList.innerHTML = historyLogs.map(item => `
         <li class="history-item">
           <div>
-            <strong>${item.code}</strong>
+            <strong>${item.code}</strong>${item.name ? ` • <span>${item.name}</span>` : ""}
             <span style="color: var(--success-text); font-weight: 700;">+${item.added}đ</span>
-            ${item.isMock ? '<span style="font-size:11px; color:#b86b35;">(Test)</span>' : ''}
             <div style="font-size: 11.5px; color: var(--muted);">Tổng hiện tại: ${item.total} điểm</div>
           </div>
           <div style="font-size: 12px; color: var(--muted);">${item.timeStr}</div>
@@ -670,36 +611,25 @@
     });
     document.getElementById("btnStartCamCenter").addEventListener("click", startCamera);
 
-    // --- NHẬP TAY & TEST NHANH ---
-    document.getElementById("btnManualSubmit").addEventListener("click", () => {
-      const val = document.getElementById("manualCodeInput").value;
+    // --- NHẬP TAY ---
+    function submitManualCode() {
+      const inputEl = document.getElementById("manualCodeInput");
+      const val = inputEl.value;
       if (!val.trim()) return;
-      lastScanCode = ""; // Cho phép bấm tay liên tiếp khi test
+      lastScanCode = "";
       sendPointsToSheet(val);
-      document.getElementById("manualCodeInput").value = "";
-    });
+      inputEl.value = "";
+    }
 
-    document.querySelectorAll("[data-test]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        lastScanCode = "";
-        sendPointsToSheet(btn.dataset.test);
-      });
+    document.getElementById("btnManualSubmit").addEventListener("click", submitManualCode);
+    document.getElementById("manualCodeInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        submitManualCode();
+      }
     });
 
     // --- MODAL NHẬP KEY ---
-    function refreshModeBadge() {
-      if (SCRIPT_URL_FROM_CONFIG) {
-        modeBadge.textContent = config.secretKey ? "Đã nối config.js • Có Key" : "Đã nối config.js • Chưa nhập Key";
-        modeBadge.style.background = config.secretKey ? "#e7f6ec" : "#fef9c3";
-        modeBadge.style.color = config.secretKey ? "#166534" : "#854d0e";
-      } else {
-        modeBadge.textContent = "Không tìm thấy config.js";
-        modeBadge.style.background = "#fde8e8";
-        modeBadge.style.color = "#991b1b";
-      }
-    }
-    refreshModeBadge();
-
     document.getElementById("btnOpenConfig").addEventListener("click", () => {
       document.getElementById("cfgSecretKey").value = config.secretKey || "";
       document.getElementById("cfgCooldown").value = config.cooldownSec || 4;
@@ -714,7 +644,6 @@
       config.secretKey = document.getElementById("cfgSecretKey").value.trim();
       config.cooldownSec = Math.max(1, parseInt(document.getElementById("cfgCooldown").value, 10) || 4);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
-      refreshModeBadge();
       document.getElementById("configModal").classList.remove("open");
       updateStatus("success", "✅ Đã lưu mã bảo mật", "Sẵn sàng quét và lưu điểm thẳng vào Google Sheet.", "Sẵn sàng");
     });
