@@ -233,7 +233,7 @@
                     <div class="view-tet-gift">Quà tết hiện tại: <span id="viewTetGiftValue">---</span></div>
                 </div>
             </div>
-            <div class="view-history-title">10 lịch sử tích điểm gần nhất</div>
+            <div class="view-history-title">Lịch sử tích điểm gần nhất</div>
             <ul class="view-history-list" id="viewHistoryList"></ul>
              <!--<button type="button" class="btn-back-scan" onclick="switchToFormMode()">Quay lại giao diện tích điểm</button>-->
         </div>
@@ -305,7 +305,7 @@
             tetGift = "Chưa có quà";
         }
 
-        const history = Array.isArray(resData.history) ? resData.history.slice(0, 10) : [];
+        const history = Array.isArray(resData.history) ? resData.history : [];
 
         document.getElementById('viewCustName').innerText = name;
         document.getElementById('viewCustVnd').innerText = vndText;
