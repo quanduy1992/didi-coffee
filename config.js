@@ -1,7 +1,7 @@
 // File này lưu trữ các cấu hình dùng chung cho toàn bộ hệ thống Di Di Coffee
 const CONFIG = {
     // Dán link Web App của bạn vào đây một lần duy nhất Di Di Coffee Nghĩ Lễ: 30/04 - 02/05
-    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzvr8jFT16vAu3IJcURD7IEJM-mncKL7USm3zsl2X_YVLPhyOws1jRuy7YQUKaf1wGleg/exec',
+    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxF6qujDutfzFqgDoElvwWpN17jvcklv9bwISdrRYewrQvHvyrNGpJdhnBq1rD2-en0pw/exec',
     
     // Bạn có thể thêm các cấu hình khác sau này tại đây
     REDEEM_POINTS: 15,
