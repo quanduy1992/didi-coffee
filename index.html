@@ -60,6 +60,18 @@
             color: #5c2415;
             margin-bottom: 4px;
         }
+        .view-customer-vnd {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #fff3cd;
+            border: 1px solid #f0c36d;
+            color: #8a3b08;
+            font-size: 13px;
+            font-weight: 800;
+            vertical-align: middle;
+        }
         .view-customer-meta {
             font-size: 13px;
             color: #5d4037;
@@ -210,7 +222,7 @@
         <!-- --- BỔ SUNG: KHỐI HIỂN THỊ KHI CHUYỂN SANG CHẾ ĐỘ XEM (VIEW) --- -->
         <div id="viewInfoBox">
             <div class="view-profile-card">
-                <div class="view-customer-name" id="viewCustName">---</div>
+                <div class="view-customer-name"><span id="viewCustName">---</span> - <span class="view-customer-vnd" id="viewCustVnd">0 VNĐ</span></div>
                 <div class="view-customer-meta" id="viewCustMeta">SĐT: --- • Mã: ---</div>
                 <div class="view-points-banner">
                     <div style="font-size: 12px; color: #5d4037; font-weight: 700;">SỐ ĐIỂM HIỆN TẠI</div>
@@ -241,6 +253,34 @@
 <script src="config.js"></script> 
 <script src="hoadao.js"></script> 
 <script>
+    // --- BỔ SUNG: ĐỊNH DẠNG SỐ TIỀN CỘT G (VNĐ) ---
+    function formatColGVnd(resData) {
+        if (!resData || typeof resData !== 'object') return "0 VNĐ";
+        const rawVal =
+            resData.colG !== undefined ? resData.colG :
+            resData.col_g !== undefined ? resData.col_g :
+            resData.g !== undefined ? resData.g :
+            resData.vnd !== undefined ? resData.vnd :
+            resData.money !== undefined ? resData.money :
+            resData.amount !== undefined ? resData.amount :
+            resData.balance !== undefined ? resData.balance : 0;
+
+        if (typeof rawVal === "string") {
+            const trimmed = rawVal.trim();
+            if (!trimmed) return "0 VNĐ";
+            if (/vnd|đ/i.test(trimmed)) return trimmed;
+            const numericStr = Number(trimmed.replace(/[^\d.-]/g, ""));
+            if (!isNaN(numericStr)) {
+                return numericStr.toLocaleString("vi-VN") + " VNĐ";
+            }
+            return trimmed;
+        }
+
+        const num = Number(rawVal);
+        if (isNaN(num)) return "0 VNĐ";
+        return num.toLocaleString("vi-VN") + " VNĐ";
+    }
+
     // --- BỔ SUNG: HÀM CHUYỂN GIAO DIỆN SANG VIEW & QUAY LẠI FORM ---
     function switchToViewMode(resData, fallbackCode) {
         document.getElementById('form-input').style.display = 'none';
@@ -248,6 +288,7 @@
         document.getElementById('viewInfoBox').style.display = 'block';
 
         const name = resData.name || ('Khách ' + fallbackCode);
+        const vndText = formatColGVnd(resData);
         const phone = resData.phone || 'Chưa cập nhật';
         const code = resData.code || fallbackCode;
         const points = (resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
@@ -264,6 +305,7 @@
         const history = Array.isArray(resData.history) ? resData.history.slice(0, 5) : [];
 
         document.getElementById('viewCustName').innerText = name;
+        document.getElementById('viewCustVnd').innerText = vndText;
         document.getElementById('viewCustMeta').innerText = "SĐT: " + phone + " • Mã KH: " + code;
         document.getElementById('viewCustPoints').innerText = points + " điểm";
         document.getElementById('viewTetGiftValue').innerText = tetGift;
