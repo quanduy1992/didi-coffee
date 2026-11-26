@@ -396,7 +396,7 @@
         resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>🔒 Đang tải thông tin khách hàng...</div>";
 
         const safetyTimeout = setTimeout(function() {
-            resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm khi tải thông tin VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+            resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm khi tải thông tin VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở form tích điểm</button>";
         }, 20000);
 
         window.googleCallback = function(resData) {
@@ -518,8 +518,8 @@
             if (finished) return;
             finished = true;
             cleanup();
-            if (typeof onFinalFail === "function") onFinalFail("TIMEOUT");
-        }, 15000);
+            if (typeof onFinalFail === "function") onFinalFail();
+        }, 20000);
 
         window[cbName] = function(resData) {
             if (finished) return;
@@ -536,7 +536,7 @@
             finished = true;
             clearTimeout(safetyTimeout);
             cleanup();
-            if (typeof onFinalFail === "function") onFinalFail("NETWORK_ERROR");
+            if (typeof onFinalFail === "function") onFinalFail();
         };
         document.body.appendChild(scriptTag);
     }
@@ -562,7 +562,7 @@
 
         btnSubmit.disabled = false;
         btnSubmit.innerHTML = "⌛ Đang tích điểm...";
-        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>⌛ Đang gửi tích điểm mã <b>" + code + "</b>... (có thể quét/nhập mã khách khác luôn)</div>";
+        resultDiv.innerHTML = ""; 
         
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
@@ -581,21 +581,16 @@
             btnSubmit.disabled = false;
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
-            if (!resData) {
-                resultDiv.innerHTML = "<div class='error'>❌ Phản hồi rỗng cho mã " + code + ".</div><button type='button' class='btn-back-scan' onclick='document.getElementById(\"inputCode\").value=\"" + code + "\";handleVerify();'>Gửi lại mã " + code + "</button>";
-                return;
-            }
-
-            if (resData.mode === "VIEW" && resData.status === "SUCCESS") {
+            if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
                 switchToViewMode(resData, code);
             }
-            else if (resData.status === "SUCCESS") {
+            else if (resData && resData.status === "SUCCESS") {
                 if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
                 const now = new Date();
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
                 resultDiv.innerHTML = `
                     <div class="success-box">
-                        <div>✅ TÍCH ĐIỂM THÀNH CÔNG! (${code})</div>
+                        <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
                         <span class="time">Thời gian: ${timeStr}</span>
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
@@ -614,39 +609,30 @@
                     }, 800);
                 }
             } 
-            else if (resData.status === "USED") {
+            else if (resData && resData.status === "USED") {
                 resultDiv.innerHTML = `
                     <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
-                        <div>⚠️ Mã ${code} đã được sử dụng.</div>
+                        <div>⚠️ Mã này đã được sử dụng.</div>
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;
             } 
-            else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
-                resultDiv.innerHTML = "<div class='error'>❌ Mã " + code + " không tồn tại!</div>";
+            else if (resData && resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
+                resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
             }
             else {
-                resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
+                resultDiv.innerHTML = "<div class='error'>❌ " + ((resData && resData.message) || "Lỗi hệ thống!") + "</div>";
             }
-        };
-
-        const handleFinalFail = function(reason) {
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-            const reasonText = (reason === "TIMEOUT")
-                ? "Kết nối chậm / quá thời gian chờ"
-                : "Lỗi kết nối máy chủ";
-            resultDiv.innerHTML =
-                "<div class='error'>❌ " + reasonText + " khi tích mã <b>" + code + "</b>. Có thể quét khách khác luôn hoặc kiểm tra sheet rồi bấm gửi lại.</div>" +
-                "<button type='button' class='btn-back-scan' onclick='document.getElementById(\"inputCode\").value=\"" + code + "\";handleVerify();'>Gửi lại mã " + code + "</button>";
         };
 
         sendVerifyScript("tichdiem", code, name, phone, pointsToAdd, handleServerResponse, function() {
             if (!triedFallbackAction) {
                 triedFallbackAction = true;
-                sendVerifyScript("tich_diem", code, name, phone, pointsToAdd, handleServerResponse, handleFinalFail);
-            } else {
-                handleFinalFail("NETWORK_ERROR");
+                sendVerifyScript("tich_diem", code, name, phone, pointsToAdd, handleServerResponse, function() {
+                    resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+                });
             }
         });
     }
