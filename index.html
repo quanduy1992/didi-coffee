@@ -378,7 +378,7 @@
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tichdiem&code=${encodeURIComponent(code)}&callback=googleCallback&t=${new Date().getTime()}`;
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tichdiem&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}&callback=googleCallback&t=${new Date().getTime()}`;
         scriptTag.onerror = function() {
             clearTimeout(safetyTimeout);
             resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
@@ -417,7 +417,7 @@
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        const codeParam = codeHint ? `&code=${encodeURIComponent(codeHint)}` : "";
+        const codeParam = codeHint ? `&code=${encodeURIComponent(codeHint)}&ma_khach=${encodeURIComponent(codeHint)}` : "";
         scriptTag.src = `${CONFIG.SCRIPT_URL}?action=view&key=${encodeURIComponent(keyValue)}&secret_key=${encodeURIComponent(keyValue)}${codeParam}&callback=googleCallback&t=${new Date().getTime()}`;
         scriptTag.onerror = function() {
             clearTimeout(safetyTimeout);
@@ -466,7 +466,7 @@
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
         const secretParam = secretFromURL ? `&secret_key=${encodeURIComponent(secretFromURL)}` : "";
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=checksecret&code=${encodeURIComponent(code)}${secretParam}&callback=googleCallback&t=${new Date().getTime()}`;
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=checksecret&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}${secretParam}&callback=googleCallback&t=${new Date().getTime()}`;
         scriptTag.onerror = function() {
             clearTimeout(safetyTimeout);
             const oldScript = document.getElementById('api-call');
@@ -513,7 +513,7 @@
 
         const scriptTag = document.createElement("script");
         scriptTag.id = "api-call";
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=${encodeURIComponent(actionName)}&code=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=${encodeURIComponent(actionName)}&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&quantity=${pointsToAdd}&points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
 
         scriptTag.onerror = function() {
             const el = document.getElementById('api-call');
