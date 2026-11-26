@@ -436,7 +436,6 @@
         resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>🔒 Đang lấy thông tin khách hàng...</div>";
 
         const safetyTimeout = setTimeout(function() {
-            // Nếu quá thời gian kiểm tra khóa mà không rõ trạng thái -> không tự chạy tích điểm cũ để tránh ghi nhầm
             resultDiv.innerHTML = "<div class='error'>❌ Không kiểm tra được khóa bảo mật (quá thời gian). Đã tạm dừng để tránh tích điểm nhầm!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
         }, 15000);
 
@@ -446,7 +445,6 @@
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
 
-            // Nếu kết quả trả về có dữ liệu lịch sử (history) hoặc mode VIEW -> hiển thị VIEW luôn, không chạy index cũ
             if (resData && (Array.isArray(resData.history) || resData.mode === "VIEW")) {
                 if (resData.status === "SUCCESS") {
                     switchToViewMode(resData, code);
@@ -456,7 +454,6 @@
                 return;
             }
 
-            // Nếu không có lịch sử và link không bắt khóa -> mới chạy tiếp luồng index cũ
             switchToFormMode();
             if (savedName && savedPhone) {
                 setTimeout(handleVerify, 300);
@@ -471,7 +468,6 @@
             clearTimeout(safetyTimeout);
             const oldScript = document.getElementById('api-call');
             if (oldScript) oldScript.remove();
-            // Lỗi kết nối khi kiểm tra khóa -> không tự chạy tích điểm cũ
             resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối khi kiểm tra khóa bảo mật!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
         };
         document.body.appendChild(scriptTag);
@@ -491,13 +487,11 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
-        // Ưu tiên 1: Nếu GET có key -> chuyển sang chế độ VIEW
         if (keyFromURL) {
             openViewByKey(keyFromURL, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
             return;
         }
 
-        // Ưu tiên 2: Nếu GET có code (và không có key) -> tích điểm bình thường
         if (codeFromURL) {
             switchToFormMode();
             if (savedName && savedPhone) {
@@ -508,17 +502,41 @@
     };
 
     function sendVerifyScript(actionName, code, name, phone, pointsToAdd, onSuccess, onFinalFail) {
-        const oldScript = document.getElementById('api-call');
-        if (oldScript) oldScript.remove();
-
+        const cbName = "didiScanCb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
         const scriptTag = document.createElement("script");
-        scriptTag.id = "api-call";
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=${encodeURIComponent(actionName)}&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&quantity=${pointsToAdd}&points=${pointsToAdd}&callback=googleCallback&t=${new Date().getTime()}`;
+        scriptTag.id = "api-call-" + cbName;
+
+        let finished = false;
+        const cleanup = function() {
+            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+            if (scriptTag && scriptTag.parentNode) {
+                scriptTag.parentNode.removeChild(scriptTag);
+            }
+        };
+
+        const safetyTimeout = setTimeout(function() {
+            if (finished) return;
+            finished = true;
+            cleanup();
+            if (typeof onFinalFail === "function") onFinalFail("TIMEOUT");
+        }, 15000);
+
+        window[cbName] = function(resData) {
+            if (finished) return;
+            finished = true;
+            clearTimeout(safetyTimeout);
+            cleanup();
+            if (typeof onSuccess === "function") onSuccess(resData);
+        };
+
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=${encodeURIComponent(actionName)}&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&quantity=${pointsToAdd}&points=${pointsToAdd}&callback=${cbName}&t=${new Date().getTime()}`;
 
         scriptTag.onerror = function() {
-            const el = document.getElementById('api-call');
-            if (el) el.remove();
-            if (typeof onFinalFail === "function") onFinalFail();
+            if (finished) return;
+            finished = true;
+            clearTimeout(safetyTimeout);
+            cleanup();
+            if (typeof onFinalFail === "function") onFinalFail("NETWORK_ERROR");
         };
         document.body.appendChild(scriptTag);
     }
@@ -542,14 +560,13 @@
             return;
         }
 
-        btnSubmit.disabled = true; 
-        btnSubmit.innerHTML = "⌛ Đang tích điểm..."; 
-        resultDiv.innerHTML = ""; 
+        btnSubmit.disabled = false;
+        btnSubmit.innerHTML = "⌛ Đang tích điểm...";
+        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>⌛ Đang gửi tích điểm mã <b>" + code + "</b>... (có thể quét/nhập mã khách khác luôn)</div>";
         
         localStorage.setItem('didi_customer_name', name);
         localStorage.setItem('didi_customer_phone', phone);
         
-        // --- LOGIC CẬP NHẬT ĐIỂM THEO MÃ ---
         let pointsToAdd = (CONFIG.POINTS_PER_CODE) ? parseFloat(CONFIG.POINTS_PER_CODE) : 1;
 
         if (code.startsWith("TA")) {
@@ -557,25 +574,19 @@
         } else if (code.startsWith("SC")) {
             pointsToAdd = pointsToAdd + 0.25;
         }
-        // ------------------------------------
 
         let triedFallbackAction = false;
 
-        const safetyTimeout = setTimeout(function() {
-            if (btnSubmit.disabled) {
-                btnSubmit.disabled = false;
-                btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-                resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, vui lòng thử lại!</div>";
-            }
-        }, 20000);
-
-        window.googleCallback = function(resData) {
-            clearTimeout(safetyTimeout);
+        const handleServerResponse = function(resData) {
             btnSubmit.disabled = false;
             btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
 
-            // Nếu backend trả về mode === "VIEW" (do thiếu/sai secret_key) thì chuyển sang giao diện xem
-            if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
+            if (!resData) {
+                resultDiv.innerHTML = "<div class='error'>❌ Phản hồi rỗng cho mã " + code + ".</div><button type='button' class='btn-back-scan' onclick='document.getElementById(\"inputCode\").value=\"" + code + "\";handleVerify();'>Gửi lại mã " + code + "</button>";
+                return;
+            }
+
+            if (resData.mode === "VIEW" && resData.status === "SUCCESS") {
                 switchToViewMode(resData, code);
             }
             else if (resData.status === "SUCCESS") {
@@ -584,14 +595,13 @@
                 const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
                 resultDiv.innerHTML = `
                     <div class="success-box">
-                        <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
+                        <div>✅ TÍCH ĐIỂM THÀNH CÔNG! (${code})</div>
                         <span class="time">Thời gian: ${timeStr}</span>
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;  
                 document.getElementById('inputCode').value = ""; 
 
-                // Kiểm tra kết quả VIP trả về từ cột VIP (resData.vip) thay vì check điểm
                 if (resData.vip && resData.vip.toUpperCase() === "VIP") {
                     setTimeout(function() {
                         alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 14 điểm để đổi 1 ly bất kỳ.");
@@ -607,31 +617,36 @@
             else if (resData.status === "USED") {
                 resultDiv.innerHTML = `
                     <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
-                        <div>⚠️ Mã này đã được sử dụng.</div>
+                        <div>⚠️ Mã ${code} đã được sử dụng.</div>
                         <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
                     </div>
                 `;
             } 
             else if (resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
-                resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
+                resultDiv.innerHTML = "<div class='error'>❌ Mã " + code + " không tồn tại!</div>";
             }
             else {
                 resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Lỗi hệ thống!") + "</div>";
             }
-            
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
         };
 
-        sendVerifyScript("tichdiem", code, name, phone, pointsToAdd, null, function() {
+        const handleFinalFail = function(reason) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+            const reasonText = (reason === "TIMEOUT")
+                ? "Kết nối chậm / quá thời gian chờ"
+                : "Lỗi kết nối máy chủ";
+            resultDiv.innerHTML =
+                "<div class='error'>❌ " + reasonText + " khi tích mã <b>" + code + "</b>. Có thể quét khách khác luôn hoặc kiểm tra sheet rồi bấm gửi lại.</div>" +
+                "<button type='button' class='btn-back-scan' onclick='document.getElementById(\"inputCode\").value=\"" + code + "\";handleVerify();'>Gửi lại mã " + code + "</button>";
+        };
+
+        sendVerifyScript("tichdiem", code, name, phone, pointsToAdd, handleServerResponse, function() {
             if (!triedFallbackAction) {
                 triedFallbackAction = true;
-                sendVerifyScript("tich_diem", code, name, phone, pointsToAdd, null, function() {
-                    clearTimeout(safetyTimeout);
-                    resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-                });
+                sendVerifyScript("tich_diem", code, name, phone, pointsToAdd, handleServerResponse, handleFinalFail);
+            } else {
+                handleFinalFail("NETWORK_ERROR");
             }
         });
     }
