@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Di Di Coffee - Nhập Số Lượng Khách</title>
+  <!-- Nạp sẵn file config.js dùng chung của hệ thống -->
+  <script src="config.js"></script>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --card: #ffffff;
+      --primary: #4a2c18;
+      --primary-hover: #633b20;
+      --accent: #d97706;
+      --success: #15803d;
+      --success-bg: #dcfce7;
+      --danger: #b91c1c;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding-bottom: 40px;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--primary);
+      color: #fff;
+      padding: 12px 14px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-sm {
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .btn-sm:active {
+      transform: scale(0.97);
+    }
+
+    .search-box {
+      display: flex;
+      gap: 8px;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 15px;
+      outline: none;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .config-panel {
+      display: none;
+      background: #fffbeb;
+      border-bottom: 1px solid #fde68a;
+      padding: 12px 14px;
+      font-size: 13px;
+    }
+
+    .config-panel.open {
+      display: block;
+    }
+
+    .config-group {
+      margin-bottom: 8px;
+    }
+
+    .config-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 4px;
+      color: #92400e;
+    }
+
+    .config-group input {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .config-note {
+      font-size: 11px;
+      color: #92400e;
+      margin-bottom: 8px;
+    }
+
+    .config-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .config-save-btn {
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .config-reset-btn {
+      background: #fff;
+      color: #92400e;
+      border: 1px solid #fcd34d;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .stats-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 6px 12px;
+    }
+
+    .customer-row {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: border-color 0.2s, background-color 0.2s;
+    }
+
+    .customer-row.has-pending {
+      border-color: #f59e0b;
+      background: #fffdf5;
+    }
+
+    .customer-row.sent-ok {
+      border-color: #86efac;
+      background: #f0fdf4;
+    }
+
+    .cust-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .cust-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .vip-badge {
+      background: #fef3c7;
+      color: #b45309;
+      border: 1px solid #fcd34d;
+      font-size: 10px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: 5px;
+      flex-shrink: 0;
+    }
+
+    .cust-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .pending-tag {
+      color: #d97706;
+      font-weight: 700;
+    }
+
+    .action-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+    }
+
+    .qty-control {
+      display: flex;
+      align-items: center;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      overflow: hidden;
+      background: #f9fafb;
+    }
+
+    .qty-step {
+      width: 30px;
+      height: 36px;
+      border: none;
+      background: transparent;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+      cursor: pointer;
+    }
+
+    .qty-step:active {
+      background: #e5e7eb;
+    }
+
+    .qty-input {
+      width: 44px;
+      height: 36px;
+      border: none;
+      border-left: 1px solid #e5e7eb;
+      border-right: 1px solid #e5e7eb;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      -moz-appearance: textfield;
+    }
+
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    .btn-send {
+      height: 36px;
+      padding: 0 14px;
+      border: none;
+      border-radius: 9px;
+      background: var(--primary);
+      color: #fff;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .btn-send:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-send:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .btn-send.done {
+      background: var(--success);
+    }
+
+    .status-msg {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #111827;
+      color: #fff;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+      opacity: 0;
+      transition: all 0.25s ease;
+      z-index: 50;
+      max-width: 90vw;
+      text-align: center;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .toast.error {
+      background: var(--danger);
+    }
+
+    .toast.success {
+      background: var(--success);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="header-top">
+      <div class="header-title">DI DI COFFEE • SET SỐ LƯỢNG QUÉT THẺ</div>
+      <div class="header-actions">
+        <button class="btn-sm" onclick="taiDanhSachKhach()">↻ Tải lại</button>
+        <button class="btn-sm" onclick="toggleConfig()">⚙ Cấu hình</button>
+      </div>
+    </div>
+    <div class="search-box">
+      <input
+        type="text"
+        id="searchInput"
+        class="search-input"
+        placeholder="Tìm tên khách, mã thẻ (DI...), SĐT..."
+        oninput="locKhach()"
+      />
+    </div>
+  </div>
+
+  <div id="configPanel" class="config-panel">
+    <div class="config-note" id="configSourceNote">Đang tự động lấy SCRIPT_URL từ file config.js</div>
+    <div class="config-group">
+      <label for="scriptUrlInput">Link Web App Google Apps Script (/exec):</label>
+      <input type="text" id="scriptUrlInput" placeholder="https://script.google.com/macros/s/.../exec" />
+    </div>
+    <div class="config-group">
+      <label for="secretKeyInput">Mã bí mật (MY_SECRET_KEY):</label>
+      <input type="text" id="secretKeyInput" placeholder="DIDI2026" />
+    </div>
+    <div class="config-actions">
+      <button class="config-save-btn" onclick="luuCauHinh()">Lưu cấu hình & Tải danh sách</button>
+      <button class="config-reset-btn" onclick="dungMacDinhConfig()">Dùng lại link từ config.js</button>
+    </div>
+  </div>
+
+  <div class="stats-bar">
+    <span id="countInfo">Đang tải danh sách khách...</span>
+    <span id="pendingInfo"></span>
+  </div>
+
+  <div class="container" id="customerList">
+    <div class="status-msg">Đang kết nối Google Sheets...</div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const DEFAULT_SECRET_KEY = "DIDI2026";
+    let allCustomers = [];
+
+    // Đọc SCRIPT_URL và SECRET_KEY trực tiếp từ object CONFIG trong file config.js
+    function getExternalConfig() {
+      const ext = (typeof CONFIG !== "undefined" && CONFIG) ? CONFIG : {};
+      return {
+        scriptUrl: (ext.SCRIPT_URL || ext.script_url || "").toString().trim(),
+        secretKey: (ext.SECRET_KEY || ext.MY_SECRET_KEY || "").toString().trim()
+      };
+    }
+
+    function getConfig() {
+      const ext = getExternalConfig();
+      const savedUrl = (localStorage.getItem("didi_sl_script_url") || "").trim();
+      const savedSecret = (localStorage.getItem("didi_sl_secret_key") || "").trim();
+
+      return {
+        scriptUrl: ext.scriptUrl || savedUrl,
+        secretKey: savedSecret || ext.secretKey || DEFAULT_SECRET_KEY,
+        fromConfigJs: Boolean(ext.scriptUrl)
+      };
+    }
+
+    function initConfigUI() {
+      const cfg = getConfig();
+      document.getElementById("scriptUrlInput").value = cfg.scriptUrl;
+      document.getElementById("secretKeyInput").value = cfg.secretKey;
+      const noteEl = document.getElementById("configSourceNote");
+      if (noteEl) {
+        noteEl.textContent = cfg.fromConfigJs
+          ? "✓ Đang dùng tự động CONFIG.SCRIPT_URL từ file config.js"
+          : "Chưa đọc được CONFIG.SCRIPT_URL từ config.js — có thể dán tay bên dưới:";
+      }
+      if (!cfg.scriptUrl) {
+        document.getElementById("configPanel").classList.add("open");
+      }
+    }
+
+    function toggleConfig() {
+      document.getElementById("configPanel").classList.toggle("open");
+    }
+
+    function luuCauHinh() {
+      const url = document.getElementById("scriptUrlInput").value.trim();
+      const secret = document.getElementById("secretKeyInput").value.trim();
+      localStorage.setItem("didi_sl_script_url", url);
+      localStorage.setItem("didi_sl_secret_key", secret);
+      document.getElementById("configPanel").classList.remove("open");
+      showToast("Đã lưu cấu hình!", "success");
+      taiDanhSachKhach();
+    }
+
+    function dungMacDinhConfig() {
+      localStorage.removeItem("didi_sl_script_url");
+      localStorage.removeItem("didi_sl_secret_key");
+      initConfigUI();
+      showToast("Đã lấy lại cấu hình từ config.js!", "success");
+      taiDanhSachKhach();
+    }
+
+    function showToast(msg, type = "") {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.className = "toast show" + (type ? " " + type : "");
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        el.classList.remove("show");
+      }, 2600);
+    }
+
+    // Gọi Apps Script qua JSONP để tránh lỗi CORS trên GitHub Pages / file local
+    function callAppsScriptJSONP(paramsObj) {
+      return new Promise((resolve, reject) => {
+        const cfg = getConfig();
+        if (!cfg.scriptUrl) {
+          reject(new Error("Chưa có SCRIPT_URL trong config.js!"));
+          return;
+        }
+
+        const cbName = "didi_cb_" + Date.now() + "_" + Math.floor(Math.random() * 10000);
+        const url = new URL(cfg.scriptUrl);
+        Object.keys(paramsObj).forEach((k) => {
+          if (paramsObj[k] !== undefined && paramsObj[k] !== null) {
+            url.searchParams.set(k, paramsObj[k]);
+          }
+        });
+        url.searchParams.set("secret_key", cfg.secretKey);
+        url.searchParams.set("callback", cbName);
+
+        const script = document.createElement("script");
+        const timeout = setTimeout(() => {
+          cleanup();
+          reject(new Error("Quá thời gian phản hồi từ Apps Script"));
+        }, 15000);
+
+        function cleanup() {
+          clearTimeout(timeout);
+          delete window[cbName];
+          if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        window[cbName] = function (data) {
+          cleanup();
+          resolve(data);
+        };
+
+        script.onerror = function () {
+          cleanup();
+          reject(new Error("Không kết nối được tới Apps Script"));
+        };
+
+        script.src = url.toString();
+        document.body.appendChild(script);
+      });
+    }
+
+    async function taiDanhSachKhach() {
+      const listEl = document.getElementById("customerList");
+      const cfg = getConfig();
+      if (!cfg.scriptUrl) {
+        listEl.innerHTML = '<div class="status-msg">Không tìm thấy <b>CONFIG.SCRIPT_URL</b> trong <code>config.js</code>. Bấm <b>⚙ Cấu hình</b> để kiểm tra.</div>';
+        document.getElementById("countInfo").textContent = "Chưa có link SCRIPT_URL";
+        return;
+      }
+
+      listEl.innerHTML = '<div class="status-msg">Đang tải danh sách khách từ sheet KHACH...</div>';
+
+      try {
+        const res = await callAppsScriptJSONP({ action: "giaodiem" });
+        if (!res || res.status !== "SUCCESS") {
+          throw new Error((res && res.message) || "Không lấy được danh sách khách");
+        }
+        allCustomers = Array.isArray(res.customers) ? res.customers : [];
+        renderCustomers(allCustomers);
+      } catch (err) {
+        listEl.innerHTML = `<div class="status-msg" style="color:#b91c1c;">Lỗi: ${escapeHtml(err.message)}</div>`;
+        document.getElementById("countInfo").textContent = "Lỗi tải dữ liệu";
+      }
+    }
+
+    function normalizeText(str) {
+      return (str || "")
+        .toString()
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[̀-ͯ]/g, "")
+        .replace(/đ/g, "d");
+    }
+
+    function locKhach() {
+      const kw = normalizeText(document.getElementById("searchInput").value.trim());
+      if (!kw) {
+        renderCustomers(allCustomers);
+        return;
+      }
+      const filtered = allCustomers.filter((c) => {
+        const name = normalizeText(c.name);
+        const key = normalizeText(c.key);
+        const phone = (c.phone || "").toString();
+        return name.includes(kw) || key.includes(kw) || phone.includes(kw);
+      });
+      renderCustomers(filtered);
+    }
+
+    function escapeHtml(text) {
+      return (text || "")
+        .toString()
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderCustomers(list) {
+      const listEl = document.getElementById("customerList");
+      const pendingCount = allCustomers.filter((c) => Number(c.quantity || 0) > 0).length;
+
+      document.getElementById("countInfo").textContent = `Hiển thị ${list.length} / ${allCustomers.length} khách`;
+      document.getElementById("pendingInfo").textContent = pendingCount > 0 ? `Đang chờ quét: ${pendingCount} khách` : "";
+
+      if (!list.length) {
+        listEl.innerHTML = '<div class="status-msg">Không tìm thấy khách phù hợp.</div>';
+        return;
+      }
+
+      listEl.innerHTML = list
+        .map((c) => {
+          const currentQty = Number(c.quantity || 0);
+          const inputVal = currentQty > 0 ? currentQty : 1;
+          const safeKey = escapeHtml(c.key);
+          const safeName = escapeHtml(c.name || c.key);
+          const isVip = c.isVip || (c.vip && c.vip.toUpperCase() === "VIP");
+
+          return `
+            <div class="customer-row ${currentQty > 0 ? "has-pending" : ""}" id="row_${safeKey}">
+              <div class="cust-info">
+                <div class="cust-name">
+                  <span>${safeName}</span>
+                  ${isVip ? '<span class="vip-badge">VIP</span>' : ""}
+                </div>
+                <div class="cust-sub">
+                  ${safeKey}${c.phone ? " • " + escapeHtml(c.phone) : ""}
+                  ${currentQty > 0 ? ` • <span class="pending-tag" id="pending_${safeKey}">Chờ quét: ${currentQty} ly</span>` : `<span id="pending_${safeKey}"></span>`}
+                </div>
+              </div>
+              <div class="action-box">
+                <div class="qty-control">
+                  <button type="button" class="qty-step" onclick="doiSoLuong('${safeKey}', -1)">−</button>
+                  <input
+                    type="number"
+                    min="0"
+                    step="1"
+                    id="qty_${safeKey}"
+                    class="qty-input"
+                    value="${inputVal}"
+                    inputmode="numeric"
+                  />
+                  <button type="button" class="qty-step" onclick="doiSoLuong('${safeKey}', 1)">+</button>
+                </div>
+                <button
+                  type="button"
+                  id="btn_${safeKey}"
+                  class="btn-send"
+                  onclick="guiSoLuong('${safeKey}')"
+                >
+                  Gửi
+                </button>
+              </div>
+            </div>
+          `;
+        })
+        .join("");
+    }
+
+    function doiSoLuong(key, delta) {
+      const input = document.getElementById("qty_" + key);
+      if (!input) return;
+      const cur = Number(input.value) || 0;
+      const next = Math.max(0, cur + delta);
+      input.value = next;
+    }
+
+    async function guiSoLuong(key) {
+      const input = document.getElementById("qty_" + key);
+      const btn = document.getElementById("btn_" + key);
+      const row = document.getElementById("row_" + key);
+      const pendingEl = document.getElementById("pending_" + key);
+      if (!input || !btn) return;
+
+      const qty = Number(input.value);
+      if (isNaN(qty) || qty < 0) {
+        showToast("Số lượng không hợp lệ!", "error");
+        return;
+      }
+
+      const oldText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = "Đang gửi...";
+
+      try {
+        const res = await callAppsScriptJSONP({
+          action: "giaodiem",
+          code: key,
+          quantity: qty
+        });
+
+        if (!res || res.status !== "SUCCESS") {
+          throw new Error((res && res.message) || "Gửi thất bại");
+        }
+
+        // Ưu tiên lấy thông tin khách mới nhất do hàm giaodiem trả về
+        const updatedCust = res.customer || null;
+        const finalQty = updatedCust && updatedCust.quantity !== undefined && updatedCust.quantity !== null
+          ? Number(updatedCust.quantity) || 0
+          : qty;
+        const displayName = (updatedCust && updatedCust.name) || res.name || key;
+
+        const item = allCustomers.find((c) => c.key === key);
+        if (item) {
+          item.quantity = finalQty;
+          if (updatedCust) {
+            item.name = updatedCust.name || item.name;
+            item.phone = updatedCust.phone || item.phone;
+            item.vip = updatedCust.vip !== undefined ? updatedCust.vip : item.vip;
+            item.isVip = updatedCust.isVip !== undefined ? updatedCust.isVip : item.isVip;
+          }
+        }
+
+        if (row) {
+          row.classList.remove("has-pending");
+          row.classList.add("sent-ok");
+          if (finalQty > 0) row.classList.add("has-pending");
+        }
+        if (pendingEl) {
+          pendingEl.innerHTML = finalQty > 0 ? ` • <span class="pending-tag">Chờ quét: ${finalQty} ly</span>` : "";
+        }
+
+        const pendingCount = allCustomers.filter((c) => Number(c.quantity || 0) > 0).length;
+        document.getElementById("pendingInfo").textContent = pendingCount > 0 ? `Đang chờ quét: ${pendingCount} khách` : "";
+
+        btn.textContent = "Đã lưu ✓";
+        btn.classList.add("done");
+        showToast(`Đã lưu ${finalQty} ly cho ${displayName} chờ quét thẻ!`, "success");
+
+        setTimeout(() => {
+          btn.textContent = oldText;
+          btn.classList.remove("done");
+          btn.disabled = false;
+        }, 1400);
+      } catch (err) {
+        btn.textContent = oldText;
+        btn.disabled = false;
+        showToast("Lỗi: " + err.message, "error");
+      }
+    }
+
+    initConfigUI();
+    taiDanhSachKhach();
+  </script>
+</body>
+</html>
