@@ -287,30 +287,25 @@
             font-weight: 600;
         }
         .view-redeem-actions {
-            display: flex;
+            display: flex !important;
+            align-items: stretch;
             gap: 8px;
-            justify-content: center;
         }
         .view-redeem-confirm {
-            flex: 1;
-            padding: 9px 12px;
-            border: none;
-            border-radius: 8px;
-            background: linear-gradient(135deg, #b71c1c 0%, #8e0000 100%);
-            color: #fff8e1;
-            font-weight: 800;
-            font-size: 13.5px;
-            cursor: pointer;
+            flex: 1 1 auto !important;
+            width: auto !important;
+            padding: 9px 14px !important;
+            white-space: nowrap !important;
+            font-size: 13px !important;
+            line-height: 1.25 !important;
         }
         .view-redeem-cancel {
-            padding: 9px 12px;
-            border: 1px solid #c5b29e;
-            border-radius: 8px;
-            background: #fff;
-            color: #5d4037;
-            font-weight: 700;
-            font-size: 13px;
-            cursor: pointer;
+            flex: 0 0 auto !important;
+            width: auto !important;
+            padding: 9px 12px !important;
+            white-space: nowrap !important;
+            font-size: 13px !important;
+            line-height: 1.25 !important;
         }
         .view-redeem-msg {
             margin-top: 8px;
