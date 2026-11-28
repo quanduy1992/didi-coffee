@@ -404,16 +404,18 @@
                 </div>
                 <a id="viewRedeemCfBtn" class="view-redeem-cf" href="">Đổi Cà Phê</a>
                 <div id="viewRedeemPanel" class="view-redeem-panel">
-                    <div class="view-redeem-title">Bạn muốn đổi mấy ly?</div>
-                    <div class="view-cup-choices" id="viewCupChoices">
-                        <button type="button" class="view-cup-btn active" data-cups="1">1 ly</button>
-                        <button type="button" class="view-cup-btn" data-cups="2">2 ly</button>
-                        <button type="button" class="view-cup-btn" data-cups="3">3 ly</button>
-                        <button type="button" class="view-cup-btn" data-cups="4">4 ly</button>
-                        <button type="button" class="view-cup-btn" data-cups="5">5 ly</button>
+                    <div id="viewCupPickerWrap">
+                        <div class="view-redeem-title">Bạn muốn đổi mấy ly?</div>
+                        <div class="view-cup-choices" id="viewCupChoices">
+                            <button type="button" class="view-cup-btn active" data-cups="1">1 ly</button>
+                            <button type="button" class="view-cup-btn" data-cups="2">2 ly</button>
+                            <button type="button" class="view-cup-btn" data-cups="3">3 ly</button>
+                            <button type="button" class="view-cup-btn" data-cups="4">4 ly</button>
+                            <button type="button" class="view-cup-btn" data-cups="5">5 ly</button>
+                        </div>
+                        <div class="view-redeem-preview" id="viewRedeemPreview"></div>
                     </div>
-                    <div class="view-redeem-preview" id="viewRedeemPreview"></div>
-                    <div class="view-redeem-actions">
+                    <div class="view-redeem-actions" id="viewRedeemActions">
                         <button type="button" class="view-redeem-confirm" id="viewRedeemConfirmBtn">Xác nhận đổi</button>
                         <button type="button" class="view-redeem-cancel" id="viewRedeemCancelBtn">Hủy</button>
                     </div>
@@ -440,736 +442,736 @@
         <br><span style="color:#990900;font-weight:bold;">Quét mã đổi điểm tại quầy</span>
     </div>
 
-<script src="config.js"></script> 
-<script src="hoadao.js"></script> 
-<script>
-    // --- BỔ SUNG: ĐỊNH DẠNG SỐ TIỀN CỘT G (VNĐ) ---
-    function formatColGVnd(resData) {
-        if (!resData || typeof resData !== 'object') return "0 VNĐ";
-        const rawVal =
-            resData.colG !== undefined ? resData.colG :
-            resData.col_g !== undefined ? resData.col_g :
-            resData.g !== undefined ? resData.g :
-            resData.vnd !== undefined ? resData.vnd :
-            resData.money !== undefined ? resData.money :
-            resData.amount !== undefined ? resData.amount :
-            resData.balance !== undefined ? resData.balance : 0;
+    <script src="config.js"></script> 
+    <script src="hoadao.js"></script> 
+    <script>
+        // --- BỔ SUNG: ĐỊNH DẠNG SỐ TIỀN CỘT G (VNĐ) ---
+        function formatColGVnd(resData) {
+            if (!resData || typeof resData !== 'object') return "0 VNĐ";
+            const rawVal =
+                resData.colG !== undefined ? resData.colG :
+                resData.col_g !== undefined ? resData.col_g :
+                resData.g !== undefined ? resData.g :
+                resData.vnd !== undefined ? resData.vnd :
+                resData.money !== undefined ? resData.money :
+                resData.amount !== undefined ? resData.amount :
+                resData.balance !== undefined ? resData.balance : 0;
 
-        if (typeof rawVal === "string") {
-            const trimmed = rawVal.trim();
-            if (!trimmed) return "0 VNĐ";
-            if (/vnd|đ/i.test(trimmed)) return trimmed;
-            const numericStr = Number(trimmed.replace(/[^\d.-]/g, ""));
-            if (!isNaN(numericStr)) {
-                return numericStr.toLocaleString("vi-VN") + " VNĐ";
+            if (typeof rawVal === "string") {
+                const trimmed = rawVal.trim();
+                if (!trimmed) return "0 VNĐ";
+                if (/vnd|đ/i.test(trimmed)) return trimmed;
+                const numericStr = Number(trimmed.replace(/[^\d.-]/g, ""));
+                if (!isNaN(numericStr)) {
+                    return numericStr.toLocaleString("vi-VN") + " VNĐ";
+                }
+                return trimmed;
             }
-            return trimmed;
+
+            const num = Number(rawVal);
+            if (isNaN(num)) return "0 VNĐ";
+            return num.toLocaleString("vi-VN") + " VNĐ";
         }
 
-        const num = Number(rawVal);
-        if (isNaN(num)) return "0 VNĐ";
-        return num.toLocaleString("vi-VN") + " VNĐ";
-    }
+        // --- BỔ SUNG: GẮN KEY VÀO NÚT ĐỔI CF KHI KHÁCH ĐANG VIEW BẰNG THẺ ---
+        function updateViewRedeemCfLink(resData, fallbackCode) {
+            const btnEl = document.getElementById('viewRedeemCfBtn');
+            if (!btnEl) return;
 
-    // --- BỔ SUNG: GẮN KEY VÀO NÚT ĐỔI CF KHI KHÁCH ĐANG VIEW BẰNG THẺ ---
-    function updateViewRedeemCfLink(resData, fallbackCode) {
-        const btnEl = document.getElementById('viewRedeemCfBtn');
-        if (!btnEl) return;
+            const baseHref = btnEl.dataset.baseHref || btnEl.getAttribute('href') || 'doi-qua.html';
+            btnEl.dataset.baseHref = baseHref;
 
-        const baseHref = btnEl.dataset.baseHref || btnEl.getAttribute('href') || 'doi-qua.html';
-        btnEl.dataset.baseHref = baseHref;
+            const urlParams = new URLSearchParams(window.location.search);
+            const keyFromUrl = (urlParams.get('key') || urlParams.get('secret_key') || urlParams.get('secret') || "").trim();
+            const keyFromRes = (resData && (resData.key || resData.secret_key)) ? String(resData.key || resData.secret_key).trim() : "";
+            const keyFromSession = (typeof sessionStorage !== "undefined") ? (sessionStorage.getItem('didi_active_view_key') || "").trim() : "";
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const keyFromUrl = (urlParams.get('key') || urlParams.get('secret_key') || urlParams.get('secret') || "").trim();
-        const keyFromRes = (resData && (resData.key || resData.secret_key)) ? String(resData.key || resData.secret_key).trim() : "";
-        const keyFromSession = (typeof sessionStorage !== "undefined") ? (sessionStorage.getItem('didi_active_view_key') || "").trim() : "";
+            const activeKey = keyFromRes || keyFromUrl || keyFromSession;
 
-        const activeKey = keyFromRes || keyFromUrl || keyFromSession;
+            if (!activeKey) {
+                btnEl.setAttribute('href', baseHref);
+                return;
+            }
 
-        if (!activeKey) {
-            btnEl.setAttribute('href', baseHref);
-            return;
+            try {
+                const urlObj = new URL(baseHref, window.location.href);
+                urlObj.searchParams.set('key', activeKey);
+                btnEl.setAttribute('href', urlObj.pathname.split('/').pop() + urlObj.search);
+            } catch (err) {
+                const sep = baseHref.indexOf('?') !== -1 ? '&' : '?';
+                btnEl.setAttribute('href', baseHref + sep + 'key=' + encodeURIComponent(activeKey));
+            }
         }
 
-        try {
-            const urlObj = new URL(baseHref, window.location.href);
-            urlObj.searchParams.set('key', activeKey);
-            btnEl.setAttribute('href', urlObj.pathname.split('/').pop() + urlObj.search);
-        } catch (err) {
-            const sep = baseHref.indexOf('?') !== -1 ? '&' : '?';
-            btnEl.setAttribute('href', baseHref + sep + 'key=' + encodeURIComponent(activeKey));
+        // --- BỔ SUNG: HÀM CHUYỂN GIAO DIỆN SANG VIEW & QUAY LẠI FORM ---
+        function switchToViewMode(resData, fallbackCode) {
+            document.getElementById('form-input').style.display = 'none';
+            document.getElementById('result').innerHTML = '';
+            document.getElementById('viewInfoBox').style.display = 'block';
+
+            const name = resData.name || ('Khách ' + fallbackCode);
+            const vndText = formatColGVnd(resData);
+            const phone = resData.phone || 'Chưa cập nhật';
+            const code = resData.code || fallbackCode;
+            const points = (resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
+            const totalPoints = (resData.all_time !== undefined && resData.all_time !== null) ? Number(resData.all_time) : points;
+            let tetGift = (resData.tetGift !== undefined && resData.tetGift !== null && resData.tetGift !== "") 
+                ? resData.tetGift 
+                : (resData.quaTet || 'Chưa có');
+
+            // Nếu quà trả về là cf và tổng điểm < 50 thì hiển thị "Chưa có quà"
+            if (String(tetGift).trim().toLowerCase().includes("cf") && totalPoints < 50) {
+                tetGift = "Chưa có quà";
+            }
+
+            const history = Array.isArray(resData.history) ? resData.history : [];
+
+            document.getElementById('viewCustName').innerText = name;
+            document.getElementById('viewCustVnd').innerText = vndText;
+            document.getElementById('viewCustMeta').innerText = "SĐT: " + phone + " • Mã KH: " + code;
+            document.getElementById('viewCustPoints').innerText = points + " điểm";
+            document.getElementById('viewTetGiftValue').innerText = tetGift;
+
+            // --- BỔ SUNG KIỂM TRA TRẠNG THÁI VIP TỪ DỮ LIỆU TRẢ VỀ ---
+            const isVipCustomer = !!(
+                resData && (
+                    resData.vip === true ||
+                    (typeof resData.vip === "string" && resData.vip.trim().toUpperCase() === "VIP") ||
+                    resData.isVip === true ||
+                    String(resData.tier || resData.rank || resData.level || "").trim().toUpperCase() === "VIP"
+                )
+            );
+            const profileCardEl = document.getElementById('viewProfileCard');
+            if (profileCardEl) {
+                profileCardEl.classList.toggle('is-vip', isVipCustomer);
+            }
+
+            const giftBoxEl = document.querySelector('.view-tet-gift');
+            if (giftBoxEl) {
+                const isVipGift = String(tetGift).trim().toUpperCase() !== "1 LY CF" && String(tetGift).trim() !== "Chưa có quà";
+                giftBoxEl.style.opacity = isVipGift ? "1" : "0.92";
+            }
+
+            const listEl = document.getElementById('viewHistoryList');
+            listEl.innerHTML = '';
+            if (history.length === 0) {
+                listEl.innerHTML = '<li class="view-history-item"><span class="view-history-time">Chưa có lịch sử giao dịch.</span></li>';
+            } else {
+                history.forEach(function(item) {
+                    const li = document.createElement('li');
+                    li.className = 'view-history-item';
+                    const delta = Number(item.delta || 0);
+                    const isPlus = delta >= 0;
+                    const signText = isPlus ? ('+' + delta) : String(delta);
+                    const noteText = item.note || item.status || 'Tích điểm';
+                    const timeText = item.time || '';
+                    li.innerHTML = `
+                        <div>
+                            <div class="view-history-note">${noteText}</div>
+                            <div class="view-history-time">${timeText}</div>
+                        </div>
+                        <div class="view-history-delta ${isPlus ? '' : 'minus'}">${signText} đ</div>
+                    `;
+                    listEl.appendChild(li);
+                });
+            }
+
+            const resolvedKey = (resData && (resData.key || resData.secret_key)) || "";
+            if (resolvedKey && typeof sessionStorage !== "undefined") {
+                sessionStorage.setItem('didi_active_view_key', String(resolvedKey).trim());
+            }
+            updateViewRedeemCfLink(resData, fallbackCode);
         }
-    }
 
-    // --- BỔ SUNG: HÀM CHUYỂN GIAO DIỆN SANG VIEW & QUAY LẠI FORM ---
-    function switchToViewMode(resData, fallbackCode) {
-        document.getElementById('form-input').style.display = 'none';
-        document.getElementById('result').innerHTML = '';
-        document.getElementById('viewInfoBox').style.display = 'block';
+        // --- BỔ SUNG: HIỂN THỊ KẾT QUẢ KHI LUỒNG `key` CHẠY TÍCH ĐIỂM ---
+        function renderKeyScanResult(resData, fallbackCode) {
+            const resultDiv = document.getElementById('result');
+            const viewBox = document.getElementById('viewInfoBox');
+            const formBox = document.getElementById('form-input');
 
-        const name = resData.name || ('Khách ' + fallbackCode);
-        const vndText = formatColGVnd(resData);
-        const phone = resData.phone || 'Chưa cập nhật';
-        const code = resData.code || fallbackCode;
-        const points = (resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
-        const totalPoints = (resData.all_time !== undefined && resData.all_time !== null) ? Number(resData.all_time) : points;
-        let tetGift = (resData.tetGift !== undefined && resData.tetGift !== null && resData.tetGift !== "") 
-            ? resData.tetGift 
-            : (resData.quaTet || 'Chưa có');
+            if (formBox) formBox.style.display = 'none';
+            if (viewBox) viewBox.style.display = 'none';
+            if (!resultDiv) return;
 
-        // Nếu quà trả về là cf và tổng điểm < 50 thì hiển thị "Chưa có quà"
-        if (String(tetGift).trim().toLowerCase().includes("cf") && totalPoints < 50) {
-            tetGift = "Chưa có quà";
+            const code = (resData && resData.code) ? resData.code : (fallbackCode || "");
+            const name = (resData && resData.name) ? resData.name : ("Khách " + code);
+            const added = (resData && resData.added !== undefined && resData.added !== null) ? Number(resData.added) : 0;
+            const points = (resData && resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
+
+            if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+            const now = new Date();
+            const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+
+            resultDiv.innerHTML = `
+                <div class="success-box">
+                    <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
+                    <div style="margin-top:4px;font-weight:700;">${name}${code ? " (" + code + ")" : ""}</div>
+                    ${added > 0 ? `<div style="margin-top:4px;font-weight:800;color:#007b16;">Đã cộng: +${added} điểm</div>` : ""}
+                    <span class="time">Thời gian: ${timeStr}</span>
+                    <span class="points-info">Số điểm hiện tại: <span>${points}</span></span>
+                </div>
+            `;
         }
 
-        const history = Array.isArray(resData.history) ? resData.history : [];
-
-        document.getElementById('viewCustName').innerText = name;
-        document.getElementById('viewCustVnd').innerText = vndText;
-        document.getElementById('viewCustMeta').innerText = "SĐT: " + phone + " • Mã KH: " + code;
-        document.getElementById('viewCustPoints').innerText = points + " điểm";
-        document.getElementById('viewTetGiftValue').innerText = tetGift;
-
-        // --- BỔ SUNG KIỂM TRA TRẠNG THÁI VIP TỪ DỮ LIỆU TRẢ VỀ ---
-        const isVipCustomer = !!(
-            resData && (
-                resData.vip === true ||
-                (typeof resData.vip === "string" && resData.vip.trim().toUpperCase() === "VIP") ||
-                resData.isVip === true ||
-                String(resData.tier || resData.rank || resData.level || "").trim().toUpperCase() === "VIP"
-            )
-        );
-        const profileCardEl = document.getElementById('viewProfileCard');
-        if (profileCardEl) {
-            profileCardEl.classList.toggle('is-vip', isVipCustomer);
+        function switchToFormMode() {
+            document.getElementById('viewInfoBox').style.display = 'none';
+            document.getElementById('form-input').style.display = 'block';
         }
 
-        const giftBoxEl = document.querySelector('.view-tet-gift');
-        if (giftBoxEl) {
-            const isVipGift = String(tetGift).trim().toUpperCase() !== "1 LY CF" && String(tetGift).trim() !== "Chưa có quà";
-            giftBoxEl.style.opacity = isVipGift ? "1" : "0.92";
+        // Bước 2 (khi link CÓ khóa bảo mật mà khách chưa có khóa): gọi xem thông tin VIEW, không chạy tích điểm cũ
+        function fetchCustomerViewOnly(code) {
+            const resultDiv = document.getElementById('result');
+            document.getElementById('form-input').style.display = 'none';
+            document.getElementById('viewInfoBox').style.display = 'none';
+            resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>⌛ Đang tải thông tin thẻ " + code + "...</div>";
+
+            const safetyTimeout = setTimeout(function() {
+                resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, chưa nhận được phản hồi VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở form tích điểm</button>";
+            }, 20000);
+
+            window.googleCallback = function(resData) {
+                clearTimeout(safetyTimeout);
+                resultDiv.innerHTML = "";
+
+                if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
+                    switchToViewMode(resData, code);
+                } else {
+                    const msg = (resData && resData.message)
+                        ? resData.message
+                        : "Link có khóa bảo mật nhưng chưa trả về dữ liệu VIEW.";
+                    resultDiv.innerHTML = "<div class='error'>❌ " + msg + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+                }
+                const oldScript = document.getElementById('api-call');
+                if (oldScript) oldScript.remove();
+            };
+
+            const scriptTag = document.createElement("script");
+            scriptTag.id = "api-call";
+            scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tichdiem&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}&callback=googleCallback&t=${new Date().getTime()}`;
+            scriptTag.onerror = function() {
+                clearTimeout(safetyTimeout);
+                resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+                const oldScript = document.getElementById('api-call');
+                if (oldScript) oldScript.remove();
+            };
+            document.body.appendChild(scriptTag);
         }
 
-        const listEl = document.getElementById('viewHistoryList');
-        listEl.innerHTML = '';
-        if (history.length === 0) {
-            listEl.innerHTML = '<li class="view-history-item"><span class="view-history-time">Chưa có lịch sử giao dịch.</span></li>';
-        } else {
-            history.forEach(function(item) {
-                const li = document.createElement('li');
-                li.className = 'view-history-item';
-                const delta = Number(item.delta || 0);
-                const isPlus = delta >= 0;
-                const signText = isPlus ? ('+' + delta) : String(delta);
-                const noteText = item.note || item.status || 'Tích điểm';
-                const timeText = item.time || '';
-                li.innerHTML = `
-                    <div>
-                        <div class="view-history-note">${noteText}</div>
-                        <div class="view-history-time">${timeText}</div>
-                    </div>
-                    <div class="view-history-delta ${isPlus ? '' : 'minus'}">${signText} đ</div>
-                `;
-                listEl.appendChild(li);
+        // Lấy tham số key trên URL (?key=... hoặc ?secret_key=... hoặc ?secret=...) để xử lý VIEW hoặc tích điểm khi có SL > 0
+        function openViewByKey(keyValue, codeHint) {
+            const resultDiv = document.getElementById('result');
+            document.getElementById('form-input').style.display = 'none';
+            document.getElementById('viewInfoBox').style.display = 'none';
+            resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>🔒 Đang tải thông tin khách hàng...</div>";
+
+            const safetyTimeout = setTimeout(function() {
+                resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm khi tải thông tin VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở form tích điểm</button>";
+            }, 20000);
+
+            window.googleCallback = function(resData) {
+                clearTimeout(safetyTimeout);
+                resultDiv.innerHTML = "";
+                const oldScript = document.getElementById('api-call');
+                if (oldScript) oldScript.remove();
+
+                if (resData && resData.status === "SUCCESS") {
+                    const isScanAction = (resData.mode === "SCAN") || (Number(resData.added) > 0 && resData.mode !== "VIEW");
+                    if (isScanAction) {
+                        renderKeyScanResult(resData, codeHint || resData.code || "");
+                    } else {
+                        switchToViewMode(resData, codeHint || resData.code || "");
+                    }
+                } else {
+                    const msg = (resData && resData.message)
+                        ? resData.message
+                        : "Key không hợp lệ hoặc không tìm thấy thông tin khách hàng.";
+                    resultDiv.innerHTML = "<div class='error'>❌ " + msg + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+                }
+            };
+
+            const scriptTag = document.createElement("script");
+            scriptTag.id = "api-call";
+            const codeParam = codeHint ? `&code=${encodeURIComponent(codeHint)}&ma_khach=${encodeURIComponent(codeHint)}` : "";
+            scriptTag.src = `${CONFIG.SCRIPT_URL}?action=view&key=${encodeURIComponent(keyValue)}&secret_key=${encodeURIComponent(keyValue)}${codeParam}&callback=googleCallback&t=${new Date().getTime()}`;
+            scriptTag.onerror = function() {
+                clearTimeout(safetyTimeout);
+                const oldScript = document.getElementById('api-call');
+                if (oldScript) oldScript.remove();
+                resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ khi tải VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+            };
+            document.body.appendChild(scriptTag);
+        }
+
+        // Bước 1: Kiểm tra khi link được thực thi xem có khóa bảo mật không rồi mới làm việc tiếp theo
+        function checkLockAndProceed(code, secretFromURL, savedName, savedPhone) {
+            const resultDiv = document.getElementById('result');
+            document.getElementById('form-input').style.display = 'none';
+            document.getElementById('viewInfoBox').style.display = 'none';
+            resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>🔒 Đang lấy thông tin khách hàng...</div>";
+
+            const safetyTimeout = setTimeout(function() {
+                resultDiv.innerHTML = "<div class='error'>❌ Không kiểm tra được khóa bảo mật (quá thời gian). Đã tạm dừng để tránh tích điểm nhầm!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
+            }, 15000);
+
+           window.googleCallback = function(resData) {
+                clearTimeout(safetyTimeout);
+                resultDiv.innerHTML = "";
+                const oldScript = document.getElementById('api-call');
+                if (oldScript) oldScript.remove();
+
+                if (resData && (Array.isArray(resData.history) || resData.mode === "VIEW")) {
+                    if (resData.status === "SUCCESS") {
+                        switchToViewMode(resData, code);
+                    } else {
+                        resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Không tìm thấy thông tin mã " + code) + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+                    }
+                    return;
+                }
+
+                switchToFormMode();
+                if (savedName && savedPhone) {
+                    setTimeout(handleVerify, 300);
+                }
+            };
+
+            const scriptTag = document.createElement("script");
+            scriptTag.id = "api-call";
+            const secretParam = secretFromURL ? `&secret_key=${encodeURIComponent(secretFromURL)}` : "";
+            scriptTag.src = `${CONFIG.SCRIPT_URL}?action=checksecret&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}${secretParam}&callback=googleCallback&t=${new Date().getTime()}`;
+            scriptTag.onerror = function() {
+                clearTimeout(safetyTimeout);
+                const oldScript = document.getElementById('api-call');
+                if (oldScript) oldScript.remove();
+                resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối khi kiểm tra khóa bảo mật!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
+            };
+            document.body.appendChild(scriptTag);
+        }
+
+        window.onload = function() {
+            if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
+                document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
+            }
+            const urlParams = new URLSearchParams(window.location.search);
+            const codeFromURL = urlParams.get('code');
+            const keyFromURL = (urlParams.get('key') || urlParams.get('secret_key') || urlParams.get('secret') || "").trim();
+            const savedName = localStorage.getItem('didi_customer_name');
+            const savedPhone = localStorage.getItem('didi_customer_phone');
+            
+            if (savedName) document.getElementById('cusName').value = savedName;
+            if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
+            if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
+
+            if (keyFromURL && typeof sessionStorage !== "undefined") {
+                sessionStorage.setItem('didi_active_view_key', keyFromURL);
+            }
+            updateViewRedeemCfLink(null, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
+
+            if (keyFromURL) {
+                openViewByKey(keyFromURL, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
+                return;
+            }
+
+            if (codeFromURL) {
+                switchToFormMode();
+                if (savedName && savedPhone) {
+                    setTimeout(handleVerify, 300);
+                }
+                return;
+            }
+        };
+
+        function sendVerifyScript(actionName, code, name, phone, pointsToAdd, onSuccess, onFinalFail) {
+            const cbName = "didiScanCb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+            const scriptTag = document.createElement("script");
+            scriptTag.id = "api-call-" + cbName;
+
+            let finished = false;
+            const cleanup = function() {
+                try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+                if (scriptTag && scriptTag.parentNode) {
+                    scriptTag.parentNode.removeChild(scriptTag);
+                }
+            };
+
+            const safetyTimeout = setTimeout(function() {
+                if (finished) return;
+                finished = true;
+                cleanup();
+                if (typeof onFinalFail === "function") onFinalFail();
+            }, 20000);
+
+            window[cbName] = function(resData) {
+                if (finished) return;
+                finished = true;
+                clearTimeout(safetyTimeout);
+                cleanup();
+                if (typeof onSuccess === "function") onSuccess(resData);
+            };
+
+            scriptTag.src = `${CONFIG.SCRIPT_URL}?action=${encodeURIComponent(actionName)}&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&quantity=${pointsToAdd}&points=${pointsToAdd}&callback=${cbName}&t=${new Date().getTime()}`;
+
+            scriptTag.onerror = function() {
+                if (finished) return;
+                finished = true;
+                clearTimeout(safetyTimeout);
+                cleanup();
+                if (typeof onFinalFail === "function") onFinalFail();
+            };
+            document.body.appendChild(scriptTag);
+        }
+
+        function handleVerify() {
+            const name = document.getElementById('cusName').value.trim();
+            const phone = document.getElementById('cusPhone').value.trim();
+            const code = document.getElementById('inputCode').value.trim().toUpperCase();
+            const resultDiv = document.getElementById('result');
+            const btnSubmit = document.getElementById('btnSubmit');
+
+            if (!name || !phone || !code) {
+                resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đầy đủ thông tin!</div>";
+                return;
+            }
+
+            const shopPhone = "0968973787";
+            const cleanPhone = phone.replace(/\D/g, ""); 
+            if (cleanPhone === shopPhone) {
+                resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập lại SĐT của bạn, Đây là số cửa hàng không thể tích điểm!</div>";
+                return;
+            }
+
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = "⌛ Đang tích điểm...";
+            resultDiv.innerHTML = ""; 
+            
+            localStorage.setItem('didi_customer_name', name);
+            localStorage.setItem('didi_customer_phone', phone);
+            
+            let pointsToAdd = (CONFIG.POINTS_PER_CODE) ? parseFloat(CONFIG.POINTS_PER_CODE) : 1;
+
+            if (code.startsWith("TA")) {
+                pointsToAdd = pointsToAdd - 0;
+            } else if (code.startsWith("SC")) {
+                pointsToAdd = pointsToAdd + 0.25;
+            }
+
+            let triedFallbackAction = false;
+
+            const handleServerResponse = function(resData) {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+
+                if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
+                    switchToViewMode(resData, code);
+                }
+                else if (resData && resData.status === "SUCCESS") {
+                    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+                    const now = new Date();
+                    const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+                    resultDiv.innerHTML = `
+                        <div class="success-box">
+                            <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
+                            <span class="time">Thời gian: ${timeStr}</span>
+                            <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
+                        </div>
+                    `;  
+                    document.getElementById('inputCode').value = ""; 
+
+                    if (resData.vip && resData.vip.toUpperCase() === "VIP") {
+                        setTimeout(function() {
+                            alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 14 điểm để đổi 1 ly bất kỳ.");
+                        }, 400);
+                    }
+
+                    if (resData.isTop1 === true) {
+                        setTimeout(function() {
+                            alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm.");
+                        }, 800);
+                    }
+                } 
+                else if (resData && resData.status === "USED") {
+                    resultDiv.innerHTML = `
+                        <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
+                            <div>⚠️ Mã này đã được sử dụng.</div>
+                            <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
+                        </div>
+                    `;
+                } 
+                else if (resData && resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
+                    resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
+                }
+                else {
+                    resultDiv.innerHTML = "<div class='error'>❌ " + ((resData && resData.message) || "Lỗi hệ thống!") + "</div>";
+                }
+            };
+
+            sendVerifyScript("tichdiem", code, name, phone, pointsToAdd, handleServerResponse, function() {
+                if (!triedFallbackAction) {
+                    triedFallbackAction = true;
+                    sendVerifyScript("tich_diem", code, name, phone, pointsToAdd, handleServerResponse, function() {
+                        resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
+                        btnSubmit.disabled = false;
+                        btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
+                    });
+                }
             });
         }
 
-        const resolvedKey = (resData && (resData.key || resData.secret_key)) || "";
-        if (resolvedKey && typeof sessionStorage !== "undefined") {
-            sessionStorage.setItem('didi_active_view_key', String(resolvedKey).trim());
+        // --- BỔ SUNG: KHÁCH TỰ NHẤN ĐỔI Ở CHẾ ĐỘ VIEW (KHÔNG GỬI SECRET_KEY) ---
+        let viewCurrentCustomer = {
+            code: "",
+            name: "",
+            points: 0,
+            isVip: false
+        };
+        let viewSelectedCups = 1;
+
+        function getViewRedeemUnitPoints() {
+            return Math.max(1, parseInt((typeof CONFIG !== "undefined" && CONFIG && CONFIG.REDEEM_POINTS) || 15, 10) || 15);
         }
-        updateViewRedeemCfLink(resData, fallbackCode);
-    }
 
-    // --- BỔ SUNG: HIỂN THỊ KẾT QUẢ KHI LUỒNG `key` CHẠY TÍCH ĐIỂM ---
-    function renderKeyScanResult(resData, fallbackCode) {
-        const resultDiv = document.getElementById('result');
-        const viewBox = document.getElementById('viewInfoBox');
-        const formBox = document.getElementById('form-input');
-
-        if (formBox) formBox.style.display = 'none';
-        if (viewBox) viewBox.style.display = 'none';
-        if (!resultDiv) return;
-
-        const code = (resData && resData.code) ? resData.code : (fallbackCode || "");
-        const name = (resData && resData.name) ? resData.name : ("Khách " + code);
-        const added = (resData && resData.added !== undefined && resData.added !== null) ? Number(resData.added) : 0;
-        const points = (resData && resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
-
-        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-
-        const now = new Date();
-        const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-
-        resultDiv.innerHTML = `
-            <div class="success-box">
-                <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
-                <div style="margin-top:4px;font-weight:700;">${name}${code ? " (" + code + ")" : ""}</div>
-                ${added > 0 ? `<div style="margin-top:4px;font-weight:800;color:#007b16;">Đã cộng: +${added} điểm</div>` : ""}
-                <span class="time">Thời gian: ${timeStr}</span>
-                <span class="points-info">Số điểm hiện tại: <span>${points}</span></span>
-            </div>
-        `;
-    }
-
-    function switchToFormMode() {
-        document.getElementById('viewInfoBox').style.display = 'none';
-        document.getElementById('form-input').style.display = 'block';
-    }
-
-    // Bước 2 (khi link CÓ khóa bảo mật mà khách chưa có khóa): gọi xem thông tin VIEW, không chạy tích điểm cũ
-    function fetchCustomerViewOnly(code) {
-        const resultDiv = document.getElementById('result');
-        document.getElementById('form-input').style.display = 'none';
-        document.getElementById('viewInfoBox').style.display = 'none';
-        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>⌛ Đang tải thông tin thẻ " + code + "...</div>";
-
-        const safetyTimeout = setTimeout(function() {
-            resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm, chưa nhận được phản hồi VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở form tích điểm</button>";
-        }, 20000);
-
-        window.googleCallback = function(resData) {
-            clearTimeout(safetyTimeout);
-            resultDiv.innerHTML = "";
-
-            if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
-                switchToViewMode(resData, code);
-            } else {
-                const msg = (resData && resData.message)
-                    ? resData.message
-                    : "Link có khóa bảo mật nhưng chưa trả về dữ liệu VIEW.";
-                resultDiv.innerHTML = "<div class='error'>❌ " + msg + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+        function getViewVipDiscountPerCup() {
+            if (typeof CONFIG !== "undefined" && CONFIG && CONFIG.VIP_DISCOUNT !== undefined && CONFIG.VIP_DISCOUNT !== null) {
+                return Math.max(0, Number(CONFIG.VIP_DISCOUNT) || 0);
             }
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-        };
+            return 0;
+        }
 
-        const scriptTag = document.createElement("script");
-        scriptTag.id = "api-call";
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=tichdiem&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}&callback=googleCallback&t=${new Date().getTime()}`;
-        scriptTag.onerror = function() {
-            clearTimeout(safetyTimeout);
-            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-        };
-        document.body.appendChild(scriptTag);
-    }
+        function updateViewRedeemPreview() {
+            const previewEl = document.getElementById("viewRedeemPreview");
+            if (!previewEl) return;
 
-    // Lấy tham số key trên URL (?key=... hoặc ?secret_key=... hoặc ?secret=...) để xử lý VIEW hoặc tích điểm khi có SL > 0
-    function openViewByKey(keyValue, codeHint) {
-        const resultDiv = document.getElementById('result');
-        document.getElementById('form-input').style.display = 'none';
-        document.getElementById('viewInfoBox').style.display = 'none';
-        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>🔒 Đang tải thông tin khách hàng...</div>";
+            const unitPts = getViewRedeemUnitPoints();
+            const rawTotalPts = viewSelectedCups * unitPts;
+            const vipPerCup = viewCurrentCustomer.isVip ? getViewVipDiscountPerCup() : 0;
+            const vipTotalDiscount = viewCurrentCustomer.isVip ? (viewSelectedCups * vipPerCup) : 0;
+            const finalPts = viewCurrentCustomer.isVip
+                ? Math.max(1, rawTotalPts - vipTotalDiscount)
+                : rawTotalPts;
 
-        const safetyTimeout = setTimeout(function() {
-            resultDiv.innerHTML = "<div class='error'>❌ Kết nối chậm khi tải thông tin VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở form tích điểm</button>";
-        }, 20000);
-
-        window.googleCallback = function(resData) {
-            clearTimeout(safetyTimeout);
-            resultDiv.innerHTML = "";
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-
-            if (resData && resData.status === "SUCCESS") {
-                const isScanAction = (resData.mode === "SCAN") || (Number(resData.added) > 0 && resData.mode !== "VIEW");
-                if (isScanAction) {
-                    renderKeyScanResult(resData, codeHint || resData.code || "");
-                } else {
-                    switchToViewMode(resData, codeHint || resData.code || "");
-                }
+            if (viewCurrentCustomer.isVip && vipTotalDiscount > 0) {
+                previewEl.innerHTML = `Đổi <strong>${viewSelectedCups} ly</strong>: <s>${rawTotalPts}đ</s> - giảm VIP <strong>${vipTotalDiscount}đ</strong> = <strong style="color:#b71c1c;">${finalPts} điểm</strong> (Đang có: <strong>${viewCurrentCustomer.points}đ</strong>)`;
             } else {
-                const msg = (resData && resData.message)
-                    ? resData.message
-                    : "Key không hợp lệ hoặc không tìm thấy thông tin khách hàng.";
-                resultDiv.innerHTML = "<div class='error'>❌ " + msg + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+                previewEl.innerHTML = `Đổi <strong>${viewSelectedCups} ly</strong> cần <strong style="color:#b71c1c;">${finalPts} điểm</strong> (${unitPts}đ/ly • Đang có: <strong>${viewCurrentCustomer.points}đ</strong>)`;
             }
-        };
+        }
 
-        const scriptTag = document.createElement("script");
-        scriptTag.id = "api-call";
-        const codeParam = codeHint ? `&code=${encodeURIComponent(codeHint)}&ma_khach=${encodeURIComponent(codeHint)}` : "";
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=view&key=${encodeURIComponent(keyValue)}&secret_key=${encodeURIComponent(keyValue)}${codeParam}&callback=googleCallback&t=${new Date().getTime()}`;
-        scriptTag.onerror = function() {
-            clearTimeout(safetyTimeout);
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ khi tải VIEW!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
-        };
-        document.body.appendChild(scriptTag);
-    }
+        function setViewSelectedCups(cups) {
+            viewSelectedCups = Math.max(1, parseInt(cups, 10) || 1);
+            document.querySelectorAll("#viewCupChoices .view-cup-btn").forEach(function(btn) {
+                btn.classList.toggle("active", parseInt(btn.dataset.cups, 10) === viewSelectedCups);
+            });
+            updateViewRedeemPreview();
+        }
 
-    // Bước 1: Kiểm tra khi link được thực thi xem có khóa bảo mật không rồi mới làm việc tiếp theo
-    function checkLockAndProceed(code, secretFromURL, savedName, savedPhone) {
-        const resultDiv = document.getElementById('result');
-        document.getElementById('form-input').style.display = 'none';
-        document.getElementById('viewInfoBox').style.display = 'none';
-        resultDiv.innerHTML = "<div class='success-box' style='background:#fdf8f2;color:#5c2415;border-color:#e4cfb4;'>🔒 Đang lấy thông tin khách hàng...</div>";
+        function setViewCupPickerVisible(visible) {
+            const pickerWrap = document.getElementById("viewCupPickerWrap");
+            if (pickerWrap) {
+                pickerWrap.style.display = visible ? "" : "none";
+            }
+        }
 
-        const safetyTimeout = setTimeout(function() {
-            resultDiv.innerHTML = "<div class='error'>❌ Không kiểm tra được khóa bảo mật (quá thời gian). Đã tạm dừng để tránh tích điểm nhầm!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
-        }, 15000);
+        function submitGuestViewRedeem(cups) {
+            const msgEl = document.getElementById("viewRedeemMsg");
+            const confirmBtn = document.getElementById("viewRedeemConfirmBtn");
+            const code = (viewCurrentCustomer.code || "").trim().toUpperCase();
 
-       window.googleCallback = function(resData) {
-            clearTimeout(safetyTimeout);
-            resultDiv.innerHTML = "";
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
+            setViewCupPickerVisible(false);
 
-            if (resData && (Array.isArray(resData.history) || resData.mode === "VIEW")) {
-                if (resData.status === "SUCCESS") {
-                    switchToViewMode(resData, code);
-                } else {
-                    resultDiv.innerHTML = "<div class='error'>❌ " + (resData.message || "Không tìm thấy thông tin mã " + code) + "</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Quay lại giao diện tích điểm</button>";
+            if (!code) {
+                if (msgEl) {
+                    msgEl.style.color = "#990900";
+                    msgEl.textContent = "❌ Không tìm thấy mã khách hàng để đổi điểm.";
                 }
                 return;
             }
 
-            switchToFormMode();
-            if (savedName && savedPhone) {
-                setTimeout(handleVerify, 300);
-            }
-        };
-
-        const scriptTag = document.createElement("script");
-        scriptTag.id = "api-call";
-        const secretParam = secretFromURL ? `&secret_key=${encodeURIComponent(secretFromURL)}` : "";
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=checksecret&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}${secretParam}&callback=googleCallback&t=${new Date().getTime()}`;
-        scriptTag.onerror = function() {
-            clearTimeout(safetyTimeout);
-            const oldScript = document.getElementById('api-call');
-            if (oldScript) oldScript.remove();
-            resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối khi kiểm tra khóa bảo mật!</div><button type='button' class='btn-back-scan' onclick='switchToFormMode()'>Mở giao diện thủ công</button>";
-        };
-        document.body.appendChild(scriptTag);
-    }
-
-    window.onload = function() {
-        if (typeof CONFIG !== 'undefined' && CONFIG.SHOP_NAME) {
-            document.getElementById('shopTitle').innerText = "☕ " + CONFIG.SHOP_NAME;
-        }
-        const urlParams = new URLSearchParams(window.location.search);
-        const codeFromURL = urlParams.get('code');
-        const keyFromURL = (urlParams.get('key') || urlParams.get('secret_key') || urlParams.get('secret') || "").trim();
-        const savedName = localStorage.getItem('didi_customer_name');
-        const savedPhone = localStorage.getItem('didi_customer_phone');
-        
-        if (savedName) document.getElementById('cusName').value = savedName;
-        if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
-        if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
-
-        if (keyFromURL && typeof sessionStorage !== "undefined") {
-            sessionStorage.setItem('didi_active_view_key', keyFromURL);
-        }
-        updateViewRedeemCfLink(null, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
-
-        if (keyFromURL) {
-            openViewByKey(keyFromURL, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
-            return;
-        }
-
-        if (codeFromURL) {
-            switchToFormMode();
-            if (savedName && savedPhone) {
-                setTimeout(handleVerify, 300);
-            }
-            return;
-        }
-    };
-
-    function sendVerifyScript(actionName, code, name, phone, pointsToAdd, onSuccess, onFinalFail) {
-        const cbName = "didiScanCb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-        const scriptTag = document.createElement("script");
-        scriptTag.id = "api-call-" + cbName;
-
-        let finished = false;
-        const cleanup = function() {
-            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
-            if (scriptTag && scriptTag.parentNode) {
-                scriptTag.parentNode.removeChild(scriptTag);
-            }
-        };
-
-        const safetyTimeout = setTimeout(function() {
-            if (finished) return;
-            finished = true;
-            cleanup();
-            if (typeof onFinalFail === "function") onFinalFail();
-        }, 20000);
-
-        window[cbName] = function(resData) {
-            if (finished) return;
-            finished = true;
-            clearTimeout(safetyTimeout);
-            cleanup();
-            if (typeof onSuccess === "function") onSuccess(resData);
-        };
-
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?action=${encodeURIComponent(actionName)}&code=${encodeURIComponent(code)}&ma_khach=${encodeURIComponent(code)}&name=${encodeURIComponent(name)}&phone=${encodeURIComponent(phone)}&add_points=${pointsToAdd}&quantity=${pointsToAdd}&points=${pointsToAdd}&callback=${cbName}&t=${new Date().getTime()}`;
-
-        scriptTag.onerror = function() {
-            if (finished) return;
-            finished = true;
-            clearTimeout(safetyTimeout);
-            cleanup();
-            if (typeof onFinalFail === "function") onFinalFail();
-        };
-        document.body.appendChild(scriptTag);
-    }
-
-    function handleVerify() {
-        const name = document.getElementById('cusName').value.trim();
-        const phone = document.getElementById('cusPhone').value.trim();
-        const code = document.getElementById('inputCode').value.trim().toUpperCase();
-        const resultDiv = document.getElementById('result');
-        const btnSubmit = document.getElementById('btnSubmit');
-
-        if (!name || !phone || !code) {
-            resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập đầy đủ thông tin!</div>";
-            return;
-        }
-
-        const shopPhone = "0968973787";
-        const cleanPhone = phone.replace(/\D/g, ""); 
-        if (cleanPhone === shopPhone) {
-            resultDiv.innerHTML = "<div class='error'>❌ Vui lòng nhập lại SĐT của bạn, Đây là số cửa hàng không thể tích điểm!</div>";
-            return;
-        }
-
-        btnSubmit.disabled = false;
-        btnSubmit.innerHTML = "⌛ Đang tích điểm...";
-        resultDiv.innerHTML = ""; 
-        
-        localStorage.setItem('didi_customer_name', name);
-        localStorage.setItem('didi_customer_phone', phone);
-        
-        let pointsToAdd = (CONFIG.POINTS_PER_CODE) ? parseFloat(CONFIG.POINTS_PER_CODE) : 1;
-
-        if (code.startsWith("TA")) {
-            pointsToAdd = pointsToAdd - 0;
-        } else if (code.startsWith("SC")) {
-            pointsToAdd = pointsToAdd + 0.25;
-        }
-
-        let triedFallbackAction = false;
-
-        const handleServerResponse = function(resData) {
-            btnSubmit.disabled = false;
-            btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-
-            if (resData && resData.mode === "VIEW" && resData.status === "SUCCESS") {
-                switchToViewMode(resData, code);
-            }
-            else if (resData && resData.status === "SUCCESS") {
-                if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-                const now = new Date();
-                const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
-                resultDiv.innerHTML = `
-                    <div class="success-box">
-                        <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
-                        <span class="time">Thời gian: ${timeStr}</span>
-                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
-                    </div>
-                `;  
-                document.getElementById('inputCode').value = ""; 
-
-                if (resData.vip && resData.vip.toUpperCase() === "VIP") {
-                    setTimeout(function() {
-                        alert("🎉 Chúc mừng bạn đã được nâng cấp lên thành viên VIP! Ưu đãi đặc quyền: Dùng 14 điểm để đổi 1 ly bất kỳ.");
-                    }, 400);
-                }
-
-                if (resData.isTop1 === true) {
-                    setTimeout(function() {
-                        alert("Chúc mừng! Quý khách đang có số điểm tích lũy cao nhất: " + resData.points + " điểm.");
-                    }, 800);
-                }
-            } 
-            else if (resData && resData.status === "USED") {
-                resultDiv.innerHTML = `
-                    <div class="success-box" style="background-color: #fff3e0; border-color: #ff9800; color: #e65100;">
-                        <div>⚠️ Mã này đã được sử dụng.</div>
-                        <span class="points-info">Số điểm hiện tại: <span>${resData.points}</span></span>
-                    </div>
-                `;
-            } 
-            else if (resData && resData.status === "ERROR" && resData.message && resData.message.includes("không tồn tại")) {
-                resultDiv.innerHTML = "<div class='error'>❌ Mã không tồn tại!</div>";
-            }
-            else {
-                resultDiv.innerHTML = "<div class='error'>❌ " + ((resData && resData.message) || "Lỗi hệ thống!") + "</div>";
-            }
-        };
-
-        sendVerifyScript("tichdiem", code, name, phone, pointsToAdd, handleServerResponse, function() {
-            if (!triedFallbackAction) {
-                triedFallbackAction = true;
-                sendVerifyScript("tich_diem", code, name, phone, pointsToAdd, handleServerResponse, function() {
-                    resultDiv.innerHTML = "<div class='error'>❌ Lỗi kết nối máy chủ!</div>";
-                    btnSubmit.disabled = false;
-                    btnSubmit.innerText = "TÍCH ĐIỂM NGAY";
-                });
-            }
-        });
-    }
-
-    // --- BỔ SUNG: KHÁCH TỰ NHẤN ĐỔI Ở CHẾ ĐỘ VIEW (KHÔNG GỬI SECRET_KEY) ---
-    let viewCurrentCustomer = {
-        code: "",
-        name: "",
-        points: 0,
-        isVip: false
-    };
-    let viewSelectedCups = 1;
-
-    function getViewRedeemUnitPoints() {
-        return Math.max(1, parseInt((typeof CONFIG !== "undefined" && CONFIG && CONFIG.REDEEM_POINTS) || 15, 10) || 15);
-    }
-
-    function getViewVipDiscountPerCup() {
-        if (typeof CONFIG !== "undefined" && CONFIG && CONFIG.VIP_DISCOUNT !== undefined && CONFIG.VIP_DISCOUNT !== null) {
-            return Math.max(0, Number(CONFIG.VIP_DISCOUNT) || 0);
-        }
-        return 0;
-    }
-
-    function updateViewRedeemPreview() {
-        const previewEl = document.getElementById("viewRedeemPreview");
-        if (!previewEl) return;
-
-        const unitPts = getViewRedeemUnitPoints();
-        const rawTotalPts = viewSelectedCups * unitPts;
-        const vipPerCup = viewCurrentCustomer.isVip ? getViewVipDiscountPerCup() : 0;
-        const vipTotalDiscount = viewCurrentCustomer.isVip ? (viewSelectedCups * vipPerCup) : 0;
-        const finalPts = viewCurrentCustomer.isVip
-            ? Math.max(1, rawTotalPts - vipTotalDiscount)
-            : rawTotalPts;
-
-        if (viewCurrentCustomer.isVip && vipTotalDiscount > 0) {
-            previewEl.innerHTML = `Đổi <strong>${viewSelectedCups} ly</strong>: <s>${rawTotalPts}đ</s> - giảm VIP <strong>${vipTotalDiscount}đ</strong> = <strong style="color:#b71c1c;">${finalPts} điểm</strong> (Đang có: <strong>${viewCurrentCustomer.points}đ</strong>)`;
-        } else {
-            previewEl.innerHTML = `Đổi <strong>${viewSelectedCups} ly</strong> cần <strong style="color:#b71c1c;">${finalPts} điểm</strong> (${unitPts}đ/ly • Đang có: <strong>${viewCurrentCustomer.points}đ</strong>)`;
-        }
-    }
-
-    function setViewSelectedCups(cups) {
-        viewSelectedCups = Math.max(1, parseInt(cups, 10) || 1);
-        document.querySelectorAll("#viewCupChoices .view-cup-btn").forEach(function(btn) {
-            btn.classList.toggle("active", parseInt(btn.dataset.cups, 10) === viewSelectedCups);
-        });
-        updateViewRedeemPreview();
-    }
-
-    function submitGuestViewRedeem(cups) {
-        const msgEl = document.getElementById("viewRedeemMsg");
-        const confirmBtn = document.getElementById("viewRedeemConfirmBtn");
-        const code = (viewCurrentCustomer.code || "").trim().toUpperCase();
-
-        if (!code) {
-            if (msgEl) {
-                msgEl.style.color = "#990900";
-                msgEl.textContent = "❌ Không tìm thấy mã khách hàng để đổi điểm.";
-            }
-            return;
-        }
-
-        if (typeof CONFIG === "undefined" || !CONFIG.SCRIPT_URL) {
-            if (msgEl) {
-                msgEl.style.color = "#990900";
-                msgEl.textContent = "❌ Thiếu CONFIG.SCRIPT_URL.";
-            }
-            return;
-        }
-
-        const soLy = Math.max(1, parseInt(cups, 10) || 1);
-        const unitPts = getViewRedeemUnitPoints();
-        const pointsToSend = soLy * unitPts;
-        const vipDiscountToSend = viewCurrentCustomer.isVip ? getViewVipDiscountPerCup() : 0;
-
-        if (confirmBtn) {
-            confirmBtn.disabled = true;
-            confirmBtn.textContent = "Đang xử lý...";
-        }
-        if (msgEl) {
-            msgEl.style.color = "#5c2415";
-            msgEl.textContent = `⌛ Đang gửi yêu cầu đổi ${soLy} ly...`;
-        }
-
-        const cbName = "didiViewRedeemCb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
-        const scriptTag = document.createElement("script");
-        let finished = false;
-
-        const cleanup = function() {
-            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
-            if (scriptTag && scriptTag.parentNode) {
-                scriptTag.parentNode.removeChild(scriptTag);
-            }
-        };
-
-        const resetBtn = function() {
-            if (confirmBtn) {
-                confirmBtn.disabled = false;
-                confirmBtn.textContent = "Xác nhận đổi";
-            }
-        };
-
-        const safetyTimeout = setTimeout(function() {
-            if (finished) return;
-            finished = true;
-            cleanup();
-            resetBtn();
-            if (msgEl) {
-                msgEl.style.color = "#990900";
-                msgEl.textContent = "❌ Quá thời gian phản hồi từ máy chủ!";
-            }
-        }, 20000);
-
-        window[cbName] = function(resData) {
-            if (finished) return;
-            finished = true;
-            clearTimeout(safetyTimeout);
-            cleanup();
-            resetBtn();
-
-            if (resData && resData.status === "SUCCESS") {
-                const deducted = Number(resData.deducted) || pointsToSend;
-                const newPoints = (resData.points !== undefined && resData.points !== null)
-                    ? Number(resData.points)
-                    : Math.max(0, viewCurrentCustomer.points - deducted);
-
-                viewCurrentCustomer.points = newPoints;
-                const pointsEl = document.getElementById("viewCustPoints");
-                if (pointsEl) pointsEl.innerText = newPoints + " điểm";
-
-                const listEl = document.getElementById("viewHistoryList");
-                if (listEl) {
-                    const emptyItem = listEl.querySelector(".view-history-time");
-                    if (emptyItem && emptyItem.textContent.includes("Chưa có lịch sử")) {
-                        listEl.innerHTML = "";
-                    }
-                    const li = document.createElement("li");
-                    li.className = "view-history-item";
-                    const timeNow = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-                    li.innerHTML = `
-                        <div>
-                            <div class="view-history-note">Đổi ${soLy} ly (Khách tự đổi)</div>
-                            <div class="view-history-time">${timeNow}</div>
-                        </div>
-                        <div class="view-history-delta minus">-${deducted} đ</div>
-                    `;
-                    listEl.prepend(li);
-                }
-
-                updateViewRedeemPreview();
-                if (msgEl) {
-                    msgEl.style.color = "#007b16";
-                    msgEl.textContent = `✅ Đổi thành công ${soLy} ly (-${deducted}đ). Còn ${newPoints} điểm!`;
-                }
-            } else {
+            if (typeof CONFIG === "undefined" || !CONFIG.SCRIPT_URL) {
                 if (msgEl) {
                     msgEl.style.color = "#990900";
-                    msgEl.textContent = "❌ " + ((resData && resData.message) || "Không thể đổi điểm.");
+                    msgEl.textContent = "❌ Thiếu CONFIG.SCRIPT_URL.";
                 }
+                return;
             }
-        };
 
-        // Không gửi secret_key; chỉ gửi vip_discount khi khách là VIP (lấy từ CONFIG.VIP_DISCOUNT)
-        const params = new URLSearchParams({
-            action: "doi_diem_qr",
-            code: code,
-            ma_khach: code,
-            so_ly: String(soLy),
-            points: String(pointsToSend),
-            quantity: String(pointsToSend),
-            redeem_unit: String(unitPts),
-            callback: cbName,
-            t: String(Date.now())
-        });
-        if (viewCurrentCustomer.isVip) {
-            params.set("vip_discount", String(vipDiscountToSend));
-        }
+            const soLy = Math.max(1, parseInt(cups, 10) || 1);
+            const unitPts = getViewRedeemUnitPoints();
+            const pointsToSend = soLy * unitPts;
+            const vipDiscountToSend = viewCurrentCustomer.isVip ? getViewVipDiscountPerCup() : 0;
 
-        scriptTag.src = `${CONFIG.SCRIPT_URL}?${params.toString()}`;
-        scriptTag.onerror = function() {
-            if (finished) return;
-            finished = true;
-            clearTimeout(safetyTimeout);
-            cleanup();
-            resetBtn();
+            if (confirmBtn) {
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = "Đang xử lý...";
+            }
             if (msgEl) {
-                msgEl.style.color = "#990900";
-                msgEl.textContent = "❌ Lỗi kết nối máy chủ khi đổi điểm!";
+                msgEl.style.color = "#5c2415";
+                msgEl.textContent = `⌛ Đang gửi yêu cầu đổi ${soLy} ly...`;
             }
-        };
-        document.body.appendChild(scriptTag);
-    }
 
-    (function initGuestViewRedeemUi() {
-        const redeemBtn = document.getElementById("viewRedeemCfBtn");
-        const panelEl = document.getElementById("viewRedeemPanel");
-        const cancelBtn = document.getElementById("viewRedeemCancelBtn");
-        const confirmBtn = document.getElementById("viewRedeemConfirmBtn");
-        const msgEl = document.getElementById("viewRedeemMsg");
+            const cbName = "didiViewRedeemCb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+            const scriptTag = document.createElement("script");
+            let finished = false;
 
-        if (redeemBtn && panelEl) {
-            redeemBtn.addEventListener("click", function(ev) {
-                const viewBox = document.getElementById("viewInfoBox");
-                if (viewBox && viewBox.style.display === "block" && viewCurrentCustomer.code) {
-                    ev.preventDefault();
-                    const willOpen = panelEl.style.display !== "block";
-                    panelEl.style.display = willOpen ? "block" : "none";
-                    if (msgEl) msgEl.textContent = "";
-                    if (willOpen) {
-                        setViewSelectedCups(1);
+            const cleanup = function() {
+                try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+                if (scriptTag && scriptTag.parentNode) {
+                    scriptTag.parentNode.removeChild(scriptTag);
+                }
+            };
+
+            const resetBtn = function() {
+                if (confirmBtn) {
+                    confirmBtn.disabled = false;
+                    confirmBtn.textContent = "Xác nhận đổi";
+                }
+            };
+
+            const safetyTimeout = setTimeout(function() {
+                if (finished) return;
+                finished = true;
+                cleanup();
+                resetBtn();
+                if (msgEl) {
+                    msgEl.style.color = "#990900";
+                    msgEl.textContent = "❌ Quá thời gian phản hồi từ máy chủ!";
+                }
+            }, 20000);
+
+            window[cbName] = function(resData) {
+                if (finished) return;
+                finished = true;
+                clearTimeout(safetyTimeout);
+                cleanup();
+                resetBtn();
+
+                if (resData && resData.status === "SUCCESS") {
+                    const deducted = Number(resData.deducted) || pointsToSend;
+                    const newPoints = (resData.points !== undefined && resData.points !== null)
+                        ? Number(resData.points)
+                        : Math.max(0, viewCurrentCustomer.points - deducted);
+
+                    viewCurrentCustomer.points = newPoints;
+                    const pointsEl = document.getElementById("viewCustPoints");
+                    if (pointsEl) pointsEl.innerText = newPoints + " điểm";
+
+                    const listEl = document.getElementById("viewHistoryList");
+                    if (listEl) {
+                        const emptyItem = listEl.querySelector(".view-history-time");
+                        if (emptyItem && emptyItem.textContent.includes("Chưa có lịch sử")) {
+                            listEl.innerHTML = "";
+                        }
+                        const li = document.createElement("li");
+                        li.className = "view-history-item";
+                        const timeNow = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                        li.innerHTML = `
+                            <div>
+                                <div class="view-history-note">Đổi ${soLy} ly (Khách tự đổi)</div>
+                                <div class="view-history-time">${timeNow}</div>
+                            </div>
+                            <div class="view-history-delta minus">-${deducted} đ</div>
+                        `;
+                        listEl.prepend(li);
+                    }
+
+                    updateViewRedeemPreview();
+                    if (msgEl) {
+                        msgEl.style.color = "#007b16";
+                        msgEl.textContent = `✅ Đổi thành công ${soLy} ly (-${deducted}đ). Còn ${newPoints} điểm!`;
+                    }
+                } else {
+                    if (msgEl) {
+                        msgEl.style.color = "#990900";
+                        msgEl.textContent = "❌ " + ((resData && resData.message) || "Không thể đổi điểm.");
                     }
                 }
+            };
+
+            // Không gửi secret_key; chỉ gửi vip_discount khi khách là VIP (lấy từ CONFIG.VIP_DISCOUNT)
+            const params = new URLSearchParams({
+                action: "doi_diem_qr",
+                code: code,
+                ma_khach: code,
+                so_ly: String(soLy),
+                points: String(pointsToSend),
+                quantity: String(pointsToSend),
+                redeem_unit: String(unitPts),
+                callback: cbName,
+                t: String(Date.now())
             });
+            if (viewCurrentCustomer.isVip) {
+                params.set("vip_discount", String(vipDiscountToSend));
+            }
+
+            scriptTag.src = `${CONFIG.SCRIPT_URL}?${params.toString()}`;
+            scriptTag.onerror = function() {
+                if (finished) return;
+                finished = true;
+                clearTimeout(safetyTimeout);
+                cleanup();
+                resetBtn();
+                if (msgEl) {
+                    msgEl.style.color = "#990900";
+                    msgEl.textContent = "❌ Lỗi kết nối máy chủ khi đổi điểm!";
+                }
+            };
+            document.body.appendChild(scriptTag);
         }
 
-        document.querySelectorAll("#viewCupChoices .view-cup-btn").forEach(function(btn) {
-            btn.addEventListener("click", function() {
-                setViewSelectedCups(btn.dataset.cups);
-            });
-        });
+        (function initGuestViewRedeemUi() {
+            const redeemBtn = document.getElementById("viewRedeemCfBtn");
+            const panelEl = document.getElementById("viewRedeemPanel");
+            const cancelBtn = document.getElementById("viewRedeemCancelBtn");
+            const confirmBtn = document.getElementById("viewRedeemConfirmBtn");
+            const msgEl = document.getElementById("viewRedeemMsg");
 
-        if (cancelBtn && panelEl) {
-            cancelBtn.addEventListener("click", function() {
-                panelEl.style.display = "none";
-                if (msgEl) msgEl.textContent = "";
-            });
-        }
+            if (redeemBtn && panelEl) {
+                redeemBtn.addEventListener("click", function(e) {
+                    e.preventDefault();
+                    const isOpen = panelEl.style.display === "block";
+                    if (!isOpen) {
+                        const nameText = (document.getElementById("viewCustName") && document.getElementById("viewCustName").innerText) || "";
+                        const metaText = (document.getElementById("viewCustMeta") && document.getElementById("viewCustMeta").innerText) || "";
+                        const ptsText = (document.getElementById("viewCustPoints") && document.getElementById("viewCustPoints").innerText) || "0";
+                        const cardEl = document.getElementById("viewProfileCard");
+                        const codeMatch = metaText.match(/Mã KH:\s*([^\s•]+)/i);
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const fallbackCode = (urlParams.get("code") || (document.getElementById("inputCode") && document.getElementById("inputCode").value) || "").trim().toUpperCase();
 
-        if (confirmBtn) {
-            confirmBtn.addEventListener("click", function() {
-                submitGuestViewRedeem(viewSelectedCups);
-            });
-        }
-    })();
+                        viewCurrentCustomer = {
+                            code: (codeMatch && codeMatch[1]) ? codeMatch[1].trim().toUpperCase() : fallbackCode,
+                            name: nameText.trim(),
+                            points: parseFloat(String(ptsText).replace(/[^\d.-]/g, "")) || 0,
+                            isVip: !!(cardEl && cardEl.classList.contains("is-vip"))
+                        };
+                        setViewCupPickerVisible(true);
+                        if (msgEl) msgEl.textContent = "";
+                        setViewSelectedCups(1);
+                    }
+                    panelEl.style.display = isOpen ? "none" : "block";
+                });
+            }
 
-    const _origSwitchToViewModeForGuestRedeem = switchToViewMode;
-    switchToViewMode = function(resData, fallbackCode) {
-        _origSwitchToViewModeForGuestRedeem(resData, fallbackCode);
-        const code = (resData && resData.code) ? resData.code : fallbackCode;
-        const name = (resData && resData.name) ? resData.name : ("Khách " + code);
-        const points = (resData && resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
-        const isVipCustomer = !!(
-            resData && (
-                resData.vip === true ||
-                (typeof resData.vip === "string" && resData.vip.trim().toUpperCase() === "VIP") ||
-                resData.isVip === true ||
-                String(resData.tier || resData.rank || resData.level || "").trim().toUpperCase() === "VIP"
-            )
-        );
-        viewCurrentCustomer = {
-            code: String(code || "").trim().toUpperCase(),
-            name: name,
-            points: points,
-            isVip: isVipCustomer
-        };
-        updateViewRedeemPreview();
-    };
-</script>
+            document.querySelectorAll("#viewCupChoices .view-cup-btn").forEach(function(btn) {
+                btn.addEventListener("click", function() {
+                    setViewSelectedCups(btn.dataset.cups);
+                });
+            });
+
+            if (cancelBtn && panelEl) {
+                cancelBtn.addEventListener("click", function() {
+                    panelEl.style.display = "none";
+                    setViewCupPickerVisible(true);
+                    if (msgEl) msgEl.textContent = "";
+                });
+            }
+
+            if (confirmBtn) {
+                confirmBtn.addEventListener("click", function() {
+                    setViewCupPickerVisible(false);
+                    submitGuestViewRedeem(viewSelectedCups);
+                });
+            }
+        })();
+    </script>
 </body>
 </html>
