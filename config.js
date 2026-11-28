@@ -5,7 +5,7 @@ const CONFIG = {
     
     // Bạn có thể thêm các cấu hình khác sau này tại đây
     REDEEM_POINTS: 15,
-    VIP_DISCOUNT: 2,
+    VIP_DISCOUNT: 1,
     SPIN_POINTS: 200,
     POINTS_PER_CODE: 1,
     LEVEL_1: 15,
