@@ -287,7 +287,7 @@
             font-weight: 600;
         }
         .view-redeem-actions {
-            display: flex !important;
+            display: flex;
             align-items: stretch;
             gap: 8px;
         }
@@ -964,10 +964,14 @@
             updateViewRedeemPreview();
         }
 
-        function setViewCupPickerVisible(visible) {
+        function setViewRedeemControlsVisible(visible) {
             const pickerWrap = document.getElementById("viewCupPickerWrap");
+            const actionsEl = document.getElementById("viewRedeemActions");
             if (pickerWrap) {
                 pickerWrap.style.display = visible ? "" : "none";
+            }
+            if (actionsEl) {
+                actionsEl.style.display = visible ? "flex" : "none";
             }
         }
 
@@ -976,7 +980,7 @@
             const confirmBtn = document.getElementById("viewRedeemConfirmBtn");
             const code = (viewCurrentCustomer.code || "").trim().toUpperCase();
 
-            setViewCupPickerVisible(false);
+            setViewRedeemControlsVisible(false);
 
             if (!code) {
                 if (msgEl) {
@@ -1143,7 +1147,7 @@
                             points: parseFloat(String(ptsText).replace(/[^\d.-]/g, "")) || 0,
                             isVip: !!(cardEl && cardEl.classList.contains("is-vip"))
                         };
-                        setViewCupPickerVisible(true);
+                        setViewRedeemControlsVisible(true);
                         if (msgEl) msgEl.textContent = "";
                         setViewSelectedCups(1);
                     }
@@ -1160,14 +1164,14 @@
             if (cancelBtn && panelEl) {
                 cancelBtn.addEventListener("click", function() {
                     panelEl.style.display = "none";
-                    setViewCupPickerVisible(true);
+                    setViewRedeemControlsVisible(true);
                     if (msgEl) msgEl.textContent = "";
                 });
             }
 
             if (confirmBtn) {
                 confirmBtn.addEventListener("click", function() {
-                    setViewCupPickerVisible(false);
+                    setViewRedeemControlsVisible(false);
                     submitGuestViewRedeem(viewSelectedCups);
                 });
             }
