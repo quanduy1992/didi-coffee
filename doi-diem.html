@@ -709,9 +709,12 @@
         }
       };
 
+      const cupsToSend = Math.max(1, Math.round(ptsToDeduct / REDEEM_UNIT_POINTS));
       const params = new URLSearchParams({
         action: isCheckOnly ? "xem_diem_qr" : "doi_diem_qr",
         code: keyKhach,
+        ma_khach: keyKhach,
+        so_ly: String(cupsToSend),
         points: ptsToDeduct,
         quantity: ptsToDeduct,
         vip_discount: vipDiscountToSend,
