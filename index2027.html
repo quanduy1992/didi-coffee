@@ -429,6 +429,37 @@
         }
     }
 
+    // --- BỔ SUNG: HIỂN THỊ KẾT QUẢ KHI LUỒNG `key` CHẠY TÍCH ĐIỂM ---
+    function renderKeyScanResult(resData, fallbackCode) {
+        const resultDiv = document.getElementById('result');
+        const viewBox = document.getElementById('viewInfoBox');
+        const formBox = document.getElementById('form-input');
+
+        if (formBox) formBox.style.display = 'none';
+        if (viewBox) viewBox.style.display = 'none';
+        if (!resultDiv) return;
+
+        const code = (resData && resData.code) ? resData.code : (fallbackCode || "");
+        const name = (resData && resData.name) ? resData.name : ("Khách " + code);
+        const added = (resData && resData.added !== undefined && resData.added !== null) ? Number(resData.added) : 0;
+        const points = (resData && resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
+
+        if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+
+        const now = new Date();
+        const timeStr = now.toLocaleDateString('vi-VN') + " " + now.toLocaleTimeString('vi-VN');
+
+        resultDiv.innerHTML = `
+            <div class="success-box">
+                <div>✅ TÍCH ĐIỂM THÀNH CÔNG!</div>
+                <div style="margin-top:4px;font-weight:700;">${name}${code ? " (" + code + ")" : ""}</div>
+                ${added > 0 ? `<div style="margin-top:4px;font-weight:800;color:#007b16;">Đã cộng: +${added} điểm</div>` : ""}
+                <span class="time">Thời gian: ${timeStr}</span>
+                <span class="points-info">Số điểm hiện tại: <span>${points}</span></span>
+            </div>
+        `;
+    }
+
     function switchToFormMode() {
         document.getElementById('viewInfoBox').style.display = 'none';
         document.getElementById('form-input').style.display = 'block';
@@ -473,7 +504,7 @@
         document.body.appendChild(scriptTag);
     }
 
-    // Lấy tham số key trên URL (?key=... hoặc ?secret_key=... hoặc ?secret=...) để mở chế độ VIEW
+    // Lấy tham số key trên URL (?key=... hoặc ?secret_key=... hoặc ?secret=...) để xử lý VIEW hoặc tích điểm khi có SL > 0
     function openViewByKey(keyValue, codeHint) {
         const resultDiv = document.getElementById('result');
         document.getElementById('form-input').style.display = 'none';
@@ -491,7 +522,12 @@
             if (oldScript) oldScript.remove();
 
             if (resData && resData.status === "SUCCESS") {
-                switchToViewMode(resData, codeHint || resData.code || "");
+                const isScanAction = (resData.mode === "SCAN") || (Number(resData.added) > 0 && resData.mode !== "VIEW");
+                if (isScanAction) {
+                    renderKeyScanResult(resData, codeHint || resData.code || "");
+                } else {
+                    switchToViewMode(resData, codeHint || resData.code || "");
+                }
             } else {
                 const msg = (resData && resData.message)
                     ? resData.message
