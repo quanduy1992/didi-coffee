@@ -215,6 +215,33 @@
             0% { left: -120%; }
             55%, 100% { left: 160%; }
         }
+
+        /* --- BỔ SUNG: THẺ ĐỔI CF NGAY SAU CHỖ TÍCH ĐIỂM / QUÀ --- */
+        .view-redeem-cf {
+            display: block;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+            padding: 9px 14px;
+            border-radius: 10px;
+            border: 1.5px solid #ffd54f;
+            background: linear-gradient(135deg, #b71c1c 0%, #d32f2f 55%, #8e0000 100%);
+            box-shadow: 0 4px 12px rgba(183, 28, 28, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            color: #fff8e1;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+        }
+        .view-redeem-cf::before {
+            content: "☕ ";
+        }
+        .view-redeem-cf:active {
+            transform: scale(0.99);
+        }
+
         .view-history-title {
             font-size: 14px;
             font-weight: 700;
@@ -303,6 +330,7 @@
                     <div class="view-vip-note" id="viewVipNote">✨ Đặc quyền hội viên VIP Di Di Coffee</div>
                     <div class="view-tet-gift">Quà tết hiện tại: <span id="viewTetGiftValue">---</span></div>
                 </div>
+                <a id="viewRedeemCfBtn" class="view-redeem-cf" href="doi-qua.html">Đổi CF</a>
             </div>
             <div class="view-history-title">Lịch sử tích điểm gần nhất</div>
             <ul class="view-history-list" id="viewHistoryList"></ul>
@@ -353,6 +381,36 @@
         const num = Number(rawVal);
         if (isNaN(num)) return "0 VNĐ";
         return num.toLocaleString("vi-VN") + " VNĐ";
+    }
+
+    // --- BỔ SUNG: GẮN KEY VÀO NÚT ĐỔI CF KHI KHÁCH ĐANG VIEW BẰNG THẺ ---
+    function updateViewRedeemCfLink(resData, fallbackCode) {
+        const btnEl = document.getElementById('viewRedeemCfBtn');
+        if (!btnEl) return;
+
+        const baseHref = btnEl.dataset.baseHref || btnEl.getAttribute('href') || 'doi-qua.html';
+        btnEl.dataset.baseHref = baseHref;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const keyFromUrl = (urlParams.get('key') || urlParams.get('secret_key') || urlParams.get('secret') || "").trim();
+        const keyFromRes = (resData && (resData.key || resData.secret_key)) ? String(resData.key || resData.secret_key).trim() : "";
+        const keyFromSession = (typeof sessionStorage !== "undefined") ? (sessionStorage.getItem('didi_active_view_key') || "").trim() : "";
+
+        const activeKey = keyFromRes || keyFromUrl || keyFromSession;
+
+        if (!activeKey) {
+            btnEl.setAttribute('href', baseHref);
+            return;
+        }
+
+        try {
+            const urlObj = new URL(baseHref, window.location.href);
+            urlObj.searchParams.set('key', activeKey);
+            btnEl.setAttribute('href', urlObj.pathname.split('/').pop() + urlObj.search);
+        } catch (err) {
+            const sep = baseHref.indexOf('?') !== -1 ? '&' : '?';
+            btnEl.setAttribute('href', baseHref + sep + 'key=' + encodeURIComponent(activeKey));
+        }
     }
 
     // --- BỔ SUNG: HÀM CHUYỂN GIAO DIỆN SANG VIEW & QUAY LẠI FORM ---
@@ -427,6 +485,12 @@
                 listEl.appendChild(li);
             });
         }
+
+        const resolvedKey = (resData && (resData.key || resData.secret_key)) || "";
+        if (resolvedKey && typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem('didi_active_view_key', String(resolvedKey).trim());
+        }
+        updateViewRedeemCfLink(resData, fallbackCode);
     }
 
     // --- BỔ SUNG: HIỂN THỊ KẾT QUẢ KHI LUỒNG `key` CHẠY TÍCH ĐIỂM ---
@@ -607,6 +671,11 @@
         if (savedName) document.getElementById('cusName').value = savedName;
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
+
+        if (keyFromURL && typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem('didi_active_view_key', keyFromURL);
+        }
+        updateViewRedeemCfLink(null, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
 
         if (keyFromURL) {
             openViewByKey(keyFromURL, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
