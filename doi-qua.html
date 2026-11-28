@@ -46,19 +46,67 @@
             70% { box-shadow: 0 0 0 10px rgba(218, 37, 29, 0); }
             100% { box-shadow: 0 0 0 0 rgba(218, 37, 29, 0); }
         }
+
+        /* Khối thông báo tạm ngưng đổi trực tuyến */
+        .paused-notice-box {
+            margin: 16px 6px 20px;
+            padding: 20px 16px;
+            border-radius: 16px;
+            background: linear-gradient(145deg, #fffdf5 0%, #fff3cd 60%, #ffe8a3 100%);
+            border: 1.5px solid #f59e0b;
+            box-shadow: 0 8px 20px rgba(217, 119, 6, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+            text-align: center;
+        }
+
+        .paused-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 999px;
+            background: #b91c1c;
+            color: #fff;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .paused-icon {
+            font-size: 34px;
+            line-height: 1.1;
+            margin-bottom: 8px;
+        }
+
+        .paused-message {
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.5;
+            color: #7c2d12;
+            margin: 0 0 12px;
+        }
+
+        .paused-sub {
+            font-size: 12.5px;
+            line-height: 1.45;
+            color: #92400e;
+            background: rgba(255, 255, 255, 0.72);
+            border: 1px dashed rgba(217, 119, 6, 0.45);
+            border-radius: 10px;
+            padding: 8px 10px;
+        }
     </style>
 </head>
 <body>
     <div class="card"> 
         <h2 id="shopTitle">☕ DI DI COFFEE</h2>
-        <p style="color: #8d6e63; text-align: center;">Đổi <span id="reqPoints">...</span> điểm = 1 ly miễn phí</p>
-        <div id="pointDisplay"></div> 
-        <div id="form-input">
-            <label>Số điện thoại:</label>
-            <input type="tel" id="phone" placeholder="Nhập số điện thoại" oninput="checkPointRealtime()" style="width:100%; padding:10px; margin:10px 0;">
-            <button id="btnRedeem" onclick="handleRedeem()" disabled style="width: 100%;">XÁC NHẬN ĐỔI QUÀ</button>
+
+        <div class="paused-notice-box">
+            <div class="paused-badge">Thông báo</div>
+            <div class="paused-icon">⏸️💳</div>
+            <p class="paused-message">Tạm thời ngưng hoạt động vui lòng đổi tại quầy hoặc đổi từ thẻ thành viên</p>
+            <div class="paused-sub">Cảm ơn bạn đã đồng hành cùng Di Di Coffee!</div>
         </div>
-        <div id="status"></div>
+
         <div class="nav-menu">
             <a href="index.html" class="nav-item"><i>⭐</i> Tích điểm</a>
             <a href="danhsach.html" class="nav-item"><i>📜</i> Danh sách</a>
@@ -71,7 +119,6 @@
     const minPoints = CONFIG.REDEEM_POINTS;
     let isProcessing = false;
     let fromWeb = false; 
-    document.getElementById('reqPoints').innerText = minPoints;
 
     window.onload = function() {
         const urlParams = new URLSearchParams(window.location.search);
@@ -80,12 +127,14 @@
         const savedPhone = localStorage.getItem('didi_customer_phone') || localStorage.getItem('userPhone');
         
         if (fromWeb) {
-            document.getElementById('form-input').style.display = "none";
+            const formEl = document.getElementById('form-input');
+            if (formEl) formEl.style.display = "none";
         }
 
         const finalPhone = phoneFromUrl || savedPhone;
         if (finalPhone) {
-            document.getElementById('phone').value = finalPhone;
+            const phoneEl = document.getElementById('phone');
+            if (phoneEl) phoneEl.value = finalPhone;
             autoProcess(finalPhone); 
         }
     };
@@ -93,6 +142,10 @@
     async function autoProcess(phone) {
         isProcessing = true;
         const display = document.getElementById('pointDisplay');
+        if (!display) {
+            isProcessing = false;
+            return;
+        }
         display.innerHTML = "⏳ Đang kiểm tra điểm...</br></br>";
         try {
             const res = await fetch(`${scriptURL}?action=get_points_new&phone=${phone}`);
@@ -106,7 +159,6 @@
 
             if (currentPoints >= minPoints) {
                 if (fromWeb) {
-                    // TÌNH HUỐNG 1: Khách đủ điểm xem từ xa -> Đã chuyển sang STYLE XANH LÁ MÁT MẺ
                     document.getElementById('status').innerHTML = `
                         <div class="success-box" style="border: 1px solid #2e7d32; background-color: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
                             <div style="color: #2e7d32; font-weight: bold; font-size: 16px; margin-bottom: 10px;">🎉 QUÀ HIỆN TẠI CỦA BẠN LÀ: 🎉</div>
@@ -125,9 +177,9 @@
             } else {
                 isProcessing = false;
                 if (!fromWeb) {
-                    document.getElementById('btnRedeem').innerText = "CHƯA ĐỦ ĐIỂM";
+                    const btnEl = document.getElementById('btnRedeem');
+                    if (btnEl) btnEl.innerText = "CHƯA ĐỦ ĐIỂM";
                 } else {
-                    // TÌNH HUỐNG 2: Chưa đủ điểm xem từ xa -> Style xám dịu, nhắc khéo gu uống thương hiệu
                     document.getElementById('status').innerHTML = `
                         <div class="success-box" style="border: 1px solid #757575; background-color: #f5f5f5; padding: 15px; border-radius: 8px; text-align: center;">
                             <div style="color: #616161; font-weight: bold;">CHƯA ĐỦ ĐIỂM ĐỔI QUÀ</div>
@@ -148,9 +200,11 @@
 
     function checkPointRealtime() {
         if (isProcessing) return;
-        const phone = document.getElementById('phone').value.trim();
+        const phoneInput = document.getElementById('phone');
         const btn = document.getElementById('btnRedeem');
         const display = document.getElementById('pointDisplay');
+        if (!phoneInput || !btn || !display) return;
+        const phone = phoneInput.value.trim();
 
         if (phone.length >= 10) {
             fetch(`${scriptURL}?action=get_points_new&phone=${phone}`)
@@ -170,9 +224,11 @@
     }
 
     function handleRedeem() {
-        const phone = document.getElementById('phone').value.trim();
+        const phoneInput = document.getElementById('phone');
         const statusDiv = document.getElementById('status');
         const btn = document.getElementById('btnRedeem');
+        if (!phoneInput || !statusDiv || !btn) return;
+        const phone = phoneInput.value.trim();
         
         isProcessing = true;
         btn.disabled = true;
