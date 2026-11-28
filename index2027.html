@@ -215,6 +215,105 @@
             0% { left: -120%; }
             55%, 100% { left: 160%; }
         }
+
+        /* --- BỔ SUNG: THẺ ĐỔI CF NGAY SAU CHỖ TÍCH ĐIỂM / QUÀ --- */
+        .view-redeem-cf {
+            display: block;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+            margin-top: 10px;
+            padding: 9px 14px;
+            border-radius: 10px;
+            border: 1.5px solid #ffd54f;
+            background: linear-gradient(135deg, #b71c1c 0%, #d32f2f 55%, #8e0000 100%);
+            box-shadow: 0 4px 12px rgba(183, 28, 28, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+            color: #fff8e1;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
+        }
+        .view-redeem-cf::before {
+            content: "☕ ";
+        }
+        .view-redeem-cf:active {
+            transform: scale(0.99);
+        }
+
+        /* --- KHUNG HỎI SỐ LY KHI KHÁCH TỰ ĐỔI Ở VIEW --- */
+        .view-redeem-panel {
+            display: none;
+            margin-top: 10px;
+            padding: 12px;
+            border-radius: 12px;
+            background: #fffaf3;
+            border: 1.5px solid #e4cfb4;
+            text-align: center;
+        }
+        .view-redeem-title {
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #5c2415;
+            margin-bottom: 8px;
+        }
+        .view-cup-choices {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .view-cup-btn {
+            padding: 7px 11px;
+            border-radius: 8px;
+            border: 1px solid #cfa97e;
+            background: #fff;
+            color: #5c2415;
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+        }
+        .view-cup-btn.active {
+            background: #b71c1c;
+            color: #fff8e1;
+            border-color: #b71c1c;
+        }
+        .view-redeem-preview {
+            font-size: 12.5px;
+            color: #5d4037;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        .view-redeem-actions {
+            display: flex !important;
+            align-items: stretch;
+            gap: 8px;
+        }
+        .view-redeem-confirm {
+            flex: 1 1 auto !important;
+            width: auto !important;
+            padding: 9px 14px !important;
+            white-space: nowrap !important;
+            font-size: 13px !important;
+            line-height: 1.25 !important;
+        }
+        .view-redeem-cancel {
+            flex: 0 0 auto !important;
+            width: auto !important;
+            padding: 9px 12px !important;
+            white-space: nowrap !important;
+            font-size: 13px !important;
+            line-height: 1.25 !important;
+        }
+        .view-redeem-msg {
+            margin-top: 8px;
+            font-size: 12.5px;
+            font-weight: 700;
+            min-height: 18px;
+        }
+
         .view-history-title {
             font-size: 14px;
             font-weight: 700;
@@ -303,6 +402,23 @@
                     <div class="view-vip-note" id="viewVipNote">✨ Đặc quyền hội viên VIP Di Di Coffee</div>
                     <div class="view-tet-gift">Quà tết hiện tại: <span id="viewTetGiftValue">---</span></div>
                 </div>
+                <a id="viewRedeemCfBtn" class="view-redeem-cf" href="">Đổi Cà Phê</a>
+                <div id="viewRedeemPanel" class="view-redeem-panel">
+                    <div class="view-redeem-title">Bạn muốn đổi mấy ly?</div>
+                    <div class="view-cup-choices" id="viewCupChoices">
+                        <button type="button" class="view-cup-btn active" data-cups="1">1 ly</button>
+                        <button type="button" class="view-cup-btn" data-cups="2">2 ly</button>
+                        <button type="button" class="view-cup-btn" data-cups="3">3 ly</button>
+                        <button type="button" class="view-cup-btn" data-cups="4">4 ly</button>
+                        <button type="button" class="view-cup-btn" data-cups="5">5 ly</button>
+                    </div>
+                    <div class="view-redeem-preview" id="viewRedeemPreview"></div>
+                    <div class="view-redeem-actions">
+                        <button type="button" class="view-redeem-confirm" id="viewRedeemConfirmBtn">Xác nhận đổi</button>
+                        <button type="button" class="view-redeem-cancel" id="viewRedeemCancelBtn">Hủy</button>
+                    </div>
+                    <div class="view-redeem-msg" id="viewRedeemMsg"></div>
+                </div>
             </div>
             <div class="view-history-title">Lịch sử tích điểm gần nhất</div>
             <ul class="view-history-list" id="viewHistoryList"></ul>
@@ -317,7 +433,7 @@
             <a href="index.html" class="nav-item active"><i>⭐</i> Tích điểm</a>
             <a href="danhsach.html" class="nav-item"><i>📜</i> Danh sách</a>
             <a href="vong-quay.html" class="nav-item"><i>🎡</i> Quay thưởng</a>
-            <a href="doi-qua.html" class="nav-item"><i>🎁</i> Đổi CF</a>
+            <!--<a href="doi-qua.html" class="nav-item"><i>🎁</i> Đổi CF</a>-->
             <!-- <a href="doi-qua.html?from=webs" class="nav-item"><i>🎁</i> Xem quà</a>-->
         </div>
         <br><br><span style="color:#007b16;font-weight:bold;">15 điểm = 1 ly hay dùng</span>
@@ -353,6 +469,36 @@
         const num = Number(rawVal);
         if (isNaN(num)) return "0 VNĐ";
         return num.toLocaleString("vi-VN") + " VNĐ";
+    }
+
+    // --- BỔ SUNG: GẮN KEY VÀO NÚT ĐỔI CF KHI KHÁCH ĐANG VIEW BẰNG THẺ ---
+    function updateViewRedeemCfLink(resData, fallbackCode) {
+        const btnEl = document.getElementById('viewRedeemCfBtn');
+        if (!btnEl) return;
+
+        const baseHref = btnEl.dataset.baseHref || btnEl.getAttribute('href') || 'doi-qua.html';
+        btnEl.dataset.baseHref = baseHref;
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const keyFromUrl = (urlParams.get('key') || urlParams.get('secret_key') || urlParams.get('secret') || "").trim();
+        const keyFromRes = (resData && (resData.key || resData.secret_key)) ? String(resData.key || resData.secret_key).trim() : "";
+        const keyFromSession = (typeof sessionStorage !== "undefined") ? (sessionStorage.getItem('didi_active_view_key') || "").trim() : "";
+
+        const activeKey = keyFromRes || keyFromUrl || keyFromSession;
+
+        if (!activeKey) {
+            btnEl.setAttribute('href', baseHref);
+            return;
+        }
+
+        try {
+            const urlObj = new URL(baseHref, window.location.href);
+            urlObj.searchParams.set('key', activeKey);
+            btnEl.setAttribute('href', urlObj.pathname.split('/').pop() + urlObj.search);
+        } catch (err) {
+            const sep = baseHref.indexOf('?') !== -1 ? '&' : '?';
+            btnEl.setAttribute('href', baseHref + sep + 'key=' + encodeURIComponent(activeKey));
+        }
     }
 
     // --- BỔ SUNG: HÀM CHUYỂN GIAO DIỆN SANG VIEW & QUAY LẠI FORM ---
@@ -427,6 +573,12 @@
                 listEl.appendChild(li);
             });
         }
+
+        const resolvedKey = (resData && (resData.key || resData.secret_key)) || "";
+        if (resolvedKey && typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem('didi_active_view_key', String(resolvedKey).trim());
+        }
+        updateViewRedeemCfLink(resData, fallbackCode);
     }
 
     // --- BỔ SUNG: HIỂN THỊ KẾT QUẢ KHI LUỒNG `key` CHẠY TÍCH ĐIỂM ---
@@ -608,6 +760,11 @@
         if (savedPhone) document.getElementById('cusPhone').value = savedPhone;
         if (codeFromURL) document.getElementById('inputCode').value = codeFromURL.toUpperCase();
 
+        if (keyFromURL && typeof sessionStorage !== "undefined") {
+            sessionStorage.setItem('didi_active_view_key', keyFromURL);
+        }
+        updateViewRedeemCfLink(null, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
+
         if (keyFromURL) {
             openViewByKey(keyFromURL, codeFromURL ? codeFromURL.trim().toUpperCase() : "");
             return;
@@ -757,6 +914,262 @@
             }
         });
     }
+
+    // --- BỔ SUNG: KHÁCH TỰ NHẤN ĐỔI Ở CHẾ ĐỘ VIEW (KHÔNG GỬI SECRET_KEY) ---
+    let viewCurrentCustomer = {
+        code: "",
+        name: "",
+        points: 0,
+        isVip: false
+    };
+    let viewSelectedCups = 1;
+
+    function getViewRedeemUnitPoints() {
+        return Math.max(1, parseInt((typeof CONFIG !== "undefined" && CONFIG && CONFIG.REDEEM_POINTS) || 15, 10) || 15);
+    }
+
+    function getViewVipDiscountPerCup() {
+        if (typeof CONFIG !== "undefined" && CONFIG && CONFIG.VIP_DISCOUNT !== undefined && CONFIG.VIP_DISCOUNT !== null) {
+            return Math.max(0, Number(CONFIG.VIP_DISCOUNT) || 0);
+        }
+        return 0;
+    }
+
+    function updateViewRedeemPreview() {
+        const previewEl = document.getElementById("viewRedeemPreview");
+        if (!previewEl) return;
+
+        const unitPts = getViewRedeemUnitPoints();
+        const rawTotalPts = viewSelectedCups * unitPts;
+        const vipPerCup = viewCurrentCustomer.isVip ? getViewVipDiscountPerCup() : 0;
+        const vipTotalDiscount = viewCurrentCustomer.isVip ? (viewSelectedCups * vipPerCup) : 0;
+        const finalPts = viewCurrentCustomer.isVip
+            ? Math.max(1, rawTotalPts - vipTotalDiscount)
+            : rawTotalPts;
+
+        if (viewCurrentCustomer.isVip && vipTotalDiscount > 0) {
+            previewEl.innerHTML = `Đổi <strong>${viewSelectedCups} ly</strong>: <s>${rawTotalPts}đ</s> - giảm VIP <strong>${vipTotalDiscount}đ</strong> = <strong style="color:#b71c1c;">${finalPts} điểm</strong> (Đang có: <strong>${viewCurrentCustomer.points}đ</strong>)`;
+        } else {
+            previewEl.innerHTML = `Đổi <strong>${viewSelectedCups} ly</strong> cần <strong style="color:#b71c1c;">${finalPts} điểm</strong> (${unitPts}đ/ly • Đang có: <strong>${viewCurrentCustomer.points}đ</strong>)`;
+        }
+    }
+
+    function setViewSelectedCups(cups) {
+        viewSelectedCups = Math.max(1, parseInt(cups, 10) || 1);
+        document.querySelectorAll("#viewCupChoices .view-cup-btn").forEach(function(btn) {
+            btn.classList.toggle("active", parseInt(btn.dataset.cups, 10) === viewSelectedCups);
+        });
+        updateViewRedeemPreview();
+    }
+
+    function submitGuestViewRedeem(cups) {
+        const msgEl = document.getElementById("viewRedeemMsg");
+        const confirmBtn = document.getElementById("viewRedeemConfirmBtn");
+        const code = (viewCurrentCustomer.code || "").trim().toUpperCase();
+
+        if (!code) {
+            if (msgEl) {
+                msgEl.style.color = "#990900";
+                msgEl.textContent = "❌ Không tìm thấy mã khách hàng để đổi điểm.";
+            }
+            return;
+        }
+
+        if (typeof CONFIG === "undefined" || !CONFIG.SCRIPT_URL) {
+            if (msgEl) {
+                msgEl.style.color = "#990900";
+                msgEl.textContent = "❌ Thiếu CONFIG.SCRIPT_URL.";
+            }
+            return;
+        }
+
+        const soLy = Math.max(1, parseInt(cups, 10) || 1);
+        const unitPts = getViewRedeemUnitPoints();
+        const pointsToSend = soLy * unitPts;
+        const vipDiscountToSend = viewCurrentCustomer.isVip ? getViewVipDiscountPerCup() : 0;
+
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = "Đang xử lý...";
+        }
+        if (msgEl) {
+            msgEl.style.color = "#5c2415";
+            msgEl.textContent = `⌛ Đang gửi yêu cầu đổi ${soLy} ly...`;
+        }
+
+        const cbName = "didiViewRedeemCb_" + Date.now() + "_" + Math.floor(Math.random() * 100000);
+        const scriptTag = document.createElement("script");
+        let finished = false;
+
+        const cleanup = function() {
+            try { delete window[cbName]; } catch (e) { window[cbName] = undefined; }
+            if (scriptTag && scriptTag.parentNode) {
+                scriptTag.parentNode.removeChild(scriptTag);
+            }
+        };
+
+        const resetBtn = function() {
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = "Xác nhận đổi";
+            }
+        };
+
+        const safetyTimeout = setTimeout(function() {
+            if (finished) return;
+            finished = true;
+            cleanup();
+            resetBtn();
+            if (msgEl) {
+                msgEl.style.color = "#990900";
+                msgEl.textContent = "❌ Quá thời gian phản hồi từ máy chủ!";
+            }
+        }, 20000);
+
+        window[cbName] = function(resData) {
+            if (finished) return;
+            finished = true;
+            clearTimeout(safetyTimeout);
+            cleanup();
+            resetBtn();
+
+            if (resData && resData.status === "SUCCESS") {
+                const deducted = Number(resData.deducted) || pointsToSend;
+                const newPoints = (resData.points !== undefined && resData.points !== null)
+                    ? Number(resData.points)
+                    : Math.max(0, viewCurrentCustomer.points - deducted);
+
+                viewCurrentCustomer.points = newPoints;
+                const pointsEl = document.getElementById("viewCustPoints");
+                if (pointsEl) pointsEl.innerText = newPoints + " điểm";
+
+                const listEl = document.getElementById("viewHistoryList");
+                if (listEl) {
+                    const emptyItem = listEl.querySelector(".view-history-time");
+                    if (emptyItem && emptyItem.textContent.includes("Chưa có lịch sử")) {
+                        listEl.innerHTML = "";
+                    }
+                    const li = document.createElement("li");
+                    li.className = "view-history-item";
+                    const timeNow = new Date().toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+                    li.innerHTML = `
+                        <div>
+                            <div class="view-history-note">Đổi ${soLy} ly (Khách tự đổi)</div>
+                            <div class="view-history-time">${timeNow}</div>
+                        </div>
+                        <div class="view-history-delta minus">-${deducted} đ</div>
+                    `;
+                    listEl.prepend(li);
+                }
+
+                updateViewRedeemPreview();
+                if (msgEl) {
+                    msgEl.style.color = "#007b16";
+                    msgEl.textContent = `✅ Đổi thành công ${soLy} ly (-${deducted}đ). Còn ${newPoints} điểm!`;
+                }
+            } else {
+                if (msgEl) {
+                    msgEl.style.color = "#990900";
+                    msgEl.textContent = "❌ " + ((resData && resData.message) || "Không thể đổi điểm.");
+                }
+            }
+        };
+
+        // Không gửi secret_key; chỉ gửi vip_discount khi khách là VIP (lấy từ CONFIG.VIP_DISCOUNT)
+        const params = new URLSearchParams({
+            action: "doi_diem_qr",
+            code: code,
+            ma_khach: code,
+            so_ly: String(soLy),
+            points: String(pointsToSend),
+            quantity: String(pointsToSend),
+            redeem_unit: String(unitPts),
+            callback: cbName,
+            t: String(Date.now())
+        });
+        if (viewCurrentCustomer.isVip) {
+            params.set("vip_discount", String(vipDiscountToSend));
+        }
+
+        scriptTag.src = `${CONFIG.SCRIPT_URL}?${params.toString()}`;
+        scriptTag.onerror = function() {
+            if (finished) return;
+            finished = true;
+            clearTimeout(safetyTimeout);
+            cleanup();
+            resetBtn();
+            if (msgEl) {
+                msgEl.style.color = "#990900";
+                msgEl.textContent = "❌ Lỗi kết nối máy chủ khi đổi điểm!";
+            }
+        };
+        document.body.appendChild(scriptTag);
+    }
+
+    (function initGuestViewRedeemUi() {
+        const redeemBtn = document.getElementById("viewRedeemCfBtn");
+        const panelEl = document.getElementById("viewRedeemPanel");
+        const cancelBtn = document.getElementById("viewRedeemCancelBtn");
+        const confirmBtn = document.getElementById("viewRedeemConfirmBtn");
+        const msgEl = document.getElementById("viewRedeemMsg");
+
+        if (redeemBtn && panelEl) {
+            redeemBtn.addEventListener("click", function(ev) {
+                const viewBox = document.getElementById("viewInfoBox");
+                if (viewBox && viewBox.style.display === "block" && viewCurrentCustomer.code) {
+                    ev.preventDefault();
+                    const willOpen = panelEl.style.display !== "block";
+                    panelEl.style.display = willOpen ? "block" : "none";
+                    if (msgEl) msgEl.textContent = "";
+                    if (willOpen) {
+                        setViewSelectedCups(1);
+                    }
+                }
+            });
+        }
+
+        document.querySelectorAll("#viewCupChoices .view-cup-btn").forEach(function(btn) {
+            btn.addEventListener("click", function() {
+                setViewSelectedCups(btn.dataset.cups);
+            });
+        });
+
+        if (cancelBtn && panelEl) {
+            cancelBtn.addEventListener("click", function() {
+                panelEl.style.display = "none";
+                if (msgEl) msgEl.textContent = "";
+            });
+        }
+
+        if (confirmBtn) {
+            confirmBtn.addEventListener("click", function() {
+                submitGuestViewRedeem(viewSelectedCups);
+            });
+        }
+    })();
+
+    const _origSwitchToViewModeForGuestRedeem = switchToViewMode;
+    switchToViewMode = function(resData, fallbackCode) {
+        _origSwitchToViewModeForGuestRedeem(resData, fallbackCode);
+        const code = (resData && resData.code) ? resData.code : fallbackCode;
+        const name = (resData && resData.name) ? resData.name : ("Khách " + code);
+        const points = (resData && resData.points !== undefined && resData.points !== null) ? Number(resData.points) : 0;
+        const isVipCustomer = !!(
+            resData && (
+                resData.vip === true ||
+                (typeof resData.vip === "string" && resData.vip.trim().toUpperCase() === "VIP") ||
+                resData.isVip === true ||
+                String(resData.tier || resData.rank || resData.level || "").trim().toUpperCase() === "VIP"
+            )
+        );
+        viewCurrentCustomer = {
+            code: String(code || "").trim().toUpperCase(),
+            name: name,
+            points: points,
+            isVip: isVipCustomer
+        };
+        updateViewRedeemPreview();
+    };
 </script>
 </body>
 </html>
